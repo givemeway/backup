@@ -1,19 +1,47 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
 
-router.post("/",(req,res)=>{
-    const encodedString = req.headers.authorization;
-    const extractedUsernamePassword = atob(encodedString.split(" ")[1]);
-    const username = extractedUsernamePassword.split(":")[0];
-    const password = extractedUsernamePassword.split(":")[1];
-    // TODO
-    // 1. Validate the given username and password
-    const payload = {Username: username,Password: password}
-    const token = jwt.sign(payload,process.env.JWT,{expiresIn:86400 });
-    res.status(200).json({user:{token}});
-    // 2. Invalid credentials. Return status 401
+import { sqlExecute } from "../controllers/sql_execute.js";
+import { sqlConn } from "../controllers/sql_conn.js";
+import { validateUserDetails } from "../controllers/validateUserDetails.js";
+import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+await dotenv.config();
+
+const buildLoginQuery = (req, res, next) => {
+  const encodedString = req.headers.authorization;
+  const usernametype = req.headers.usernametype;
+  const extractedUsernamePassword = atob(encodedString.split(" ")[1]);
+  const username = extractedUsernamePassword.split(":")[0];
+  const password = extractedUsernamePassword.split(":")[1];
+  const payload = { Username: username };
+  let values = null;
+  let columns = null;
+  if (usernametype === "email") {
+    values = `email = '${username}'`;
+    columns = `username, password`;
+  } else {
+    values = `username = '${username}' AND password  = SHA2('${password}',512)`;
+    columns = `username, password`;
+  }
+  const query = `SELECT ${columns} FROM users WHERE ${values}`;
+  req.headers.query = query;
+  req.headers.username = username;
+  req.headers.password = password;
+  req.headers.jwt_payload = payload;
+  // req.headers.dbName = "customers";
+  next();
+};
+
+const connection = await mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: "customers",
+  port: process.env.DB_PORT,
 });
 
-module.exports = router; 
+router.use(sqlConn(connection));
+router.post("/", buildLoginQuery, sqlExecute, validateUserDetails);
+
+export { router as login };
