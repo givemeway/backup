@@ -8,16 +8,20 @@ const sqlExecute = async (req, res, next) => {
     req.headers.queryStatus = rows;
     next();
   } catch (error) {
-    req.headers.queryStatus = error;
-    if (error.errno === 1062) {
-      res
-        .status(401)
-        .json(
-          `Username ${req.headers.username} is taken. Please create another one.`
-        );
-    } else {
-      res.status(401).json(error.message);
-    }
+    res.status(500).json(error.message);
+    res.end();
+    // req.headers.queryStatus = error;
+    // if (error.errno === 1062) {
+    //   res
+    //     .status(401)
+    //     .json(
+    //       `Username ${req.headers.username} is taken. Please create another one.`
+    //     );
+    //   res.end();
+    // } else {
+    //   res.status(401).json(error);
+    //   res.end();
+    // }
   }
 };
 
