@@ -1,20 +1,12 @@
-import dotenv from "dotenv";
-await dotenv.config();
+import mysql from "mysql2/promise";
 
 const sqlConn = (connection) => async (req, res, next) => {
-  try {
-    // const connection = mysql.createConnection({
-    //   host: process.env.DB_HOST,
-    //   user: process.env.DB_USER,
-    //   password: process.env.DB_PASSWORD,
-    //   database: dbName,
-    //   port: process.env.DB_PORT,
-    // });
-    req.headers.connection = connection;
-    next();
-  } catch (error) {
-    res.status(500).json(`DB Error ${error}`);
+  if (connection instanceof Error) {
+    res.status(500).json(`DB Error - ${connection}`);
     res.end();
+  } else {
+    req.headers.connection = await connection;
+    next();
   }
 };
 
