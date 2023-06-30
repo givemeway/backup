@@ -4,9 +4,10 @@ const router = express.Router();
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { sqlConn } from "../controllers/sql_conn.js";
 import { validateUserDetails } from "../controllers/validateUserDetails.js";
-import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 await dotenv.config();
+
+import { createConnection } from "../controllers/createConnection.js";
 
 const buildLoginQuery = (req, res, next) => {
   const encodedString = req.headers.authorization;
@@ -29,19 +30,13 @@ const buildLoginQuery = (req, res, next) => {
   req.headers.username = username;
   req.headers.password = password;
   req.headers.jwt_payload = payload;
-  // req.headers.dbName = "customers";
   next();
 };
 
-const connection = await mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: "customers",
-  port: process.env.DB_PORT,
-});
+const connection = createConnection("customers");
 
 router.use(sqlConn(connection));
+
 router.post("/", buildLoginQuery, sqlExecute, validateUserDetails);
 
 export { router as login };

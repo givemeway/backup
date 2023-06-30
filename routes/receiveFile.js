@@ -5,15 +5,11 @@ import { uploadFile } from "../controllers/fileDownload.js";
 import updateUtime from "../controllers/updateUtimes.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { sqlConn } from "../controllers/sql_conn.js";
-import mysql from "mysql2/promise";
+import { createConnection } from "../controllers/createConnection.js";
 
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
-
-router.post("/sendFileInfo", verifyToken, createDir, (req, res, next) => {
-  res.json("file info received");
-});
 
 const buildSQLQueryToUpdateFiles = (req, res, next) => {
   const username = req.headers.username;
@@ -37,18 +33,12 @@ const buildSQLQueryToUpdateFiles = (req, res, next) => {
   next();
 };
 
-const connection = await mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: "data",
-  port: process.env.DB_PORT,
-});
+const connection = createConnection("data");
 
 router.use(sqlConn(connection));
 
 router.post(
-  "/receiveFile",
+  "/",
   verifyToken,
   createDir,
   uploadFile,
@@ -60,4 +50,4 @@ router.post(
   }
 );
 
-export { router as fileIO };
+export { router as receiveFile };

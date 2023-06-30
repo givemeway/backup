@@ -1,10 +1,7 @@
-import express from "express";
-import bodyparser from "body-parser";
-import { login } from "./routes/login.js";
-import { fileIO } from "./routes/fileIO.js";
-import { test } from "./routes/test.js";
-import { signup } from "./routes/signup.js";
-import { sqlConn } from "./controllers/sql_conn.js";
+const express = require("express");
+const bodyparser = require("body-parser");
+const login = require('./routes/login');
+const fileIO = require('./routes/fileIO');
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -12,10 +9,8 @@ const app = express();
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
 
-app.use("/app/login", login);
-app.use("/app/fileIO", fileIO);
-app.use("/app/test", test);
-app.use("/app/signup", signup);
+app.use("/app/login",login);
+app.use("/app/fileIO",fileIO);
 
 app.listen(PORT, (error) => {
   if (error) {

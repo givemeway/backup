@@ -12,11 +12,10 @@ import os from "node:os";
 // const path = require("path");
 // const FormData = require("form-data");
 
-const postUrl = "http://192.168.29.179:3000/app/fileIO/receiveFile";
+const postUrl = "http://192.168.29.34:3000/app/sendFileInfo";
 
 const token =
-  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6InNhbmRlZXAua3VtYXJAaWRyaXZlLmNvbSIsImlhdCI6MTY4NzU5NDc1MSwiZXhwIjoxNjg3NjgxMTUxfQ.58uv0HRSPqSCdkGHx_uFh2FyrKRggua-bw1LHGb3hQk";
-
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6InNhbmRlZXAua3VtYXJAaWRyaXZlaW5jLmNvbSIsImlhdCI6MTY4NzY5MjkzMiwiZXhwIjoxNjg3Nzc5MzMyfQ.AKIf77e9PIJRhwKUbXHTZlP3d1bQRRgEMTHIS9hUfao";
 const sendFile = async (filePath) => {
   try {
     const fileStat = fs.statSync(filePath);
@@ -26,7 +25,7 @@ const sendFile = async (filePath) => {
       filename: path.basename(filePath),
       dir: convertWindowsPathToUnix(path.dirname(filePath)),
       devicename: os.hostname(),
-      username: "aneesh_evs_ent",
+      username: "sandeep.kumar@idriveinc.com",
       filestat: JSON.stringify(fileStat),
     };
     const formData = new FormData();
@@ -75,11 +74,46 @@ const listAllFiles = async (dir) => {
   return allFiles;
 };
 
-const dir = "C:\\Users\\sandk\\Desktop\\ticket_automation";
-listAllFiles(dir).then((files) => {
-  console.log(files.length);
-  files.forEach(async (file) => {
-    let data = await sendFile(file);
-    console.log(data);
-  });
-});
+const dir = "C:\\Users\\Sandeep Kumar\\Desktop\\ticketing";
+// listAllFiles(dir).then((files) => {
+//   console.log(files.length);
+//   files.forEach(async (file) => {
+//     let data = await sendFile(file);
+//     console.log(data);
+//   });
+// });
+
+const headers = {
+  Authorization: token,
+
+  devicename: "LAPTOP-F5NFL085",
+  username: "sandeep.kumar@idriveinc.com",
+};
+
+const options = {
+  method: "POST",
+  headers: headers,
+};
+
+const fetchDBFiles = async () => {
+  const response = await fetch(postUrl, options);
+  console.log(response.body);
+  const reader = await response.body.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    const text = new TextDecoder().decode(value);
+    const lines = text.split("\n");
+
+    for (const line of lines) {
+      if (line) {
+        const row = JSON.parse(line);
+        console.log(row);
+      }
+    }
+  }
+};
+
+fetchDBFiles();
