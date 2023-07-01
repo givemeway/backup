@@ -58,7 +58,6 @@ const uploadFile = (file) => {
       xhr.upload.addEventListener("progress", function (event) {
         if (event.lengthComputable) {
           let percentComplete = Math.round((event.loaded / event.total) * 100);
-          // update progress bar
           progressBar.textContent = `${file.name} - ${percentComplete}%`;
         }
       });
