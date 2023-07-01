@@ -37,6 +37,18 @@ const connection = createConnection("customers");
 
 router.use(sqlConn(connection));
 
+const corsOptions = {
+  origin: "http://127.0.0.1:5500",
+  optionsSuccessStatus: 200,
+};
+
+router.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+
 router.post("/", buildLoginQuery, sqlExecute, validateUserDetails);
 
 export { router as login };
