@@ -11,7 +11,7 @@ const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
 
-const buildSQLQueryToUpdateFiles = (req, res, next) => {
+const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const username = req.headers.username;
   const filename = req.headers.filename;
   const device = req.headers.devicename;
@@ -22,13 +22,13 @@ const buildSQLQueryToUpdateFiles = (req, res, next) => {
     .toISOString()
     .substring(0, 19)
     .replace("T", " ");
-  const hashvalue = "34343434";
+  const checksum = fileStat.checksum;
   const versions = 1;
   const snapshot = "newsnapshot";
 
-  const query = `INSERT INTO files (username,device,directory,filename,
-    last_modified,hashvalue,versions,snapshot)
-    VALUES ("${username}","${device}","${directory}","${filename}","${isoString}",${hashvalue},${versions},"${snapshot}")`;
+  const query = `INSERT INTO files 
+                (username,device,directory,filename,last_modified,hashvalue,versions,snapshot)
+                VALUES ("${username}","${device}","${directory}","${filename}","${isoString}","${checksum}",${versions},"${snapshot}")`;
   req.headers.query = query;
   next();
 };

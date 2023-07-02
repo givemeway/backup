@@ -1,3 +1,5 @@
+import { loginURL } from "../config/config.js";
+
 let form = document.getElementById("loginForm");
 
 form.addEventListener("submit", (event) => {
@@ -13,14 +15,13 @@ form.addEventListener("submit", (event) => {
   let headers = new Headers();
   headers.append("Authorization", `Basic ${encodedData}`);
 
-  const url = "http://192.168.29.179:3000/app/login";
   const options = {
     method: "POST",
     credentials: "include",
     mode: "cors",
     headers: headers,
   };
-  fetch(url, options)
+  fetch(loginURL, options)
     .then((res) => {
       if (res.status == 401 || res.status == 403) {
         alert("Username or password incorrect!");
