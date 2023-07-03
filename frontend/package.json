@@ -1,0 +1,28 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Backup",
+  "main": "frontend.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/givemeway/backup.git"
+  },
+  "keywords": [
+    "Backup",
+    "Solution"
+  ],
+  "author": "Sandeep Kumar G R",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/givemeway/backup/issues"
+  },
+  "homepage": "https://github.com/givemeway/backup#readme",
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "node-fetch": "^3.3.1"
+  }
+}

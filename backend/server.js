@@ -5,6 +5,7 @@ import { receiveFile } from "./routes/receiveFile.js";
 import { test } from "./routes/test.js";
 import { signup } from "./routes/signup.js";
 import { fetchFilesInfo } from "./routes/fetchFilesInfo.js";
+import { fetchDBFiles } from "./routes/fetchDBFiles.js";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -17,6 +18,7 @@ app.use("/app/receiveFile", receiveFile);
 app.use("/app/test", test);
 app.use("/app/signup", signup);
 app.use("/app/sendFileInfo", fetchFilesInfo);
+app.use("/app/fetchFiles", fetchDBFiles);
 
 app.listen(PORT, (error) => {
   if (error) {
