@@ -12,13 +12,15 @@ import os from "node:os";
 // const path = require("path");
 // const FormData = require("form-data");
 
-const postUrl = "http://192.168.29.34:3000/app/sendFileInfo";
+const postUrl = "http://192.168.29.179:3000/app/receiveFile";
 
 const token =
-  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6InNhbmRlZXAua3VtYXJAaWRyaXZlaW5jLmNvbSIsImlhdCI6MTY4NzY5MjkzMiwiZXhwIjoxNjg3Nzc5MzMyfQ.AKIf77e9PIJRhwKUbXHTZlP3d1bQRRgEMTHIS9hUfao";
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6InNhbmRlZXAua3VtYXJAaWRyaXZlaW5jLmNvbSIsImlhdCI6MTY4ODExNDYyNSwiZXhwIjoxNjg4MjAxMDI1fQ.rrlBmMpqZLyDjsTzdO1jAE9SgD1vczvHfByj6J5FiFE";
+
 const sendFile = async (filePath) => {
   try {
     const fileStat = fs.statSync(filePath);
+    const size = fileStat.size;
     const fileStream = fs.createReadStream(filePath);
     const headers = {
       Authorization: token,
@@ -28,6 +30,11 @@ const sendFile = async (filePath) => {
       username: "sandeep.kumar@idriveinc.com",
       filestat: JSON.stringify(fileStat),
     };
+    let bytesTransferred = 0;
+    fileStream.on("data", (chunk) => {
+      bytesTransferred += chunk.length;
+      const percentageComplete = (bytesTransferred / size) * 100;
+    });
     const formData = new FormData();
     formData.append("file", fileStream);
     const options = {
@@ -74,14 +81,14 @@ const listAllFiles = async (dir) => {
   return allFiles;
 };
 
-const dir = "C:\\Users\\Sandeep Kumar\\Desktop\\ticketing";
-// listAllFiles(dir).then((files) => {
-//   console.log(files.length);
-//   files.forEach(async (file) => {
-//     let data = await sendFile(file);
-//     console.log(data);
-//   });
-// });
+const dir = "C:\\Users\\sandk\\Desktop\\ticket_automation\\";
+listAllFiles(dir).then((files) => {
+  console.log(files.length);
+  files.forEach(async (file) => {
+    let data = await sendFile(file);
+    console.log(data);
+  });
+});
 
 const headers = {
   Authorization: token,
@@ -116,4 +123,4 @@ const fetchDBFiles = async () => {
   }
 };
 
-fetchDBFiles();
+export { sendFile };
