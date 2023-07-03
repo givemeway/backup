@@ -26,14 +26,15 @@ const uploadFile = (req, res, next) => {
 
   upload(req, res, (error) => {
     if (error instanceof multer.MulterError) {
-      res.json("Error Occured");
+      res.json(error);
       res.end();
     } else if (error) {
-      res.json("Unknow Error");
+      res.json(error);
       res.end();
+    } else {
+      next();
     }
     // console.log(req.file);
-    next();
   });
 };
 
