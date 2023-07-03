@@ -81,7 +81,7 @@ const listAllFiles = async (dir) => {
   return allFiles;
 };
 
-const dir = "C:\\Users\\sandk\\Desktop\\ticket_automation\\";
+const dir = "C:\\Users\\Sandeep Kumar\\Desktop\\ticketing";
 listAllFiles(dir).then((files) => {
   console.log(files.length);
   files.forEach(async (file) => {
