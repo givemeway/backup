@@ -1,6 +1,6 @@
-import { fileUploadURL } from "../config/config.js";
+import { fileUploadURL, username, devicename } from "../config/config.js";
 
-const uploadFile = (file, progressBar, hashHex) => {
+const uploadFile = (file, cwd, progressBar, hashHex, token) => {
   return new Promise((resolve, reject) => {
     try {
       const fileStat = {
@@ -9,10 +9,9 @@ const uploadFile = (file, progressBar, hashHex) => {
         mtime: file.lastModifiedDate,
         checksum: hashHex,
       };
-      const token = `Bearer ${
-        JSON.parse(localStorage.getItem("token"))["token"]
-      }`;
-      const filePath = file.webkitRelativePath;
+      // const filePath = cwd + file.webkitRelativePath;
+      const filePath =
+        cwd === "/" ? file.webkitRelativePath : cwd + file.webkitRelativePath;
       const pathParts = filePath.split("/");
       pathParts.pop();
       const dir = pathParts.join("/");
@@ -21,8 +20,8 @@ const uploadFile = (file, progressBar, hashHex) => {
         Authorization: token,
         filename: file.name,
         dir: dir,
-        devicename: "DESKTOP",
-        username: "sandeep.kumar@idriveinc.com",
+        devicename: devicename,
+        username: username,
         filestat: JSON.stringify(fileStat),
       };
 
