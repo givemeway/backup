@@ -1,0 +1,2 @@
+select count(*) from  data.files WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP' AND directory REGEXP '^Crio/krishna janmastami(/[^/]+)+$';
+select count(*) from data.files WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP' AND directory = 'Crio/krishna janmastami' ORDER BY filename ASC;
