@@ -1,6 +1,6 @@
 import { hashFile } from "./hashFile.js";
 import { uploadFile } from "./transferFile.js";
-import { getfilesCurDir } from "./filesInfo.js";
+import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { cwd } from "../config/config.js";
 const form = document.getElementById("folderupload");
 const progressBar = document.getElementById("progressBar");
@@ -21,7 +21,29 @@ form.addEventListener("submit", (event) => {
       : cwd + filesList[0].webkitRelativePath.split(/\//g)[0];
 
   console.log(uploadingDirPath);
-  getfilesCurDir(uploadingDirPath, token);
+  getfilesCurDir(uploadingDirPath, token)
+    .then(async (DbFiles) => {
+      let files = await compareFiles(filesList, DbFiles);
+      console.log(files.length);
+      for (let i = 0; i < files.length; i++) {
+        try {
+          const hashHex = await hashFile(files[i]);
+          let data = await uploadFile(
+            files[i],
+            cwd,
+            progressBar,
+            hashHex,
+            token
+          );
+          console.log(data);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   // filesList.forEach(async (file) => {
   //   try {
   //     const hashHex = await hashFile(file);
