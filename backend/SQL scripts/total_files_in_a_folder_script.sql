@@ -20,3 +20,4 @@ AND directory = 'ticket_automation' ORDER BY filename ASC;
 -- WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP-10RSGE8' AND directory = 'C' 
 -- group by directory;
 
+--  select * from  data.files  WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP' AND hashed_filename REGEXP '\\${3}[0-9a-zA-Z]{64}\\${3}NA'
