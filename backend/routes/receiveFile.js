@@ -13,7 +13,7 @@ const router = express.Router();
 
 const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const username = req.headers.username;
-  const filename = req.headers.filename;
+  let filename = req.headers.filename;
   const device = req.headers.devicename;
   const directory = req.headers.dir;
   const fileStat = JSON.parse(req.headers.filestat);
@@ -28,9 +28,13 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const hashed_filename = `${filename}$$$${checksum}$$$NA`;
   const size = `${fileStat.size}`;
 
+  if (fileStat.modified === true) {
+    filename = hashed_filename;
+  }
   const query = `INSERT INTO files 
                 (username,device,directory,filename,hashed_filename,last_modified,hashvalue,versions,size,snapshot)
                 VALUES ("${username}","${device}","${directory}","${filename}","${hashed_filename}","${isoString}","${checksum}",${versions},${size},"${snapshot}")`;
+
   req.headers.query = query;
   next();
 };

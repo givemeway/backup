@@ -82,9 +82,7 @@ const listAllFiles = async (dir) => {
   return allFiles;
 };
 
-const dir =
-  "C:\\Users\\sandk\\Desktop\\Projects\\Triox\\Triox Tech Pvt Ltd\\Triox CRM";
-
+const dir = "C:\\Users\\sandk\\Desktop\\ticket_automation\\";
 listAllFiles(dir).then(async (files) => {
   console.log(files.length);
   for (let i = 0; i < files.length; i++) {
