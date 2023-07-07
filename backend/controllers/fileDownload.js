@@ -16,7 +16,12 @@ const multerInstance = multer({
       return cb(null, path.join(`${root}/${userName}`, device, filePath));
     },
     filename: (req, file, cb) => {
-      return cb(null, req.headers.filename);
+      const fileStat = JSON.parse(req.headers.filestat);
+      let filename = req.headers.filename;
+      if (fileStat.modified === true) {
+        filename = `${filename}$$$${fileStat.checksum}$$$NA`;
+      }
+      return cb(null, filename);
     },
   }),
 });
@@ -26,9 +31,11 @@ const uploadFile = (req, res, next) => {
 
   upload(req, res, (error) => {
     if (error instanceof multer.MulterError) {
+      console.log(error);
       res.json(error);
       res.end();
     } else if (error) {
+      console.log(error);
       res.json(error);
       res.end();
     } else {

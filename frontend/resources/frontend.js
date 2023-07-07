@@ -15,12 +15,11 @@ import os from "node:os";
 const postUrl = "http://192.168.29.179:3000/app/receiveFile";
 
 const token =
-  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6InNhbmRlZXAua3VtYXJAaWRyaXZlaW5jLmNvbSIsImlhdCI6MTY4ODExNDYyNSwiZXhwIjoxNjg4MjAxMDI1fQ.rrlBmMpqZLyDjsTzdO1jAE9SgD1vczvHfByj6J5FiFE";
-
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6InNhbmRlZXAua3VtYXJAaWRyaXZlaW5jLmNvbSIsImlhdCI6MTY4ODU4MzUwNiwiZXhwIjoxNjg4NjY5OTA2fQ.NQU9UhAYqFTelLixnJ5bYdMbmOpv-rxbIilZr5jJolA";
 const sendFile = async (filePath) => {
   try {
     const fileStat = fs.statSync(filePath);
-    const size = fileStat.size;
+    // const size = fileStat.size;
     const fileStream = fs.createReadStream(filePath);
     const headers = {
       Authorization: token,
@@ -30,15 +29,17 @@ const sendFile = async (filePath) => {
       username: "sandeep.kumar@idriveinc.com",
       filestat: JSON.stringify(fileStat),
     };
-    let bytesTransferred = 0;
-    fileStream.on("data", (chunk) => {
-      bytesTransferred += chunk.length;
-      const percentageComplete = (bytesTransferred / size) * 100;
-    });
+    // let bytesTransferred = 0;
+    // fileStream.on("data", (chunk) => {
+    //   bytesTransferred += chunk.length;
+    //   const percentageComplete = (bytesTransferred / size) * 100;
+    // });
     const formData = new FormData();
     formData.append("file", fileStream);
     const options = {
       method: "POST",
+      credentials: "include",
+      mode: "cors",
       headers: headers,
       body: formData,
     };
@@ -81,46 +82,12 @@ const listAllFiles = async (dir) => {
   return allFiles;
 };
 
-const dir = "C:\\Users\\Sandeep Kumar\\Desktop\\ticketing";
-listAllFiles(dir).then((files) => {
+const dir = "C:\\Users\\sandk\\Desktop\\ticket_automation\\";
+listAllFiles(dir).then(async (files) => {
   console.log(files.length);
-  files.forEach(async (file) => {
+  for (let i = 0; i < files.length; i++) {
+    let file = files[i];
     let data = await sendFile(file);
     console.log(data);
-  });
-});
-
-const headers = {
-  Authorization: token,
-
-  devicename: "LAPTOP-F5NFL085",
-  username: "sandeep.kumar@idriveinc.com",
-};
-
-const options = {
-  method: "POST",
-  headers: headers,
-};
-
-const fetchDBFiles = async () => {
-  const response = await fetch(postUrl, options);
-  console.log(response.body);
-  const reader = await response.body.getReader();
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-    const text = new TextDecoder().decode(value);
-    const lines = text.split("\n");
-
-    for (const line of lines) {
-      if (line) {
-        const row = JSON.parse(line);
-        console.log(row);
-      }
-    }
   }
-};
-
-export { sendFile };
+});

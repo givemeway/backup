@@ -51,9 +51,7 @@ const getFolders = async (req, res, next) => {
                                     directory ${order};`;
   req.headers.query = foldersinCurrentDirQuery;
   await sqlExecute(req, res, next);
-  // if (req.headers.queryStatus.length == 0) {
-  //   regex = `^\\.?${currentDir}(/[^/]+){${i}}$`;
-  // }
+
   req.headers.data["folders"] = JSON.parse(
     JSON.stringify(req.headers.queryStatus)
   );
@@ -76,4 +74,4 @@ router.post("/", verifyToken, getFiles, getFolders, (req, res) => {
   console.log("done");
 });
 
-export { router as fetchDBFiles };
+export { router as getFilesSubfolders };
