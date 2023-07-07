@@ -25,10 +25,12 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const checksum = fileStat.checksum;
   const versions = 1;
   const snapshot = "newsnapshot";
+  const hashed_filename = `${filename}$$$${checksum}$$$NA`;
+  const size = `${fileStat.size}`;
 
   const query = `INSERT INTO files 
-                (username,device,directory,filename,last_modified,hashvalue,versions,snapshot)
-                VALUES ("${username}","${device}","${directory}","${filename}","${isoString}","${checksum}",${versions},"${snapshot}")`;
+                (username,device,directory,filename,hashed_filename,last_modified,hashvalue,versions,size,snapshot)
+                VALUES ("${username}","${device}","${directory}","${filename}","${hashed_filename}","${isoString}","${checksum}",${versions},${size},"${snapshot}")`;
   req.headers.query = query;
   next();
 };

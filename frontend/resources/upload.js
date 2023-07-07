@@ -9,7 +9,10 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   event.stopPropagation();
   const files = event.target.elements.folderselected.files;
-  const filesList = Array.from(files).map((file) => file);
+  const filesList = Array.from(files).map((file) => {
+    file.modified = false;
+    return file;
+  });
   console.log(filesList[0]);
   const token = `Bearer ${JSON.parse(localStorage.getItem("token"))["token"]}`;
   // const uploadingDirPath =
@@ -27,13 +30,20 @@ form.addEventListener("submit", (event) => {
       console.log(files.length);
       for (let i = 0; i < files.length; i++) {
         try {
-          const hashHex = await hashFile(files[i]);
+          let hashHex = "";
+          if (files[i].hasOwnProperty("hash")) {
+            hashHex = files[i].hash;
+          } else {
+            hashHex = await hashFile(files[i]);
+          }
+
           let data = await uploadFile(
             files[i],
             cwd,
             progressBar,
             hashHex,
-            token
+            token,
+            files[i].modified
           );
           console.log(data);
         } catch (err) {
