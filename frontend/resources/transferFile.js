@@ -39,7 +39,11 @@ const uploadFile = (file, cwd, progressBar, hashHex, token, modified) => {
       });
       xhr.onreadystatechange = function () {
         if (xhr.readyState === XMLHttpRequest.DONE) {
-          resolve(JSON.parse(xhr.responseText));
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch (err) {
+            reject(err);
+          }
         }
       };
       xhr.open("POST", fileUploadURL);
