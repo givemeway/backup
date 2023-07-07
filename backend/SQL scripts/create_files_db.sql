@@ -10,9 +10,11 @@ CREATE TABLE `files`(
     `device` VARCHAR(70) NOT NULL,
     `directory` VARCHAR(255) NOT NULL,
     `filename` VARCHAR(255) NOT NULL,
+    `hashed_filename` VARCHAR(350) NOT NULL,
     `last_modified` DATETIME NOT NULL,
     `hashvalue` CHAR(64) NOT NULL,
     `versions` INTEGER NOT NULL,
+    `size` INTEGER NOT NULL,
     `snapshot` VARCHAR(255) NOT NULL,
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );

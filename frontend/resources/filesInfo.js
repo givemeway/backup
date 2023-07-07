@@ -34,16 +34,23 @@ const compareFiles = async (selectedFileList, DbFileList) => {
   let files = new Object();
   DbFileList.forEach((file) => {
     if (files.hasOwnProperty(file.directory)) {
-      files[file.directory][file.filename] = {
-        hash: file.hashvalue,
-        lmd: file.last_modified,
-      };
+      if (files[file.directory].hasOwnProperty(file.filename)) {
+        files[file.directory][file.filename].hash.add(file.hashvalue);
+        files[file.directory][file.filename].lmd.add(file.last_modified);
+      } else {
+        files[file.directory][file.filename] = new Object();
+        files[file.directory][file.filename].hash = new Set();
+        files[file.directory][file.filename].lmd = new Set();
+        files[file.directory][file.filename].lmd.add(file.last_modified);
+        files[file.directory][file.filename].hash.add(file.hashvalue);
+      }
     } else {
       files[file.directory] = new Object();
-      files[file.directory][file.filename] = {
-        hash: file.hashvalue,
-        lmd: file.last_modified,
-      };
+      files[file.directory][file.filename] = new Object();
+      files[file.directory][file.filename].hash = new Set();
+      files[file.directory][file.filename].lmd = new Set();
+      files[file.directory][file.filename].lmd.add(file.last_modified);
+      files[file.directory][file.filename].hash.add(file.hashvalue);
     }
   });
   let filesToUpload = [];
@@ -51,20 +58,23 @@ const compareFiles = async (selectedFileList, DbFileList) => {
     let dirName = getDirName(file.webkitRelativePath);
     if (files.hasOwnProperty(dirName)) {
       if (!files[dirName].hasOwnProperty(file.name)) {
+        file.modified = false;
         filesToUpload.push(file);
       } else {
         const localFileHash = await hashFile(file);
-        const hashFromDB = files[dirName][file.name]["hash"];
-        if (localFileHash !== hashFromDB) {
+        if (!files[dirName][file.name]["hash"].has(localFileHash)) {
           console.log("Modified");
+          file.modified = true;
+          file.hash = localFileHash;
           filesToUpload.push(file);
         }
       }
     } else {
+      file.modified = false;
       filesToUpload.push(file);
     }
   }
-
+  console.log(files);
   return filesToUpload;
 };
 

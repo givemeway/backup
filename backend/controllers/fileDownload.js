@@ -16,7 +16,12 @@ const multerInstance = multer({
       return cb(null, path.join(`${root}/${userName}`, device, filePath));
     },
     filename: (req, file, cb) => {
-      return cb(null, req.headers.filename);
+      const fileStat = JSON.parse(req.headers.filestat);
+      let filename = req.headers.filename;
+      if (fileStat.modified === true) {
+        filename = `${filename}$$$${fileStat.checksum}$$$NA`;
+      }
+      return cb(null, filename);
     },
   }),
 });

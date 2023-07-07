@@ -1,6 +1,6 @@
 import { fileUploadURL, username, devicename } from "../config/config.js";
 
-const uploadFile = (file, cwd, progressBar, hashHex, token) => {
+const uploadFile = (file, cwd, progressBar, hashHex, token, modified) => {
   return new Promise((resolve, reject) => {
     try {
       const fileStat = {
@@ -8,6 +8,8 @@ const uploadFile = (file, cwd, progressBar, hashHex, token) => {
         mtimeMs: file.lastModified,
         mtime: file.lastModifiedDate,
         checksum: hashHex,
+        modified: modified,
+        size: file.size,
       };
       // const filePath = cwd + file.webkitRelativePath;
       const filePath =
