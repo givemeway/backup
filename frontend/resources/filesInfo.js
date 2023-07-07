@@ -33,24 +33,31 @@ const compareFiles = async (selectedFileList, DbFileList) => {
   }
   let files = new Object();
   DbFileList.forEach((file) => {
+    const extractedFileName = file.filename.split(
+      /\${3}[0-9a-zA-Z]{64}\${3}NA/g
+    );
+    let fileName = file.filename;
+    if (extractedFileName.length > 1) {
+      fileName = extractedFileName[0];
+    }
     if (files.hasOwnProperty(file.directory)) {
-      if (files[file.directory].hasOwnProperty(file.filename)) {
-        files[file.directory][file.filename].hash.add(file.hashvalue);
-        files[file.directory][file.filename].lmd.add(file.last_modified);
+      if (files[file.directory].hasOwnProperty(fileName)) {
+        files[file.directory][fileName].hash.add(file.hashvalue);
+        files[file.directory][fileName].lmd.add(file.last_modified);
       } else {
-        files[file.directory][file.filename] = new Object();
-        files[file.directory][file.filename].hash = new Set();
-        files[file.directory][file.filename].lmd = new Set();
-        files[file.directory][file.filename].lmd.add(file.last_modified);
-        files[file.directory][file.filename].hash.add(file.hashvalue);
+        files[file.directory][fileName] = new Object();
+        files[file.directory][fileName].hash = new Set();
+        files[file.directory][fileName].lmd = new Set();
+        files[file.directory][fileName].lmd.add(file.last_modified);
+        files[file.directory][fileName].hash.add(file.hashvalue);
       }
     } else {
       files[file.directory] = new Object();
-      files[file.directory][file.filename] = new Object();
-      files[file.directory][file.filename].hash = new Set();
-      files[file.directory][file.filename].lmd = new Set();
-      files[file.directory][file.filename].lmd.add(file.last_modified);
-      files[file.directory][file.filename].hash.add(file.hashvalue);
+      files[file.directory][fileName] = new Object();
+      files[file.directory][fileName].hash = new Set();
+      files[file.directory][fileName].lmd = new Set();
+      files[file.directory][fileName].lmd.add(file.last_modified);
+      files[file.directory][fileName].hash.add(file.hashvalue);
     }
   });
   let filesToUpload = [];
