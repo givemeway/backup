@@ -23,11 +23,13 @@ const uploadFile = (
       };
       // const filePath = cwd + file.webkitRelativePath;
       const filePath =
-        cwd === "/" ? file.webkitRelativePath : cwd + file.webkitRelativePath;
+        cwd === "/"
+          ? file.webkitRelativePath
+          : cwd + "/" + file.webkitRelativePath;
       const pathParts = filePath.split("/");
       pathParts.pop();
       const dir = pathParts.join("/");
-
+      console.log(dir);
       const headers = {
         Authorization: token,
         filename: file.name,

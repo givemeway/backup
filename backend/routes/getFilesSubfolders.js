@@ -49,7 +49,25 @@ const getFolders = async (req, res, next) => {
                                     directory REGEXP '${regex}'
                                     ORDER BY 
                                     directory ${order};`;
-  req.headers.query = foldersinCurrentDirQuery;
+  let regex_2 = ``;
+  let path = ``;
+  if (devicename === "/") {
+    regex_2 = `^\\.?(/[^/]+)$`;
+  } else if (currentDir === "/") {
+    regex_2 = `^\\.?/${devicename}(/[^/]+)$`;
+  } else {
+    path = `/${devicename}/${currentDir}`;
+    regex_2 = `^\\.?${path}(/[^/]+)$`;
+  }
+
+  const foldersQuery = `SELECT 
+                        folder,path 
+                        FROM data.directories 
+                        WHERE username = '${username}' 
+                        AND
+                        path REGEXP '${regex_2}';`;
+
+  req.headers.query = foldersQuery;
   await sqlExecute(req, res, next);
 
   req.headers.data["folders"] = JSON.parse(

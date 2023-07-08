@@ -27,7 +27,7 @@ const getfilesCurDir = async (cwd, token) => {
   }
 };
 
-const compareFiles = async (selectedFileList, DbFileList) => {
+const compareFiles = async (selectedFileList, DbFileList, cwd) => {
   if (DbFileList.length === 0) {
     return selectedFileList;
   }
@@ -62,7 +62,11 @@ const compareFiles = async (selectedFileList, DbFileList) => {
   });
   let filesToUpload = [];
   for (const file of selectedFileList) {
-    let dirName = getDirName(file.webkitRelativePath);
+    const filePath =
+      cwd === "/"
+        ? file.webkitRelativePath
+        : cwd + "/" + file.webkitRelativePath;
+    let dirName = getDirName(filePath);
     if (files.hasOwnProperty(dirName)) {
       if (!files[dirName].hasOwnProperty(file.name)) {
         file.modified = false;
@@ -81,7 +85,6 @@ const compareFiles = async (selectedFileList, DbFileList) => {
       filesToUpload.push(file);
     }
   }
-  console.log(files);
   return filesToUpload;
 };
 
