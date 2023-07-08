@@ -16,20 +16,17 @@ form.addEventListener("submit", (event) => {
     file.modified = false;
     return file;
   });
-  console.log(filesList[0]);
   const token = `Bearer ${JSON.parse(localStorage.getItem("token"))["token"]}`;
-  // const uploadingDirPath =
-  //   cwd + filesList[0].webkitRelativePath.split(/\//g)[0];
 
   const uploadingDirPath =
     cwd === "/"
       ? filesList[0].webkitRelativePath.split(/\//g)[0]
-      : cwd + filesList[0].webkitRelativePath.split(/\//g)[0];
+      : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
 
   console.log(uploadingDirPath);
   getfilesCurDir(uploadingDirPath, token)
     .then(async (DbFiles) => {
-      let files = await compareFiles(filesList, DbFiles);
+      let files = await compareFiles(filesList, DbFiles, cwd);
       console.log(files.length);
       for (let i = 0; i < files.length; i++) {
         try {

@@ -3,7 +3,7 @@ from  data.files
 WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP' 
 AND directory REGEXP '^ticket_automation(/[^/]+)+$';
 
-select filename,last_modified,hashvalue,hashed_filename
+select count(*)
 from data.files 
 WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP' 
 AND directory = 'ticket_automation' ORDER BY filename ASC;
