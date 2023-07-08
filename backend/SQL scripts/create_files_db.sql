@@ -18,3 +18,14 @@ CREATE TABLE `files`(
     `snapshot` VARCHAR(255) NOT NULL,
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
+CREATE INDEX device_index ON files(device);
+CREATE TABLE `directories`(
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(70) NOT NULL,
+    `device` VARCHAR(70) NOT NULL,
+    `folder` VARCHAR(255) NOT NULL,
+    `path` VARCHAR(255) NOT NULL,
+     UNIQUE(`username`,`device`,`folder`,`path`),
+     FOREIGN KEY (`device`) REFERENCES files(`device`),
+     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
+);

@@ -11,6 +11,49 @@ const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
 
+const createFolderIndex = async (req, res, next) => {
+  const username = req.headers.username;
+  const device = req.headers.devicename;
+  const dir = "/" + device + "/" + req.headers.dir;
+  const pathComponents = dir.split(/\//g);
+  await insertPath(req, res, next, pathComponents, 0, null, username, device);
+  next();
+};
+
+async function insertPath(
+  req,
+  res,
+  next,
+  pathComponents,
+  index,
+  parentId,
+  username,
+  device
+) {
+  if (index >= pathComponents.length) {
+    return;
+  }
+  const path = pathComponents.slice(0, index + 1).join("/");
+  const sql = `INSERT INTO directories 
+              (username,device,folder,path) 
+              VALUES ("${username}", "${device}", "${pathComponents[index]}", "${path}") 
+              ON DUPLICATE KEY 
+              UPDATE id = LAST_INSERT_ID(id)`;
+  req.headers.query = sql;
+  await sqlExecute(req, res, next);
+  parentId = req.headers.queryStatus.insertId;
+  await insertPath(
+    req,
+    res,
+    next,
+    pathComponents,
+    index + 1,
+    parentId,
+    username,
+    device
+  );
+}
+
 const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const username = req.headers.username;
   let filename = req.headers.filename;
@@ -61,6 +104,7 @@ router.post(
   updateUtime,
   buildSQLQueryToUpdateFiles,
   sqlExecute,
+  createFolderIndex,
   (req, res) => {
     res.json(`file ${req.file.filename} received`);
   }
