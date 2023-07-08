@@ -1,6 +1,16 @@
 import { fileUploadURL, username, devicename } from "../config/config.js";
 
-const uploadFile = (file, cwd, progressBar, hashHex, token, modified) => {
+const uploadFile = (
+  file,
+  cwd,
+  progressBar,
+  hashHex,
+  token,
+  modified,
+  uploadCountElement,
+  uploadCount,
+  totalCount
+) => {
   return new Promise((resolve, reject) => {
     try {
       const fileStat = {
@@ -40,8 +50,12 @@ const uploadFile = (file, cwd, progressBar, hashHex, token, modified) => {
       xhr.onreadystatechange = function () {
         if (xhr.readyState === XMLHttpRequest.DONE) {
           try {
+            uploadCountElement.textContent =
+              "Uploaded " + uploadCount + " out of " + totalCount;
             resolve(JSON.parse(xhr.responseText));
           } catch (err) {
+            uploadCountElement.textContent =
+              "Uploaded " + uploadCount + " out of " + totalCount;
             reject(err);
           }
         }

@@ -4,6 +4,9 @@ import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { cwd } from "../config/config.js";
 const form = document.getElementById("folderupload");
 const progressBar = document.getElementById("progressBar");
+const uploadCountElement = document.getElementById("filesProcessed");
+let progressbarUI = document.getElementsByClassName("progress-bar")[0];
+let progress = document.getElementsByClassName("progress")[0];
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -43,7 +46,21 @@ form.addEventListener("submit", (event) => {
             progressBar,
             hashHex,
             token,
-            files[i].modified
+            files[i].modified,
+            uploadCountElement,
+            i + 1,
+            files.length
+          );
+          progressbarUI.setAttribute(
+            "style",
+            `width: ${Math.ceil(((i + 1) / files.length) * 100)}%`
+          );
+          progressbarUI.textContent = `${Math.ceil(
+            ((i + 1) / files.length) * 100
+          )}%`;
+          progress.setAttribute(
+            "aria-valuenow",
+            `${Math.ceil(((i + 1) / files.length) * 100)}`
           );
           console.log(data);
         } catch (err) {
