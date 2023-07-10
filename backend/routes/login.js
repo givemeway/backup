@@ -2,12 +2,9 @@ import express from "express";
 const router = express.Router();
 
 import { sqlExecute } from "../controllers/sql_execute.js";
-import { sqlConn } from "../controllers/sql_conn.js";
 import { validateUserDetails } from "../controllers/validateUserDetails.js";
 import dotenv from "dotenv";
 await dotenv.config();
-
-import { createConnection } from "../controllers/createConnection.js";
 
 const buildLoginQuery = (req, res, next) => {
   const encodedString = req.headers.authorization;
@@ -31,15 +28,6 @@ const buildLoginQuery = (req, res, next) => {
   req.headers.password = password;
   req.headers.jwt_payload = payload;
   next();
-};
-
-const connection = createConnection("customers");
-
-router.use(sqlConn(connection));
-
-const corsOptions = {
-  origin: "http://127.0.0.1:5500",
-  optionsSuccessStatus: 200,
 };
 
 router.use((req, res, next) => {

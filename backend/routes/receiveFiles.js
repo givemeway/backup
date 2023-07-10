@@ -1,12 +1,9 @@
 import express from "express";
 import { verifyToken } from "../auth/auth.js";
 import { createDir } from "../controllers/createFilePath.js";
-import { uploadFile } from "../controllers/fileDownload.js";
+import { uploadFile } from "../controllers/uploadFile.js";
 import updateUtime from "../controllers/updateUtimes.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
-import { sqlConn } from "../controllers/sql_conn.js";
-import { createConnection } from "../controllers/createConnection.js";
-
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
@@ -82,10 +79,6 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   next();
 };
 
-const connection = createConnection("data");
-
-router.use(sqlConn(connection));
-
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -106,8 +99,8 @@ router.post(
   sqlExecute,
   createFolderIndex,
   (req, res) => {
-    res.json(`file ${req.file.filename} received`);
+    res.status(200).json(`file ${req.file.filename} received`);
   }
 );
 
-export { router as receiveFile };
+export { router as receiveFiles };

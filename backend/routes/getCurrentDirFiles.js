@@ -2,8 +2,6 @@ import express from "express";
 const router = express.Router();
 import { verifyToken } from "../auth/auth.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
-import { sqlConn } from "../controllers/sql_conn.js";
-import { createConnection } from "../controllers/createConnection.js";
 
 const getFilesInDirectory = async (req, res, next) => {
   const currentdirectory = req.headers.currentdirectory;
@@ -62,8 +60,6 @@ const getFilesInDirectory = async (req, res, next) => {
   res.status(200).json(req.headers.data);
 };
 
-const connection = createConnection("data");
-router.use(sqlConn(connection));
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
   res.header("Access-Control-Allow-Credentials", "true");

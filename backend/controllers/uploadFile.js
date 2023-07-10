@@ -31,13 +31,12 @@ const uploadFile = (req, res, next) => {
 
   upload(req, res, (error) => {
     if (error instanceof multer.MulterError) {
-      // console.log(error, "Multer error");
-      console.log("Error here");
-      res.json(error);
+      console.log(error, "Multer error");
+      res.status(500).json(error);
       res.end();
     } else if (error) {
-      // console.log(error);
-      res.json(error);
+      console.log(error);
+      res.status(500).json(error);
       res.end();
     } else {
       next();

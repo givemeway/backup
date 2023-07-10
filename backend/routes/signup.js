@@ -1,9 +1,6 @@
 import express from "express";
 const router = express.Router();
 import { sqlExecute } from "../controllers/sql_execute.js";
-import { sqlConn } from "../controllers/sql_conn.js";
-import mysql from "mysql2/promise";
-import { createConnection } from "../controllers/createConnection.js";
 
 const buildSignupQuery = (req, res, next) => {
   const username = req.headers.username;
@@ -19,11 +16,17 @@ const buildSignupQuery = (req, res, next) => {
   req.headers.query = query;
   next();
 };
-const connection = createConnection("customers");
-router.use(sqlConn(connection));
 
 router.post("/", buildSignupQuery, sqlExecute, (req, res) => {
-  res.status(200).json(req.headers.queryStatus);
+  if (req.headers.hasOwnProperty("sql_errno")) {
+    if (req.headers.sql_errno === 1062) {
+      res.status(500).json(req.headers.error.message);
+    } else {
+      res.status(500).json(req.headers.error);
+    }
+  } else {
+    res.status(200).json(`Username ${req.headers.username} created!`);
+  }
 });
 
 export { router as signup };
