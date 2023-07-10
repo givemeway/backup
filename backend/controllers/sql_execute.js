@@ -11,6 +11,7 @@ const sqlExecute = async (req, res, next) => {
   } catch (error) {
     if (error.errno == 1062) {
       req.headers.sql_errno = 1062;
+      req.headers.error = error;
       next();
     } else {
       res.status(500).json(error.message);

@@ -1,11 +1,7 @@
 import express from "express";
-import { sqlConn } from "../controllers/sql_conn.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { verifyToken } from "../auth/auth.js";
-import { createConnection } from "../controllers/createConnection.js";
 const router = express.Router();
-
-const connection = createConnection("data");
 
 const getFiles = async (req, res, next) => {
   const currentDir = req.headers.currentdirectory;
@@ -75,8 +71,6 @@ const getFolders = async (req, res, next) => {
   );
   res.json(req.headers.data);
 };
-
-router.use(sqlConn(connection));
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5500");

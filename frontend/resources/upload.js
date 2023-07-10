@@ -7,6 +7,7 @@ const progressBar = document.getElementById("progressBar");
 const uploadCountElement = document.getElementById("filesProcessed");
 let progressbarUI = document.getElementsByClassName("progress-bar")[0];
 let progress = document.getElementsByClassName("progress")[0];
+let filesFailed = document.getElementById("filesFailed");
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -62,10 +63,12 @@ form.addEventListener("submit", (event) => {
           console.log(data);
         } catch (err) {
           console.log(err);
+          addFailedFilesToDOM(filesFailed, files[i].name, err);
         }
       }
     })
     .catch((err) => {
+      console.log("inaide this error block");
       console.log(err);
     });
   // filesList.forEach(async (file) => {
@@ -79,3 +82,10 @@ form.addEventListener("submit", (event) => {
   //   }
   // });
 });
+
+const addFailedFilesToDOM = (parent, file, msg) => {
+  let liElement = document.createElement("li");
+  liElement.classList.add("list-group-item");
+  liElement.innerText = `${file} ERROR: ${msg}`;
+  parent.appendChild(liElement);
+};
