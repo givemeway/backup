@@ -1,24 +1,26 @@
 import express from "express";
 const router = express.Router();
-import { createConnection } from "../controllers/createConnection.js";
-import { sqlConn } from "../controllers/sql_conn.js";
-import { verifyToken } from "../auth/auth.js";
-import { fetchFilesData } from "../controllers/fetchFiles.js";
+import fs from "node:fs";
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization,devicename,filename,dir,username,filestat"
+    "Content-Type,Authorization,Content-Disposition"
   );
   next();
 });
 
 router.post("/", (req, res) => {
-  console.log("testing");
-});
+  const filePath =
+    "F:\\NodeJSBackupSolution\\sandeep.kumar@idriveinc.com\\DESKTOP-10RSGE8\\Desktop\\Sandeep Kumar. GR-(315-ST 411)-DBYPS2459K_2023-24.pdf";
 
-const downloadFiles = () => {};
+  res.writeHead(200, {
+    "Content-Disposition": "attachment; filename=DBYPS2459K_2023-24.pdf",
+    "Content-Type": "application/octet-stream",
+  });
+  fs.createReadStream(filePath).pipe(res);
+});
 
 export { router as downloadFiles };
