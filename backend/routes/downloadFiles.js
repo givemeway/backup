@@ -1,26 +1,25 @@
 import express from "express";
 const router = express.Router();
+import path from "node:path";
 import fs from "node:fs";
 
 router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type,Authorization,Content-Disposition"
-  );
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  res.header("Access-Control-Expose-Headers", "Content-Disposition");
   next();
 });
 
-router.post("/", (req, res) => {
+router.get("/", (req, res) => {
   const filePath =
-    "F:\\NodeJSBackupSolution\\sandeep.kumar@idriveinc.com\\DESKTOP-10RSGE8\\Desktop\\Sandeep Kumar. GR-(315-ST 411)-DBYPS2459K_2023-24.pdf";
+    "D:/NodeJSBackupSolution/sandeep.kumar@idriveinc.com/DESKTOP-10RSGE8/ticketing/Clustering-master/data/clusters.json";
 
-  res.writeHead(200, {
-    "Content-Disposition": "attachment; filename=DBYPS2459K_2023-24.pdf",
-    "Content-Type": "application/octet-stream",
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      res.send("Error");
+    }
   });
-  fs.createReadStream(filePath).pipe(res);
 });
 
 export { router as downloadFiles };
