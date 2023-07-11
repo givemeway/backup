@@ -1,4 +1,6 @@
 import express from "express";
+import fs from "node:fs";
+import https from "node:https";
 import bodyparser from "body-parser";
 import { login } from "./routes/login.js";
 import { receiveFiles } from "./routes/receiveFiles.js";
@@ -41,10 +43,23 @@ try {
   console.log(err);
 }
 
-app.listen(PORT, (error) => {
-  if (error) {
-    throw Error(error);
+// app.listen(PORT, (error) => {
+//   if (error) {
+//     throw Error(error);
+//   } else {
+//     console.log(`Listening on localhost:${PORT}`);
+//   }
+// });
+
+const options = {
+  key: fs.readFileSync("./key.pem"),
+  cert: fs.readFileSync("./cert.pem"),
+};
+
+https.createServer(options, app).listen(PORT, (err) => {
+  if (err) {
+    throw Error(err);
   } else {
-    console.log(`Listening on localhost:${PORT}`);
+    console.log(`Listening on localhost:${PORT} over HTTPS`);
   }
 });

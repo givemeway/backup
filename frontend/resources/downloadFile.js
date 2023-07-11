@@ -8,18 +8,28 @@ const headers = {
   Authorization: token,
 };
 file.addEventListener("click", () => {
-  console.log("clicked");
   axios
-    .post(downloadURL, {}, { responseType: "blob", headers: headers })
+    .get(downloadURL, {}, { responseType: "blob", headers: headers })
     .then((res) => {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement("a");
       console.log(res.headers);
+      let fileName = res.headers
+        .get("content-disposition")
+        .split(";")[1]
+        .trim()
+        .split("filename=")[1]
+        .trim()
+        .split(/\"/g)[1]
+        .trim();
+
       a.href = url;
-      a.download = "filename.pdf";
+      a.target = "_blank";
+      a.download = fileName;
+      a.textContent = fileName;
       container.appendChild(a);
-      a.click();
-      a.remove();
+      // a.click();
+      // a.remove();
     })
     .catch((err) => console.log(err));
 });
