@@ -1,6 +1,7 @@
 import express from "express";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { verifyToken } from "../auth/auth.js";
+import { origin } from "../config/config.js";
 const router = express.Router();
 
 const getFiles = async (req, res, next) => {
@@ -73,7 +74,7 @@ const getFolders = async (req, res, next) => {
 };
 
 router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",

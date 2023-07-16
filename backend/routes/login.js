@@ -3,10 +3,12 @@ const router = express.Router();
 
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { validateUserDetails } from "../controllers/validateUserDetails.js";
+import { origin } from "../config/config.js";
 import dotenv from "dotenv";
 await dotenv.config();
 
 const buildLoginQuery = (req, res, next) => {
+  console.log(req.headers);
   const encodedString = req.headers.authorization;
   const usernametype = req.headers.usernametype;
   const extractedUsernamePassword = atob(encodedString.split(" ")[1]);
@@ -31,7 +33,7 @@ const buildLoginQuery = (req, res, next) => {
 };
 
 router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();

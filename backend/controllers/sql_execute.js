@@ -14,6 +14,7 @@ const sqlExecute = async (req, res, next) => {
       req.headers.error = error;
       next();
     } else {
+      console.log(error);
       res.status(500).json(error.message);
       res.end();
     }
