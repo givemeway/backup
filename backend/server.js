@@ -13,7 +13,7 @@ import { downloadFiles } from "./routes/downloadFiles.js";
 import { createConnection } from "./controllers/createConnection.js";
 import { sqlConn } from "./controllers/sql_conn.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const app = express();
 
 app.use(bodyparser.json());
@@ -22,10 +22,11 @@ app.use(bodyparser.urlencoded({ extended: true }));
 try {
   const dataDBConnection = createConnection("data");
   const usersDBConnection = createConnection("customers");
+  // const cryptoDBConnection = createConnection("crypto");
 
   app.use("/app/login", sqlConn(usersDBConnection), login);
   app.use("/app/receiveFiles", sqlConn(dataDBConnection), receiveFiles);
-  app.use("/app/test", test);
+  app.use("/app/test", sqlConn(usersDBConnection), test);
   app.use("/app/signup", sqlConn(usersDBConnection), signup);
   app.use("/app/sendFileInfo", sqlConn(dataDBConnection), fetchFilesInfo);
   app.use(
@@ -43,23 +44,23 @@ try {
   console.log(err);
 }
 
-// app.listen(PORT, (error) => {
-//   if (error) {
-//     throw Error(error);
-//   } else {
-//     console.log(`Listening on localhost:${PORT}`);
-//   }
-// });
-
-const options = {
-  key: fs.readFileSync("./key.pem"),
-  cert: fs.readFileSync("./cert.pem"),
-};
-
-https.createServer(options, app).listen(PORT, (err) => {
-  if (err) {
-    throw Error(err);
+app.listen(PORT, (error) => {
+  if (error) {
+    throw Error(error);
   } else {
-    console.log(`Listening on localhost:${PORT} over HTTPS`);
+    console.log(`Listening on localhost:${PORT}`);
   }
 });
+
+// const options = {
+//   key: fs.readFileSync("./key.pem"),
+//   cert: fs.readFileSync("./cert.pem"),
+// };
+
+// https.createServer(options, app).listen(PORT, (err) => {
+//   if (err) {
+//     throw Error(err);
+//   } else {
+//     console.log(`Listening on localhost:${PORT} over HTTPS`);
+//   }
+// });
