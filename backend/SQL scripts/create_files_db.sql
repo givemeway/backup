@@ -16,6 +16,8 @@ CREATE TABLE `files`(
     `versions` INTEGER NOT NULL,
     `size` INTEGER NOT NULL,
     `snapshot` VARCHAR(255) NOT NULL,
+    `salt` BLOB NOT NULL,
+    `iv` BLOBK NOT NULL,
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
 CREATE INDEX device_index ON files(device);

@@ -4,6 +4,7 @@ import { createDir } from "../controllers/createFilePath.js";
 import { uploadFile } from "../controllers/uploadFile.js";
 import updateUtime from "../controllers/updateUtimes.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
+import { origin } from "../config/config.js";
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
@@ -80,7 +81,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
 };
 
 router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
@@ -95,12 +96,14 @@ router.post(
   createDir,
   uploadFile,
   updateUtime,
-  buildSQLQueryToUpdateFiles,
-  sqlExecute,
-  createFolderIndex,
   (req, res) => {
     res.status(200).json(`file ${req.file.filename} received`);
   }
 );
 
 export { router as receiveFiles };
+
+// updateUtime,
+// buildSQLQueryToUpdateFiles,
+// sqlExecute,
+// createFolderIndex,

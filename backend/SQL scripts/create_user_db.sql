@@ -14,5 +14,11 @@ CREATE TABLE `users`(
 `phone` VARCHAR(20) NOT NULL
 );
 
+CREATE TABLE `cryptoKeys` (
+`filename` VARCHAR(70) NOT NULL,
+`salt` BLOB NOT NULL,
+`iv` BLOB NOT NULL,
+);
+
 CREATE UNIQUE INDEX username_index ON users (username);
 
