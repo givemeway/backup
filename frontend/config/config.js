@@ -1,4 +1,4 @@
-const host = "http://172.20.224.1:3001";
+const host = "http://172.20.240.1:3001";
 const fileUploadURL = `${host}/app/receiveFiles`;
 const loginURL = `${host}/app/login`;
 const fetchFilesURL = `${host}/app/getCurrentDirFiles`;
