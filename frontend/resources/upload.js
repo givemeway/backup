@@ -1,4 +1,4 @@
-import { hashFile } from "./hashFile.js";
+import { hashFileChunked } from "./hashFile.js";
 import { uploadFile } from "./transferFile.js";
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { cwd } from "../config/config.js";
@@ -35,7 +35,7 @@ form.addEventListener("submit", (event) => {
           if (files[i].hasOwnProperty("hash")) {
             hashHex = files[i].hash;
           } else {
-            hashHex = await hashFile(files[i]);
+            hashHex = await hashFileChunked(files[i]);
           }
 
           let data = await uploadFile(
