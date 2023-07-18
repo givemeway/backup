@@ -1,3 +1,5 @@
+const chunkSize = 1024 * 1024 * 100;
+
 const hashFile = async (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -17,4 +19,37 @@ const hashFile = async (file) => {
   });
 };
 
-export { hashFile };
+const hashFileChunked = async (file) => {
+  return new Promise((resolve, reject) => {
+    let hash = forge.md.sha256.create();
+    let currentChunk = 0;
+
+    let reader = new FileReader();
+
+    reader.onload = (event) => {
+      const data = event.target.result;
+      hash.update(data);
+      currentChunk++;
+      if (currentChunk < file.size / chunkSize) {
+        loadNextChunk();
+      } else {
+        const result = hash.digest().toHex();
+        resolve(result);
+      }
+    };
+
+    reader.onerror = (event) => {
+      reject(event.target.error);
+    };
+
+    const loadNextChunk = () => {
+      let start = currentChunk * chunkSize;
+      let end = Math.min(start + chunkSize, file.size);
+      reader.readAsBinaryString(file.slice(start, end));
+    };
+
+    loadNextChunk();
+  });
+};
+
+export { hashFile, hashFileChunked };
