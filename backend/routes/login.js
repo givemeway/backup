@@ -8,7 +8,6 @@ import dotenv from "dotenv";
 await dotenv.config();
 
 const buildLoginQuery = (req, res, next) => {
-  console.log(req.headers);
   const encodedString = req.headers.authorization;
   const usernametype = req.headers.usernametype;
   const extractedUsernamePassword = atob(encodedString.split(" ")[1]);
@@ -25,7 +24,9 @@ const buildLoginQuery = (req, res, next) => {
     columns = `username, password`;
   }
   const query = `SELECT ${columns} FROM users WHERE ${values}`;
-  req.headers.query = query;
+  const query2 = `SELECT username, password FROM users WHERE username = ? AND password  = SHA2(?,512)`;
+  req.headers.query = query2;
+  req.headers.queryValues = [username, password];
   req.headers.username = username;
   req.headers.password = password;
   req.headers.jwt_payload = payload;

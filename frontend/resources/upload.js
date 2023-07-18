@@ -1,4 +1,4 @@
-import { hashFileChunked } from "./hashFile.js";
+import { hashFile, hashFileChunked } from "./hashFile.js";
 import { uploadFile } from "./transferFile.js";
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { cwd } from "../config/config.js";

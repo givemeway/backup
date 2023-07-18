@@ -17,10 +17,12 @@ CREATE TABLE `files`(
     `size` INTEGER NOT NULL,
     `snapshot` VARCHAR(255) NOT NULL,
     `salt` BLOB NOT NULL,
-    `iv` BLOBK NOT NULL,
+    `iv` BLOB NOT NULL,
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
 CREATE INDEX device_index ON files(device);
+CREATE INDEX directory_index ON files(directory);
+
 CREATE TABLE `directories`(
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(70) NOT NULL,
@@ -31,3 +33,5 @@ CREATE TABLE `directories`(
      FOREIGN KEY (`device`) REFERENCES files(`device`),
      FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
+
+CREATE INDEX path_index ON directories(path);
