@@ -33,13 +33,15 @@ const encryptFile = (file, enc_key) => {
         ["encrypt", "decrypt"]
       );
 
-      resolve(
-        await crypto.subtle.encrypt(
+      resolve({
+        encryptedFile: await crypto.subtle.encrypt(
           { name: "AES-CBC", iv },
           derivedKey,
           arrBuffer
-        )
-      );
+        ),
+        salt,
+        iv,
+      });
     };
     reader.onerror = (event) => {
       reject(event.target.error);

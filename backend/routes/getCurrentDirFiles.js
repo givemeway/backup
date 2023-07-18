@@ -17,43 +17,24 @@ const getFilesInDirectory = async (req, res, next) => {
                                   FROM  
                                   data.files 
                                   where 
-                                  username = '${username}'
+                                  username = ?
                                   AND
-                                  device = '${devicename}'
-                                  limit ${start},${end};`;
+                                  device = ?`;
     req.headers.query = filesInOtherDirectories;
+    req.headers.queryValues = [username, devicename];
     await sqlExecute(req, res, next);
     req.headers.data.push(...req.headers.queryStatus);
   } else {
     const regex_other_files = `^${currentdirectory}(/[^/]+)+$`;
-    const filesInOtherDirectories = `SELECT 
-                                  directory,filename,hashvalue,last_modified
-                                  FROM  
-                                  data.files 
-                                  where 
-                                  username = '${username}'
-                                  AND
-                                  device = '${devicename}'
-                                  AND
-                                  directory REGEXP '${regex_other_files}'
-                                  limit ${start},${end};`;
-
+    const filesInOtherDirectories = `SELECT directory,filename,hashvalue,last_modified FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
     req.headers.query = filesInOtherDirectories;
+    req.headers.queryValues = [username, devicename, regex_other_files];
     await sqlExecute(req, res, next);
     req.headers.data.push(...req.headers.queryStatus);
-    const filesInCurrentDirectory = `SELECT
-                                  directory,filename,hashvalue,last_modified
-                                  FROM 
-                                  data.files 
-                                  WHERE 
-                                  username = '${username}'
-                                  AND 
-                                  device = '${devicename}'
-                                  AND 
-                                  directory = '${currentdirectory}'
-                                  limit ${start},${end};`;
+    const filesInCurrentDirectory = `SELECT directory,filename,hashvalue,last_modified FROM files WHERE  username = ? AND device = ? AND directory = ?`;
 
     req.headers.query = filesInCurrentDirectory;
+    req.headers.queryValues = [username, devicename, currentdirectory];
     await sqlExecute(req, res, next);
     req.headers.data.push(...req.headers.queryStatus);
   }

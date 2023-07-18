@@ -14,7 +14,7 @@ const uploadFile = (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const fileStat = {
+      let fileStat = {
         atimeMs: file.lastModified,
         mtimeMs: file.lastModified,
         mtime: file.lastModifiedDate,
@@ -37,7 +37,14 @@ const uploadFile = (
         username: username,
         filestat: JSON.stringify(fileStat),
       };
-      const encryptedFile = await encryptFile(file, "sandy86kumar");
+      const { encryptedFile, salt, iv } = await encryptFile(
+        file,
+        "sandy86kumar"
+      );
+
+      fileStat.salt = salt;
+      fileStat.iv = iv;
+      console.log(fileStat);
       const encryptedBlob = new Blob([encryptedFile], { type: file.type });
       const formData = new FormData();
       formData.append("file", encryptedBlob, file.name);
@@ -49,14 +56,6 @@ const uploadFile = (
             progressBar.textContent = `${file.name} - ${
               parseFloat(event.progress) * 100
             }%`;
-            // if (event.lengthComputable) {
-            //   let percentComplete = Math.round(
-            //     (event.loaded / event.total) * 100
-            //   );
-            //   console.log(percentComplete);
-            //   progressBar.textContent = `${file.name} - ${percentComplete}%`;
-            //   console.log(`${file.name} - ${percentComplete}%`);
-            // }
           },
         })
         .then(function (response) {
@@ -93,3 +92,12 @@ const uploadFile = (
 };
 
 export { uploadFile };
+
+// if (event.lengthComputable) {
+//   let percentComplete = Math.round(
+//     (event.loaded / event.total) * 100
+//   );
+//   console.log(percentComplete);
+//   progressBar.textContent = `${file.name} - ${percentComplete}%`;
+//   console.log(`${file.name} - ${percentComplete}%`);
+// }

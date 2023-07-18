@@ -4,8 +4,11 @@ await dotenv.config();
 const sqlExecute = async (req, res, next) => {
   try {
     const con = req.headers.connection;
-    const [rows, fields] = await con.execute(req.headers.query);
+    const [rows, fields] = await con.execute(req.headers.query, [
+      ...req.headers.queryValues,
+    ]);
     req.headers.queryStatus = rows;
+    console.log(rows);
     req.headers.query_success = true;
     next();
   } catch (error) {

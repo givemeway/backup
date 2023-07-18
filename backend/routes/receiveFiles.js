@@ -68,15 +68,32 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const snapshot = "newsnapshot";
   const hashed_filename = `${filename}$$$${checksum}$$$NA`;
   const size = `${fileStat.size}`;
+  const salt = Buffer.from(fileStat.salt);
+  const iv = Buffer.from(fileStat.iv);
 
   if (fileStat.modified === true) {
     filename = hashed_filename;
   }
   const query = `INSERT INTO files 
-                (username,device,directory,filename,hashed_filename,last_modified,hashvalue,versions,size,snapshot)
-                VALUES ("${username}","${device}","${directory}","${filename}","${hashed_filename}","${isoString}","${checksum}",${versions},${size},"${snapshot}")`;
+                (username,device,directory,filename,hashed_filename,last_modified,hashvalue,versions,size,snapshot,salt,iv)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
 
   req.headers.query = query;
+  req.headers.queryValues = [
+    username,
+    device,
+    directory,
+    filename,
+    hashed_filename,
+    isoString,
+    checksum,
+    versions,
+    size,
+    snapshot,
+    salt,
+    iv,
+  ];
+
   next();
 };
 
@@ -96,6 +113,9 @@ router.post(
   createDir,
   uploadFile,
   updateUtime,
+  buildSQLQueryToUpdateFiles,
+  sqlExecute,
+  createFolderIndex,
   (req, res) => {
     res.status(200).json(`file ${req.file.filename} received`);
   }
