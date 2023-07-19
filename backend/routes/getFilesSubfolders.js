@@ -9,17 +9,19 @@ const getFiles = async (req, res, next) => {
   const order = req.headers.sortorder;
   const username = req.headers.username;
   const devicename = req.headers.devicename;
+  console.log(currentDir, order, username, devicename);
 
   const filesInCurrentDirQuery = `select filename from files 
                                   WHERE 
-                                  username = '${username}' 
+                                  username = ?
                                   AND 
-                                  device = '${devicename}' 
+                                  device = ?
                                   AND 
-                                  directory = '${currentDir}' 
+                                  directory = ?
                                   ORDER BY 
-                                  filename ${order};`;
+                                  filename ASC`;
   req.headers.query = filesInCurrentDirQuery;
+  req.headers.queryValues = [username, devicename, currentDir];
   await sqlExecute(req, res, next);
   req.headers.data = {};
   req.headers.data["files"] = JSON.parse(
@@ -60,11 +62,12 @@ const getFolders = async (req, res, next) => {
   const foldersQuery = `SELECT 
                         folder,path 
                         FROM data.directories 
-                        WHERE username = '${username}' 
+                        WHERE username = ?
                         AND
-                        path REGEXP '${regex_2}';`;
+                        path REGEXP ?;`;
 
   req.headers.query = foldersQuery;
+  req.headers.queryValues = [username, regex_2];
   await sqlExecute(req, res, next);
 
   req.headers.data["folders"] = JSON.parse(

@@ -12,6 +12,7 @@ import { getCurrentDirFiles } from "./routes/getCurrentDirFiles.js";
 import { downloadFiles } from "./routes/downloadFiles.js";
 import { createConnection } from "./controllers/createConnection.js";
 import { sqlConn } from "./controllers/sql_conn.js";
+import { searchFiles } from "./routes/searchItems.js";
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -22,7 +23,7 @@ app.use(bodyparser.urlencoded({ extended: true }));
 try {
   const dataDBConnection = createConnection("data");
   const usersDBConnection = createConnection("customers");
-  // const cryptoDBConnection = createConnection("crypto");
+  const cryptoDBConnection = createConnection("cryptoKeys");
 
   app.use("/app/login", sqlConn(usersDBConnection), login);
   app.use("/app/receiveFiles", sqlConn(dataDBConnection), receiveFiles);
@@ -40,6 +41,7 @@ try {
     getCurrentDirFiles
   );
   app.use("/app/downloadFiles", sqlConn(dataDBConnection), downloadFiles);
+  app.use("/app/searchFiles", sqlConn(dataDBConnection), searchFiles);
 } catch (err) {
   console.log(err);
 }

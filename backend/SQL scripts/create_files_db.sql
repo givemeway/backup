@@ -22,6 +22,7 @@ CREATE TABLE `files`(
 );
 CREATE INDEX device_index ON files(device);
 CREATE INDEX directory_index ON files(directory);
+ALTER TABLE data.files ADD FULLTEXT(filename); 
 
 CREATE TABLE `directories`(
     `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -35,3 +36,4 @@ CREATE TABLE `directories`(
 );
 
 CREATE INDEX path_index ON directories(path);
+ALTER TABLE data.directories ADD FULLTEXT(folder); 

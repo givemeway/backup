@@ -10,11 +10,18 @@ const buildSignupQuery = (req, res, next) => {
   const email = req.headers.email;
   const password = req.headers.password;
   const phone = req.headers.phone;
-  const query = `INSERT INTO users (username,email,password,first_name,last_name,phone)
-    VALUES ("${username}","${email}", SHA2('${password}',512),"${firstname}",
-    "${lastname}","${phone}"
-    );`;
+  const query = `INSERT INTO users 
+                (username,email,password,first_name,last_name,phone,enc)
+                VALUES (?,?, SHA2(?,512),?,?,?,NULL);`;
   req.headers.query = query;
+  req.headers.queryValues = [
+    username,
+    email,
+    password,
+    firstname,
+    lastname,
+    phone,
+  ];
   next();
 };
 
