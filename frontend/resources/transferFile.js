@@ -14,14 +14,6 @@ const uploadFile = (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let fileStat = {
-        atimeMs: file.lastModified,
-        mtimeMs: file.lastModified,
-        mtime: file.lastModifiedDate,
-        checksum: hashHex,
-        modified: modified,
-        size: file.size,
-      };
       const filePath =
         cwd === "/"
           ? file.webkitRelativePath
@@ -29,6 +21,21 @@ const uploadFile = (
       const pathParts = filePath.split("/");
       pathParts.pop();
       const dir = pathParts.join("/");
+      const { encryptedFile, salt, iv } = await encryptFile(
+        file,
+        "sandy86kumar"
+      );
+      const fileStat = {
+        atimeMs: file.lastModified,
+        mtimeMs: file.lastModified,
+        mtime: file.lastModifiedDate,
+        checksum: hashHex,
+        modified: modified,
+        size: file.size,
+        salt: btoa(salt),
+        iv: btoa(iv),
+      };
+
       const headers = {
         Authorization: token,
         filename: file.name,
@@ -37,14 +44,7 @@ const uploadFile = (
         username: username,
         filestat: JSON.stringify(fileStat),
       };
-      const { encryptedFile, salt, iv } = await encryptFile(
-        file,
-        "sandy86kumar"
-      );
 
-      fileStat.salt = salt;
-      fileStat.iv = iv;
-      console.log(fileStat);
       const encryptedBlob = new Blob([encryptedFile], { type: file.type });
       const formData = new FormData();
       formData.append("file", encryptedBlob, file.name);

@@ -8,7 +8,6 @@ const sqlExecute = async (req, res, next) => {
       ...req.headers.queryValues,
     ]);
     req.headers.queryStatus = rows;
-    console.log(rows);
     req.headers.query_success = true;
     next();
   } catch (error) {
