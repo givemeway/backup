@@ -3,6 +3,10 @@ const router = express.Router();
 import { origin } from "../config/config.js";
 import path from "node:path";
 import fs from "node:fs";
+import { verifyToken } from "../auth/auth.js";
+import csrf from "csurf";
+
+router.use(csrf({ cookie: true }));
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
@@ -12,15 +16,17 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get("/", (req, res) => {
-  const filePath =
-    "D:/NodeJSBackupSolution/sandeep.kumar@idriveinc.com/DESKTOP-10RSGE8/ticketing/Clustering-master/data/clusters.json";
-
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      res.send("Error");
-    }
-  });
+router.get("/", verifyToken, (req, res) => {
+  console.log(req);
+  const filePath = "F:/IDDriveImage/LAPTOP-F5NFL085/C/DiskImage[C].img";
+  const readStream = fs.createReadStream(filePath);
+  res.set("Content-Disposition", `attachment; filename="GPT.img"`);
+  readStream.pipe(res);
+  // res.sendFile(filePath, (err) => {
+  //   if (err) {
+  //     res.send("Error");
+  //   }
+  // });
 });
 
 export { router as downloadFiles };

@@ -1,12 +1,28 @@
 import { fileUploadURL, username, devicename } from "../config/config.js";
 import { encryptFile } from "./encryptFile.js";
 
+const arrayBufferToHex = (buffer) => {
+  return [...new Uint8Array(buffer)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const arrayBufferToBase64 = (buffer) => {
+  let binary = "";
+  let bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+};
+
 const uploadFile = (
   file,
   cwd,
   progressBar,
   hashHex,
   token,
+  CSRFToken,
   modified,
   uploadCountElement,
   uploadCount,
@@ -21,10 +37,10 @@ const uploadFile = (
       const pathParts = filePath.split("/");
       pathParts.pop();
       const dir = pathParts.join("/");
-      const { encryptedFile, salt, iv } = await encryptFile(
-        file,
-        "sandy86kumar"
-      );
+
+      const { encryptedFile, salt, iv, enc_fileName, enc_directory } =
+        await encryptFile(file, "sandy86kumar", dir);
+
       const fileStat = {
         atimeMs: file.lastModified,
         mtimeMs: file.lastModified,
@@ -34,17 +50,21 @@ const uploadFile = (
         size: file.size,
         salt: btoa(salt),
         iv: btoa(iv),
+        enc_filename: arrayBufferToBase64(enc_fileName),
+        enc_directory: arrayBufferToBase64(enc_directory),
       };
 
       const headers = {
-        Authorization: token,
+        // Authorization: token,
         filename: file.name,
         dir: dir,
         devicename: devicename,
         username: username,
         filestat: JSON.stringify(fileStat),
+        // "Content-Type": "application/octet-stream",
+        "Content-Disposition": `attachment; filename="${file.name}"`,
+        "X-CSRF-Token": CSRFToken,
       };
-
       const encryptedBlob = new Blob([encryptedFile], { type: file.type });
       const formData = new FormData();
       formData.append("file", encryptedBlob, file.name);

@@ -1,9 +1,9 @@
 import { fetchFilesURL, devicename, username } from "../config/config.js";
 import { hashFile } from "./hashFile.js";
 
-const getfilesCurDir = async (cwd, token) => {
+const getfilesCurDir = async (cwd, CSRFToken) => {
   const headers = {
-    Authorization: token,
+    "X-CSRF-Token": CSRFToken,
     devicename: devicename,
     currentdirectory: cwd,
     username: username,

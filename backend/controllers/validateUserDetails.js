@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import cookie from "cookie";
 
 const validateUserDetails = (req, res, next) => {
   if (req.headers.queryStatus instanceof Array) {
@@ -19,6 +20,17 @@ const validateUserDetails = (req, res, next) => {
           req.headers.jwt_payload,
           process.env.JWT_SECRET,
           { expiresIn: 86400 }
+        );
+        console.log(token);
+        res.setHeader(
+          "Set-Cookie",
+          cookie.serialize("token", token, {
+            httpOnly: true,
+            sameSite: "lax",
+            path: "/",
+            domain: "192.168.29.34",
+            expires: new Date(Date.now() + 86400000),
+          })
         );
         res
           .status(200)

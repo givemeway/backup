@@ -1,15 +1,16 @@
 import express from "express";
+import csrf from "csurf";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
 const router = express.Router();
+router.use(csrf({ cookie: true }));
 
 const getFiles = async (req, res, next) => {
   const currentDir = req.headers.currentdirectory;
   const order = req.headers.sortorder;
   const username = req.headers.username;
   const devicename = req.headers.devicename;
-  console.log(currentDir, order, username, devicename);
 
   const filesInCurrentDirQuery = `select filename from files 
                                   WHERE 

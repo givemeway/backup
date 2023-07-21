@@ -1,8 +1,8 @@
-import { loginURL } from "../config/config.js";
+import { loginURL, csrftokenURL } from "../config/config.js";
 
 let form = document.getElementById("loginForm");
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   event.stopPropagation();
   const elements = event.target.elements;
@@ -12,8 +12,12 @@ form.addEventListener("submit", (event) => {
 
   const encodedData = btoa(`${username}:${password}`);
 
-  let headers = new Headers();
-  headers.append("Authorization", `Basic ${encodedData}`);
+  const response = await fetch(csrftokenURL);
+  const { CSRFToken } = await response.json();
+  const headers = {
+    Authorization: `Basic ${encodedData}`,
+    "X-CSRF-Token": CSRFToken,
+  };
 
   const options = {
     method: "POST",
@@ -21,6 +25,7 @@ form.addEventListener("submit", (event) => {
     mode: "cors",
     headers: headers,
   };
+  console.log(options);
   fetch(loginURL, options)
     .then((res) => {
       if (res.status == 401 || res.status == 403) {

@@ -24,7 +24,11 @@
   "homepage": "https://github.com/givemeway/backup#readme",
   "dependencies": {
     "body-parser": "^1.20.2",
+    "busboy": "^1.6.0",
+    "cookie": "^0.5.0",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "csurf": "^1.11.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "flatted": "^3.2.7",
