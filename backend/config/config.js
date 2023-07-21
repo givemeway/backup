@@ -1,2 +1,2 @@
-const origin = "http://localhost:5500";
+const origin = "https://192.168.29.34:3001";
 export { origin };

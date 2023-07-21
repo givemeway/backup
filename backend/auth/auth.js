@@ -6,9 +6,10 @@ await dotenv.config();
 
 const verifyToken = (request, response, next) => {
   const authHeader = request.headers.authorization;
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
-    jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
+  const cookieToken = request.cookies.token;
+  if (cookieToken) {
+    // const token = authHeader.split(" ")[1];
+    jwt.verify(cookieToken, process.env.JWT_SECRET, (error, user) => {
       if (error) {
         response.status(403).json("Token Invalid");
         response.end();

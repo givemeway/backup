@@ -1,7 +1,10 @@
 import express from "express";
+import csrf from "csurf";
 const router = express.Router();
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { origin } from "../config/config.js";
+
+router.use(csrf({ cookie: true }));
 
 const buildSignupQuery = (req, res, next) => {
   const username = req.headers.username;

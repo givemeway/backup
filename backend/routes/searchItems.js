@@ -1,7 +1,9 @@
 import express from "express";
 import { origin } from "../config/config.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
+import csrf from "csurf";
 const router = express.Router();
+router.use(csrf({ cookie: true }));
 
 const findFiles = async (req, res, next) => {
   const param = req.headers.searchparam;

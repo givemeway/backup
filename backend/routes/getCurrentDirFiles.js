@@ -1,8 +1,11 @@
 import express from "express";
+import csrf from "csurf";
 const router = express.Router();
 import { verifyToken } from "../auth/auth.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { origin } from "../config/config.js";
+
+router.use(csrf({ cookie: true }));
 
 const getFilesInDirectory = async (req, res, next) => {
   const currentdirectory = req.headers.currentdirectory;

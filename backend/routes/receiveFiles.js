@@ -6,11 +6,14 @@ import updateUtime from "../controllers/updateUtimes.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { origin } from "../config/config.js";
 import bodyParser from "body-parser";
+import csrf from "csurf";
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
 
-router.use(bodyParser.urlencoded({ extended: true }));
+// router.use(bodyParser.urlencoded({ extended: true }));
+
+router.use(csrf({ cookie: true }));
 
 const createFolderIndex = async (req, res, next) => {
   const username = req.headers.username;
@@ -74,20 +77,23 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const size = `${fileStat.size}`;
   const salt = Buffer.from(atob(fileStat.salt));
   const iv = Buffer.from(atob(fileStat.iv));
+  const enc_filename = fileStat.enc_filename;
+  const enc_directory = fileStat.enc_directory;
 
   if (fileStat.modified === true) {
     filename = hashed_filename;
   }
   const query = `INSERT INTO files 
-                (username,device,directory,filename,hashed_filename,last_modified,hashvalue,versions,size,snapshot,salt,iv)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
-  WebSocket();
+                (username,device,directory, enc_directory,filename,enc_filename,hashed_filename,last_modified,hashvalue,versions,size,snapshot,salt,iv)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
   req.headers.query = query;
   req.headers.queryValues = [
     username,
     device,
     directory,
+    enc_directory,
     filename,
+    enc_filename,
     hashed_filename,
     isoString,
     checksum,
@@ -106,7 +112,7 @@ router.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization,devicename,filename,dir,username,filestat"
+    "Content-Type,Content-Disposition, Authorization,devicename,filename,dir,username,filestat"
   );
   next();
 });
@@ -117,11 +123,19 @@ const testing = (req, res, next) => {
   next();
 };
 
-router.post("/", testing, (req, res) => {
-  res.status(200).json(`instructions received`);
-
-  // res.status(200).json(`file ${req.file.filename} received`);
-});
+router.post(
+  "/",
+  verifyToken,
+  createDir,
+  uploadFile,
+  updateUtime,
+  buildSQLQueryToUpdateFiles,
+  sqlExecute,
+  createFolderIndex,
+  (req, res) => {
+    res.status(200).json(`file ${req.headers.filename} received`);
+  }
+);
 
 export { router as receiveFiles };
 

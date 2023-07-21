@@ -1,7 +1,7 @@
 import { hashFile, hashFileChunked } from "./hashFile.js";
 import { uploadFile } from "./transferFile.js";
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
-import { cwd } from "../config/config.js";
+import { cwd, csrftokenURL } from "../config/config.js";
 const form = document.getElementById("folderupload");
 const progressBar = document.getElementById("progressBar");
 const uploadCountElement = document.getElementById("filesProcessed");
@@ -9,7 +9,7 @@ let progressbarUI = document.getElementsByClassName("progress-bar")[0];
 let progress = document.getElementsByClassName("progress")[0];
 let filesFailed = document.getElementById("filesFailed");
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   event.stopPropagation();
   const files = event.target.elements.folderselected.files;
@@ -19,13 +19,15 @@ form.addEventListener("submit", (event) => {
   });
   const token = `Bearer ${JSON.parse(localStorage.getItem("token"))["token"]}`;
 
+  const response = await fetch(csrftokenURL);
+  const { CSRFToken } = await response.json();
   const uploadingDirPath =
     cwd === "/"
       ? filesList[0].webkitRelativePath.split(/\//g)[0]
       : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
 
   console.log(uploadingDirPath);
-  getfilesCurDir(uploadingDirPath, token)
+  getfilesCurDir(uploadingDirPath, CSRFToken)
     .then(async (DbFiles) => {
       let files = await compareFiles(filesList, DbFiles, cwd);
       console.log(files.length);
@@ -44,6 +46,7 @@ form.addEventListener("submit", (event) => {
             progressBar,
             hashHex,
             token,
+            CSRFToken,
             files[i].modified,
             uploadCountElement,
             i + 1,

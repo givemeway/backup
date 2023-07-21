@@ -6,14 +6,19 @@ const generateRandomBytes = (len) => {
 
 const getPasswordkey = (key) => {
   const enc = new TextEncoder();
-  return crypto.subtle.importKey("raw", enc.encode(key), "PBKDF2", false, [
-    "deriveKey",
-  ]);
+  return window.crypto.subtle.importKey(
+    "raw",
+    enc.encode(key),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
 };
 
-const encryptFile = (file, enc_key) => {
+const encryptFile = (file, enc_key, dir) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    const enc = new TextEncoder();
     reader.onload = async (event) => {
       const arrBuffer = event.target.result;
       const salt = generateRandomBytes(32);
@@ -25,7 +30,7 @@ const encryptFile = (file, enc_key) => {
         hash: "SHA-256",
       };
       const passwordKey = await getPasswordkey(enc_key);
-      const derivedKey = await crypto.subtle.deriveKey(
+      const derivedKey = await window.crypto.subtle.deriveKey(
         algo_options,
         passwordKey,
         { name: "AES-CBC", length: 256 },
@@ -34,13 +39,23 @@ const encryptFile = (file, enc_key) => {
       );
 
       resolve({
-        encryptedFile: await crypto.subtle.encrypt(
+        encryptedFile: await window.crypto.subtle.encrypt(
           { name: "AES-CBC", iv },
           derivedKey,
           arrBuffer
         ),
         salt,
         iv,
+        enc_fileName: await window.crypto.subtle.encrypt(
+          { name: "AES-CBC", iv },
+          derivedKey,
+          enc.encode(file.name)
+        ),
+        enc_directory: await window.crypto.subtle.encrypt(
+          { name: "AES-CBC", iv },
+          derivedKey,
+          enc.encode(dir)
+        ),
       });
     };
     reader.onerror = (event) => {

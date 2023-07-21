@@ -6,6 +6,9 @@ import { validateUserDetails } from "../controllers/validateUserDetails.js";
 import { origin } from "../config/config.js";
 import dotenv from "dotenv";
 await dotenv.config();
+import csrf from "csurf";
+
+router.use(csrf({ cookie: true }));
 
 const buildLoginQuery = (req, res, next) => {
   const encodedString = req.headers.authorization;
@@ -37,6 +40,8 @@ router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Expose-Headers", "Set-Cookie");
+
   next();
 });
 
