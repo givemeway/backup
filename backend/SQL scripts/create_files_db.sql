@@ -20,6 +20,7 @@ CREATE TABLE `files`(
     `snapshot` VARCHAR(255) NOT NULL,
     `salt` BLOB NOT NULL,
     `iv` BLOB NOT NULL,
+    UNIQUE(`username`,`device`,`directory`,`filename`),
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
 CREATE INDEX device_index ON files(device);
