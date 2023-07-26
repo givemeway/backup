@@ -80,13 +80,14 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const enc_filename = fileStat.enc_filename;
   const enc_directory = fileStat.enc_directory;
 
-  if (fileStat.modified === true) {
-    filename = hashed_filename;
-  }
-  const query = `INSERT INTO files 
-                (username,device,directory, enc_directory,filename,enc_filename,hashed_filename,last_modified,hashvalue,versions,size,snapshot,salt,iv)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-  req.headers.query = query;
+  const insertQuery = `INSERT INTO files 
+                (username,device,directory, enc_directory,filename,
+                  enc_filename,hashed_filename,last_modified,hashvalue,
+                versions,size,snapshot,salt,iv)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON DUPLICATE KEY
+                UPDATE versions = versions + 1;`;
+  req.headers.query = insertQuery;
   req.headers.queryValues = [
     username,
     device,
@@ -103,7 +104,35 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
     salt,
     iv,
   ];
-
+  await sqlExecute(req, res, next);
+  if (fileStat.modified === true) {
+    filename = hashed_filename;
+    const insertVersionedFileQuery = `INSERT INTO files 
+                                    (username,device,directory, enc_directory,filename,
+                                      enc_filename,hashed_filename,last_modified,hashvalue,
+                                    versions,size,snapshot,salt,iv)
+                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                    ON DUPLICATE KEY
+                                    UPDATE versions = versions + 1;`;
+    req.headers.query = insertVersionedFileQuery;
+    req.headers.queryValues = [
+      username,
+      device,
+      directory,
+      enc_directory,
+      filename,
+      enc_filename,
+      hashed_filename,
+      isoString,
+      checksum,
+      versions,
+      size,
+      snapshot,
+      salt,
+      iv,
+    ];
+    await sqlExecute(req, res, next);
+  }
   next();
 };
 
@@ -112,7 +141,7 @@ router.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
-    "Content-Type,Content-Disposition, Authorization,devicename,filename,dir,username,filestat"
+    "Content-Type,Content-Disposition,Authorization,devicename,filemode,filename,dir,username,filestat,totalchunks,currentchunk"
   );
   next();
 });

@@ -48,47 +48,57 @@ const multerInstance = multer({
 // };
 
 const uploadFile = (req, res, next) => {
-  const busboy = Busboy({ headers: req.headers });
+  const device = req.headers.devicename;
+  const fileMode = req.headers.filemode;
+  const totalChunks = req.headers.totalchunks;
+  const currentChunk = req.headers.currentchunk;
+  const filePath = req.headers.dir;
+  const userName = req.headers.username;
+  const abspath = path.join(`${root}/${userName}`, device, filePath);
+  const fileStat = JSON.parse(req.headers.filestat);
+  let fileName = req.headers.filename;
+  if (fileStat.modified === true) {
+    fileName = `${fileName}$$$${fileStat.checksum}$$$NA`;
+  }
 
-  busboy.on("file", (fieldname, file, filename) => {
-    // Handle the incoming file stream here
-    // For example, you can pipe the file stream to a writable stream
-    const device = req.headers.devicename;
-    const filePath = req.headers.dir;
-    const userName = req.headers.username;
-    const abspath = path.join(`${root}/${userName}`, device, filePath);
-    const fileStat = JSON.parse(req.headers.filestat);
-    let fileName = req.headers.filename;
-    const writableStream = fs.createWriteStream(`${abspath}/${fileName}`);
-    file.pipe(writableStream);
-  });
+  const createWriteStream = () => {
+    const fileStream = fs.createWriteStream(`${abspath}/${fileName}`, {
+      flags: "a",
+    });
+    req.pipe(fileStream);
 
-  busboy.on("finish", () => {
-    next();
-  });
-  req.pipe(busboy);
-  // const boundary = req.headers["content-type"].split(";")[1].split("=")[1];
-  // console.log(boundary);
-  // console.log(req.headers["content-type"]);
-  // console.log(req.headers["content-disposition"]);
-  // console.log(req.file);
-  // const data = [];
-  // req.on("data", (chunk) => {
-  //   const parts = chunk.toString().split(boundary);
-  //   for (const part of parts) {
-  //     const [name, value] = part.split("; filename=");
-  //     const filename = name.split("=")[1];
-  //     console.log(value);
-  //     // const fileData = value.split("filename=")[1];
+    fileStream.on("finish", () => {
+      if (totalChunks === currentChunk) {
+        next();
+      } else {
+        res
+          .status(200)
+          .send({ success: true, desc: `chunk ${currentChunk} received` });
+      }
+    });
 
-  //     // data.push({
-  //     //   name: name.split("=")[0],
-  //     //   filename: filename,
-  //     //   fileData: fs.readFileSync(Buffer.from(fileData)),
-  //     // });
-  //   }
-  // });
-  // console.log(data);
+    fileStream.on("error", (err) => {
+      res
+        .status(500)
+        .json({ success: false, desc: `chunk ${currentChunk} failed` });
+      res.end();
+    });
+  };
+
+  if (fileMode === "w") {
+    fs.access(`${abspath}/${fileName}`, (err) => {
+      if (err) {
+        createWriteStream();
+      } else {
+        res
+          .status(500)
+          .json("A file name with the same directory name already exists");
+        res.end();
+      }
+    });
+  } else {
+    createWriteStream();
+  }
 };
 
 export { uploadFile };
