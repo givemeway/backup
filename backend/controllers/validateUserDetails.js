@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
-import { host } from "../config/config.js";
+import { domain } from "../config/config.js";
 
 const validateUserDetails = (req, res, next) => {
   if (req.headers.queryStatus instanceof Array) {
@@ -29,7 +29,7 @@ const validateUserDetails = (req, res, next) => {
             httpOnly: true,
             sameSite: "lax",
             path: "/",
-            domain: "172.27.0.1",
+            domain: domain,
             expires: new Date(Date.now() + 86400000),
           })
         );

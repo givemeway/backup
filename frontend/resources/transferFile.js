@@ -1,5 +1,10 @@
 import { fileUploadURL, username, devicename } from "../config/config.js";
-import { encryptFile } from "./encryptFile.js";
+import {
+  encryptFile,
+  encryptData,
+  generateIVSaltDerivedKey,
+  getPasswordkey,
+} from "./encryptFile.js";
 
 const arrayBufferToHex = (buffer) => {
   return [...new Uint8Array(buffer)]
@@ -38,20 +43,20 @@ const uploadFile = (
       pathParts.pop();
       const dir = pathParts.join("/");
 
-      const { encryptedFile, salt, iv, enc_fileName, enc_directory } =
-        await encryptFile(file, "sandy86kumar", dir);
+      // const { encryptedFile, salt, iv, enc_fileName, enc_directory } =
+      //   await encryptFile(file, "sandy86kumar", dir);
 
-      const fileStat = {
+      let fileStat = {
         atimeMs: file.lastModified,
         mtimeMs: file.lastModified,
         mtime: file.lastModifiedDate,
-        checksum: hashHex,
+        // checksum: hashHex,
         modified: modified,
         size: file.size,
-        salt: btoa(salt),
-        iv: btoa(iv),
-        enc_filename: arrayBufferToBase64(enc_fileName),
-        enc_directory: arrayBufferToBase64(enc_directory),
+        // salt: btoa(salt),
+        // iv: btoa(iv),
+        // enc_filename: arrayBufferToBase64(enc_fileName),
+        // enc_directory: arrayBufferToBase64(enc_directory),
       };
 
       let headers = {
@@ -60,7 +65,7 @@ const uploadFile = (
         dir: dir,
         devicename: devicename,
         username: username,
-        filestat: JSON.stringify(fileStat),
+        // filestat: JSON.stringify(fileStat),
         "Content-Type": "application/octet-stream",
         "Content-Disposition": `attachment; filename="${file.name}"`,
         "X-CSRF-Token": CSRFToken,
@@ -69,17 +74,40 @@ const uploadFile = (
       // const formData = new FormData();
       // formData.append("file", encryptedBlob, file.name);
       const reader = new FileReader();
+
       const loadNextChunk = () => {
         let start = currentChunk * CHUNK_SIZE;
         let end = Math.min(start + CHUNK_SIZE, file.size);
-        reader.readAsArrayBuffer(file.slice(start, end));
+        reader.readAsBinaryString(file.slice(start, end));
+        // reader.readAsBinaryString(file.slice(start, end));
       };
+
       const CHUNK_SIZE = 1024 * 1024 * 10;
       const MAX_RETRIES = 3;
       let retries = 0;
       let currentChunk = 0;
       const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+      let hash_file = forge.md.sha256.create();
+      let hash_enc_file = forge.md.sha256.create();
       headers["filemode"] = "w";
+
+      const { salt, iv, derivedKey } = await generateIVSaltDerivedKey(
+        getPasswordkey,
+        "sandy86kumar"
+      );
+      const enc = new TextEncoder();
+      const enc_fileName = await encryptData(
+        enc.encode(file.name),
+        derivedKey,
+        iv
+      );
+      const enc_directory = await encryptData(enc.encode(dir), derivedKey, iv);
+
+      fileStat.salt = btoa(salt);
+      fileStat.iv = btoa(iv);
+      fileStat.enc_filename = arrayBufferToBase64(enc_fileName);
+      fileStat.enc_directory = arrayBufferToBase64(enc_directory);
+
       if (totalChunks === 1) {
         headers["totalchunks"] = 1;
         loadNextChunk();
@@ -90,6 +118,12 @@ const uploadFile = (
 
       const uploadChunk = (chunk) => {
         headers["currentchunk"] = currentChunk + 1;
+        if (headers["currentchunk"] === totalChunks) {
+          fileStat.checksum = hash_file.digest().toHex();
+          console.log(hashHex);
+          headers.enc_file_checksum = hash_enc_file.digest().toHex();
+        }
+        headers.filestat = JSON.stringify(fileStat);
         axios
           .post(fileUploadURL, chunk, {
             headers: headers,
@@ -141,13 +175,19 @@ const uploadFile = (
           });
       };
 
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         const chunk = event.target.result;
+        hash_file.update(chunk);
+        // const encryptedChunk = await encryptData(chunk, derivedKey, iv);
+        // hash_enc_file.update(encryptedChunk);
+        // let hash_enc_chunk = forge.md.sha256.create();
+        // hash_enc_chunk.update(encryptedChunk);
+        // headers.encchunkhash = hash_enc_chunk.digest().toHex();
         uploadChunk(chunk);
       };
 
       reader.onerror = (event) => {
-        console.log(error);
+        console.log(event);
       };
       // axios
       //   .post(fileUploadURL, formData, {
