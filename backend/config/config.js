@@ -1,5 +1,5 @@
-const host_url = "https://172.19.80.1";
+const domain = "172.23.16.1";
+const host_url = `https://${domain}`;
 const origin = `${host_url}:3001`;
-const domain = "172.19.80.1";
 
 export { origin, domain };

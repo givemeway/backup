@@ -19,6 +19,15 @@ const hashFile = async (file) => {
   });
 };
 
+const hashChunk = async (arrBuffer) => {
+  const hashBuffer = await crypto.subtle.digest("SHA-256", arrBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return hashHex;
+};
+
 const hashFileChunked = async (file) => {
   return new Promise((resolve, reject) => {
     let hash = forge.md.sha256.create();
@@ -52,4 +61,4 @@ const hashFileChunked = async (file) => {
   });
 };
 
-export { hashFile, hashFileChunked };
+export { hashChunk, hashFileChunked, hashFile };

@@ -60,7 +60,7 @@ const uploadFile = (req, res, next) => {
   if (fileStat.modified === true) {
     fileName = `${fileName}$$$${fileStat.checksum}$$$NA`;
   }
-  console.log(fileStat);
+
   const createWriteStream = () => {
     const fileStream = fs.createWriteStream(`${abspath}/${fileName}`, {
       flags: "a",
@@ -69,8 +69,6 @@ const uploadFile = (req, res, next) => {
 
     fileStream.on("finish", () => {
       if (totalChunks === currentChunk) {
-        console.log(req.headers);
-        console.log(fileStat);
         next();
       } else {
         res
