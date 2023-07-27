@@ -65,4 +65,37 @@ const encryptFile = (file, enc_key, dir) => {
   });
 };
 
-export { encryptFile };
+const generateIVSaltDerivedKey = async (callback, enc_key) => {
+  const salt = generateRandomBytes(32);
+  const iv = generateRandomBytes(16);
+  const algo_options = {
+    name: "PBKDF2",
+    salt: salt,
+    iterations: 100000,
+    hash: "SHA-256",
+  };
+  const passwordKey = await callback(enc_key);
+  const derivedKey = await window.crypto.subtle.deriveKey(
+    algo_options,
+    passwordKey,
+    { name: "AES-CBC", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+  return { salt, iv, derivedKey };
+};
+
+const encryptData = async (data, derivedKey, iv) => {
+  const enc = new TextEncoder();
+  // const { salt, iv, derivedKey } = await generateIVSaltDerivedKey(
+  //   getPasswordkey,
+  //   enc_key
+  // );
+  return await window.crypto.subtle.encrypt(
+    { name: "AES-CBC", iv },
+    derivedKey,
+    data
+  );
+};
+
+export { encryptFile, encryptData, generateIVSaltDerivedKey, getPasswordkey };

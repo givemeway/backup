@@ -1,4 +1,5 @@
-const host = "https://172.27.0.1";
-const origin = `${host}:3001`;
+const host_url = "https://172.19.80.1";
+const origin = `${host_url}:3001`;
+const domain = "172.19.80.1";
 
-export { origin, host };
+export { origin, domain };

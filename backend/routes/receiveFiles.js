@@ -141,7 +141,7 @@ router.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
-    "Content-Type,Content-Disposition,Authorization,devicename,filemode,filename,dir,username,filestat,totalchunks,currentchunk"
+    "Content-Type,Content-Disposition,Authorization,devicename,encchunkhash,enc_file_checksum,filemode,filename,dir,username,filestat,totalchunks,currentchunk"
   );
   next();
 });
