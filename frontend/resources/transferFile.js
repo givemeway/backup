@@ -6,6 +6,8 @@ import {
   getPasswordkey,
 } from "./encryptFile.js";
 
+import { hashChunk } from "./hashFile.js";
+
 const arrayBufferToHex = (buffer) => {
   return [...new Uint8Array(buffer)]
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -19,6 +21,24 @@ const arrayBufferToBase64 = (buffer) => {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+};
+
+const arrayBufferToBinaryString = (buffer) => {
+  const bytes = new Uint8Array(buffer);
+  let binaryString = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binaryString += String.fromCharCode(bytes[i]);
+  }
+  return binaryString;
+};
+
+const binaryStringToArrayBuffer = (binaryString) => {
+  let buffer = new ArrayBuffer(binaryString.length);
+  let view = new Uint8Array(buffer);
+  for (let i = 0; i < binaryString.length; i++) {
+    view[i] = binaryString.charCodeAt(i);
+  }
+  return buffer;
 };
 
 const uploadFile = (
@@ -43,43 +63,30 @@ const uploadFile = (
       pathParts.pop();
       const dir = pathParts.join("/");
 
-      // const { encryptedFile, salt, iv, enc_fileName, enc_directory } =
-      //   await encryptFile(file, "sandy86kumar", dir);
-
       let fileStat = {
         atimeMs: file.lastModified,
         mtimeMs: file.lastModified,
         mtime: file.lastModifiedDate,
-        // checksum: hashHex,
         modified: modified,
         size: file.size,
-        // salt: btoa(salt),
-        // iv: btoa(iv),
-        // enc_filename: arrayBufferToBase64(enc_fileName),
-        // enc_directory: arrayBufferToBase64(enc_directory),
       };
 
       let headers = {
-        // Authorization: token,
         filename: file.name,
         dir: dir,
         devicename: devicename,
         username: username,
-        // filestat: JSON.stringify(fileStat),
         "Content-Type": "application/octet-stream",
         "Content-Disposition": `attachment; filename="${file.name}"`,
         "X-CSRF-Token": CSRFToken,
       };
-      // const encryptedBlob = new Blob([encryptedFile], { type: file.type });
-      // const formData = new FormData();
-      // formData.append("file", encryptedBlob, file.name);
+
       const reader = new FileReader();
 
       const loadNextChunk = () => {
         let start = currentChunk * CHUNK_SIZE;
         let end = Math.min(start + CHUNK_SIZE, file.size);
-        reader.readAsBinaryString(file.slice(start, end));
-        // reader.readAsBinaryString(file.slice(start, end));
+        reader.readAsArrayBuffer(file.slice(start, end));
       };
 
       const CHUNK_SIZE = 1024 * 1024 * 10;
@@ -120,7 +127,6 @@ const uploadFile = (
         headers["currentchunk"] = currentChunk + 1;
         if (headers["currentchunk"] === totalChunks) {
           fileStat.checksum = hash_file.digest().toHex();
-          console.log(hashHex);
           headers.enc_file_checksum = hash_enc_file.digest().toHex();
         }
         headers.filestat = JSON.stringify(fileStat);
@@ -177,54 +183,18 @@ const uploadFile = (
 
       reader.onload = async (event) => {
         const chunk = event.target.result;
-        hash_file.update(chunk);
-        // const encryptedChunk = await encryptData(chunk, derivedKey, iv);
-        // hash_enc_file.update(encryptedChunk);
-        // let hash_enc_chunk = forge.md.sha256.create();
-        // hash_enc_chunk.update(encryptedChunk);
-        // headers.encchunkhash = hash_enc_chunk.digest().toHex();
-        uploadChunk(chunk);
+        hash_file.update(arrayBufferToBinaryString(chunk));
+        const encryptedChunk = await encryptData(chunk, derivedKey, iv);
+        hash_enc_file.update(arrayBufferToBinaryString(encryptedChunk));
+        let hash_enc_chunk = forge.md.sha256.create();
+        hash_enc_chunk.update(arrayBufferToBinaryString(encryptedChunk));
+        headers.encchunkhash = hash_enc_chunk.digest().toHex();
+        uploadChunk(encryptedChunk);
       };
 
       reader.onerror = (event) => {
         console.log(event);
       };
-      // axios
-      //   .post(fileUploadURL, formData, {
-      //     headers: headers,
-      //     onUploadProgress: function (event) {
-      //       progressBar.textContent = `${file.name} - ${
-      //         parseFloat(event.progress) * 100
-      //       }%`;
-      //     },
-      //   })
-      //   .then(function (response) {
-      //     uploadCountElement.textContent =
-      //       "Uploaded " + uploadCount + " out of " + totalCount;
-      //     resolve(response.data);
-      //   })
-      //   .catch(function (error) {
-      //     uploadCountElement.textContent =
-      //       "Uploaded " + uploadCount + " out of " + totalCount;
-
-      //     if (error.response) {
-      //       switch (error.response.status) {
-      //         case 500:
-      //           reject(error.response.data);
-      //           break;
-      //         case 401:
-      //           reject(error.response.data);
-      //           break;
-      //         case 403:
-      //           reject(error.response.data);
-      //           break;
-      //         default:
-      //           reject(error);
-      //       }
-      //     } else {
-      //       reject(error);
-      //     }
-      //   });
     } catch (err) {
       reject(err);
     }

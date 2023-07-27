@@ -86,11 +86,6 @@ const generateIVSaltDerivedKey = async (callback, enc_key) => {
 };
 
 const encryptData = async (data, derivedKey, iv) => {
-  const enc = new TextEncoder();
-  // const { salt, iv, derivedKey } = await generateIVSaltDerivedKey(
-  //   getPasswordkey,
-  //   enc_key
-  // );
   return await window.crypto.subtle.encrypt(
     { name: "AES-CBC", iv },
     derivedKey,

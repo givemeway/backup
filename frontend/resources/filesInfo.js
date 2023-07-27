@@ -1,5 +1,5 @@
 import { fetchFilesURL, devicename, username } from "../config/config.js";
-import { hashFile } from "./hashFile.js";
+import { hashFileChunked } from "./hashFile.js";
 
 const getfilesCurDir = async (cwd, CSRFToken) => {
   const headers = {
@@ -72,7 +72,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd) => {
         file.modified = false;
         filesToUpload.push(file);
       } else {
-        const localFileHash = await hashFile(file);
+        const localFileHash = await hashFileChunked(file);
         if (!files[dirName][file.name]["hash"].has(localFileHash)) {
           console.log("Modified");
           file.modified = true;
