@@ -6,7 +6,7 @@ import fs from "node:fs";
 import { verifyToken } from "../auth/auth.js";
 import csrf from "csurf";
 
-router.use(csrf({ cookie: true }));
+// router.use(csrf({ cookie: true }));
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
@@ -16,17 +16,17 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get("/", verifyToken, (req, res) => {
-  console.log(req);
-  const filePath = "F:/IDDriveImage/LAPTOP-F5NFL085/C/DiskImage[C].img";
-  const readStream = fs.createReadStream(filePath);
-  res.set("Content-Disposition", `attachment; filename="GPT.img"`);
+router.get("/", (req, res) => {
+  const filePath =
+    "F:/NodeJSBackupSolution/sandeep.kumar@idriveinc.com/DESKTOP-10RSGE8/Downloads/sandeep_amma_divya.exe";
+  const readStream = fs.createReadStream(filePath, {
+    highWaterMark: 1024 * 1024 * 1,
+  });
+  res.set(
+    "Content-Disposition",
+    `attachment; filename="sandeep_amma_divya.exe"`
+  );
   readStream.pipe(res);
-  // res.sendFile(filePath, (err) => {
-  //   if (err) {
-  //     res.send("Error");
-  //   }
-  // });
 });
 
 export { router as downloadFiles };

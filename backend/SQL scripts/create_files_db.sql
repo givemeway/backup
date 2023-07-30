@@ -18,8 +18,8 @@ CREATE TABLE `files`(
     `versions` INTEGER NOT NULL,
     `size` INTEGER NOT NULL,
     `snapshot` VARCHAR(255) NOT NULL,
-    `salt` BLOB NOT NULL,
-    `iv` BLOB NOT NULL,
+    `salt` VARCHAR(255) NOT NULL,
+    `iv` VARCHAR(255) NOT NULL,
     UNIQUE(`username`,`device`,`directory`,`filename`),
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );

@@ -43,9 +43,8 @@
     </form>
     <div id="downloadContainer">
       <button id="fileDownload">
-        <a href="http://192.168.29.34:3001/app/downloadFiles" download="gpt.img"
-          >Download
-        </a>
+        <!-- <a href="https://192.168.29.34:3001/app/downloadFiles">Download </a> -->
+        Download
       </button>
     </div>
     <script
@@ -53,6 +52,10 @@
       integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/web-streams-polyfill@2.0.2/dist/ponyfill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.3/StreamSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/node-forge@1.0.0/dist/forge.min.js"></script>
     <script type="module" src="./resources/upload.js"></script>

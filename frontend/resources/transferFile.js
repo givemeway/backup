@@ -14,6 +14,32 @@ const arrayBufferToHex = (buffer) => {
     .join("");
 };
 
+const generateRandomBytes = (len) => {
+  let buffer = new Uint8Array(len);
+  crypto.getRandomValues(buffer);
+  return buffer;
+};
+
+const deriveKey = (password, salt, iterations, length) => {
+  const md = forge.md.sha256.create();
+  const key = forge.pkcs5.pbkdf2(password, salt, iterations, length / 8, md);
+  return key;
+};
+
+const encryptChunk = async (key, iv, chunk) => {
+  let encryptedChunk = await window.crypto.subtle.encrypt(
+    {
+      name: "AES-CBC",
+      iv: iv,
+    },
+    key,
+    chunk
+  );
+  const previousIV = encryptedChunk.slice(-16);
+
+  return { encryptedChunk, previousIV };
+};
+
 const arrayBufferToBase64 = (buffer) => {
   let binary = "";
   let bytes = new Uint8Array(buffer);
@@ -41,6 +67,15 @@ const binaryStringToArrayBuffer = (binaryString) => {
   return buffer;
 };
 
+const encryptMessage = (algorithm, text, key, iv) => {
+  let enc = new TextEncoder();
+  const cipher = forge.cipher.createCipher(algorithm, key);
+  cipher.start({ iv: iv });
+  cipher.update(forge.util.createBuffer(enc.encode(text)));
+  cipher.finish();
+  return cipher.output.toHex();
+};
+
 const uploadFile = (
   file,
   cwd,
@@ -62,6 +97,11 @@ const uploadFile = (
       const pathParts = filePath.split("/");
       pathParts.pop();
       const dir = pathParts.join("/");
+
+      if (file.size === 0) {
+        reject(`Empty file`);
+        return;
+      }
 
       let fileStat = {
         atimeMs: file.lastModified,
@@ -89,7 +129,7 @@ const uploadFile = (
         reader.readAsArrayBuffer(file.slice(start, end));
       };
 
-      const CHUNK_SIZE = 1024 * 1024 * 10;
+      const CHUNK_SIZE = 1024 * 1024 * 1;
       const MAX_RETRIES = 3;
       let retries = 0;
       let currentChunk = 0;
@@ -98,23 +138,22 @@ const uploadFile = (
       let hash_enc_file = forge.md.sha256.create();
       headers["filemode"] = "w";
 
-      const { salt, iv, derivedKey } = await generateIVSaltDerivedKey(
-        getPasswordkey,
-        "sandy86kumar"
-      );
-      const enc = new TextEncoder();
-      const enc_fileName = await encryptData(
-        enc.encode(file.name),
-        derivedKey,
-        iv
-      );
-      const enc_directory = await encryptData(enc.encode(dir), derivedKey, iv);
+      const salt = generateRandomBytes(32);
+      const iv_buffer = generateRandomBytes(16);
+      const iv = arrayBufferToBinaryString(iv_buffer);
+      const key = deriveKey("sandy86kumar", salt, 100000, 256);
 
-      fileStat.salt = btoa(salt);
-      fileStat.iv = btoa(iv);
-      fileStat.enc_filename = arrayBufferToBase64(enc_fileName);
-      fileStat.enc_directory = arrayBufferToBase64(enc_directory);
+      const enc_fileName = encryptMessage("AES-CBC", file.name, key, iv);
 
+      const enc_directory = encryptMessage("AES-CBC", dir, key, iv);
+
+      const cipher = forge.cipher.createCipher("AES-CBC", key);
+      cipher.start({ iv: iv });
+
+      fileStat.salt = arrayBufferToHex(salt);
+      fileStat.iv = arrayBufferToHex(iv_buffer);
+      fileStat.enc_filename = enc_fileName;
+      fileStat.enc_directory = enc_directory;
       if (totalChunks === 1) {
         headers["totalchunks"] = 1;
         loadNextChunk();
@@ -128,15 +167,18 @@ const uploadFile = (
         if (headers["currentchunk"] === totalChunks) {
           fileStat.checksum = hash_file.digest().toHex();
           headers.enc_file_checksum = hash_enc_file.digest().toHex();
+          cipher.finish();
         }
+
         headers.filestat = JSON.stringify(fileStat);
+
         axios
           .post(fileUploadURL, chunk, {
             headers: headers,
             onUploadProgress: function (event) {
-              progressBar.textContent = `${file.name} - ${
-                parseFloat(event.progress) * 100
-              }%`;
+              progressBar.textContent = `${file.name} - ${parseFloat(
+                ((currentChunk + 1) / totalChunks) * event.progress * 100
+              ).toFixed(2)}%`;
             },
           })
           .then(function (response) {
@@ -184,12 +226,14 @@ const uploadFile = (
       reader.onload = async (event) => {
         const chunk = event.target.result;
         hash_file.update(arrayBufferToBinaryString(chunk));
-        const encryptedChunk = await encryptData(chunk, derivedKey, iv);
-        hash_enc_file.update(arrayBufferToBinaryString(encryptedChunk));
+        cipher.update(forge.util.createBuffer(chunk));
+        const encryptedChunk = cipher.output.getBytes();
+        hash_enc_file.update(encryptedChunk);
         let hash_enc_chunk = forge.md.sha256.create();
-        hash_enc_chunk.update(arrayBufferToBinaryString(encryptedChunk));
+        hash_enc_chunk.update(encryptedChunk);
         headers.encchunkhash = hash_enc_chunk.digest().toHex();
-        uploadChunk(encryptedChunk);
+        const arrBuffer = binaryStringToArrayBuffer(encryptedChunk);
+        uploadChunk(arrBuffer);
       };
 
       reader.onerror = (event) => {
@@ -201,13 +245,9 @@ const uploadFile = (
   });
 };
 
-export { uploadFile };
-
-// if (event.lengthComputable) {
-//   let percentComplete = Math.round(
-//     (event.loaded / event.total) * 100
-//   );
-//   console.log(percentComplete);
-//   progressBar.textContent = `${file.name} - ${percentComplete}%`;
-//   console.log(`${file.name} - ${percentComplete}%`);
-// }
+export {
+  uploadFile,
+  deriveKey,
+  arrayBufferToBinaryString,
+  binaryStringToArrayBuffer,
+};
