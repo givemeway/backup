@@ -34,11 +34,11 @@ form.addEventListener("submit", async (event) => {
       for (let i = 0; i < files.length; i++) {
         try {
           let hashHex = "";
-          if (files[i].hasOwnProperty("hash")) {
-            hashHex = files[i].hash;
-          } else {
-            hashHex = await hashFileChunked(files[i]);
-          }
+          // if (files[i].hasOwnProperty("hash")) {
+          //   hashHex = files[i].hash;
+          // } else {
+          //   hashHex = await hashFileChunked(files[i]);
+          // }
 
           let data = await uploadFile(
             files[i],

@@ -39,7 +39,7 @@ try {
 
   app.use("/app/login", sqlConn(usersDBConnection), login);
   app.use("/app/receiveFiles", sqlConn(dataDBConnection), receiveFiles);
-  app.use("/app/test", sqlConn(usersDBConnection), test);
+  app.use("/app/test", sqlConn(dataDBConnection), test);
   app.use("/app/signup", sqlConn(usersDBConnection), signup);
   app.use("/app/sendFileInfo", sqlConn(dataDBConnection), fetchFilesInfo);
   app.use(

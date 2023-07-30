@@ -27,6 +27,7 @@ const createDir = async (req, res, next) => {
       fs.mkdir(path.dirname(fileAbsPath), { recursive: true }, (error) => {
         if (error) {
           console.log(error);
+          console.log(fileAbsPath);
           res.status(500).json("unable to create Dir try again");
           res.end();
         } else {

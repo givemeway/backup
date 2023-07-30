@@ -60,7 +60,6 @@ const uploadFile = (req, res, next) => {
   if (fileStat.modified === true) {
     fileName = `${fileName}$$$${fileStat.checksum}$$$NA`;
   }
-
   const createWriteStream = () => {
     const fileStream = fs.createWriteStream(`${abspath}/${fileName}`, {
       flags: "a",
@@ -71,16 +70,20 @@ const uploadFile = (req, res, next) => {
       if (totalChunks === currentChunk) {
         next();
       } else {
-        res
-          .status(200)
-          .send({ success: true, desc: `chunk ${currentChunk} received` });
+        res.status(200).send({
+          success: true,
+          desc: `chunk ${currentChunk} received`,
+          msg: "success",
+        });
       }
     });
 
     fileStream.on("error", (err) => {
-      res
-        .status(500)
-        .json({ success: false, desc: `chunk ${currentChunk} failed` });
+      res.status(500).json({
+        success: false,
+        desc: `chunk ${currentChunk} failed`,
+        msg: err,
+      });
       res.end();
     });
   };

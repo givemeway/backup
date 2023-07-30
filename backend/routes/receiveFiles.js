@@ -75,8 +75,8 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const snapshot = "newsnapshot";
   const hashed_filename = `${filename}$$$${checksum}$$$NA`;
   const size = `${fileStat.size}`;
-  const salt = Buffer.from(atob(fileStat.salt));
-  const iv = Buffer.from(atob(fileStat.iv));
+  const salt = fileStat.salt;
+  const iv = fileStat.iv;
   const enc_filename = fileStat.enc_filename;
   const enc_directory = fileStat.enc_directory;
 
