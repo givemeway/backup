@@ -15,6 +15,7 @@ CREATE TABLE `files`(
     `hashed_filename` VARCHAR(350) NOT NULL,
     `last_modified` DATETIME NOT NULL,
     `hashvalue` CHAR(64) NOT NULL,
+    `enc_hashvalue` CHAR(64) NOT NULL,
     `versions` INTEGER NOT NULL,
     `size` INTEGER NOT NULL,
     `snapshot` VARCHAR(255) NOT NULL,

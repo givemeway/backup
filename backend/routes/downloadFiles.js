@@ -12,20 +12,23 @@ router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
-  res.header("Access-Control-Expose-Headers", "Content-Disposition");
+  res.header(
+    "Access-Control-Expose-Headers",
+    "Content-Disposition,Content-Length"
+  );
   next();
 });
 
 router.get("/", (req, res) => {
   const filePath =
-    "F:/NodeJSBackupSolution/sandeep.kumar@idriveinc.com/DESKTOP-10RSGE8/Downloads/sandeep_amma_divya.exe";
+    "F:/NodeJSBackupSolution/sandeep.kumar@idriveinc.com/DESKTOP-10RSGE8/Downloads/whereareyou.exe";
+  const fileStat = fs.statSync(filePath);
   const readStream = fs.createReadStream(filePath, {
     highWaterMark: 1024 * 1024 * 1,
   });
-  res.set(
-    "Content-Disposition",
-    `attachment; filename="sandeep_amma_divya.exe"`
-  );
+  // res.set("Content-Length", fileStat.size);
+  res.set("Content-Length", fileStat.size);
+  res.set("Content-Disposition", `attachment; filename="whereareyou.exe"`);
   readStream.pipe(res);
 });
 
