@@ -63,6 +63,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const username = req.headers.username;
   let filename = req.headers.filename;
   const device = req.headers.devicename;
+  const enc_file_checksum = req.headers.enc_file_checksum;
   const directory = req.headers.dir;
   const fileStat = JSON.parse(req.headers.filestat);
   const last_modified = new Date(fileStat.mtime);
@@ -83,8 +84,8 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const insertQuery = `INSERT INTO files 
                 (username,device,directory, enc_directory,filename,
                   enc_filename,hashed_filename,last_modified,hashvalue,
-                versions,size,snapshot,salt,iv)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                enc_hashvalue,versions,size,snapshot,salt,iv)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON DUPLICATE KEY
                 UPDATE versions = versions + 1;`;
   req.headers.query = insertQuery;
@@ -98,6 +99,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
     hashed_filename,
     isoString,
     checksum,
+    enc_file_checksum,
     versions,
     size,
     snapshot,
@@ -110,7 +112,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
     const insertVersionedFileQuery = `INSERT INTO files 
                                     (username,device,directory, enc_directory,filename,
                                       enc_filename,hashed_filename,last_modified,hashvalue,
-                                    versions,size,snapshot,salt,iv)
+                                      enc_hashvalue,versions,size,snapshot,salt,iv)
                                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                     ON DUPLICATE KEY
                                     UPDATE versions = versions + 1;`;
@@ -125,6 +127,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
       hashed_filename,
       isoString,
       checksum,
+      enc_file_checksum,
       versions,
       size,
       snapshot,

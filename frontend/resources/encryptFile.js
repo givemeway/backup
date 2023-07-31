@@ -88,20 +88,6 @@ const generateIVSaltDerivedKey = async (callback, enc_key) => {
   const iv = generateRandomBytes(16);
 
   const derivedKey = await getderivedKey(salt, callback, enc_key);
-  // const algo_options = {
-  //   name: "PBKDF2",
-  //   salt: salt,
-  //   iterations: 100000,
-  //   hash: "SHA-256",
-  // };
-  // const passwordKey = await callback(enc_key);
-  // const derivedKey = await window.crypto.subtle.deriveKey(
-  //   algo_options,
-  //   passwordKey,
-  //   { name: "AES-CBC", length: 256 },
-  //   true,
-  //   ["encrypt", "decrypt"]
-  // );
   return { salt, iv, derivedKey };
 };
 

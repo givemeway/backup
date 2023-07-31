@@ -1,31 +1,19 @@
-import { downloadURL, csrftokenURL } from "../config/config.js";
 import {
-  deriveKey,
+  csrftokenURL,
+  downloadURL,
+  filesFoldersURL,
+} from "../config/config.js";
+import { deriveKey } from "./cryptoUtil.js";
+import {
+  hexToBuffer,
   arrayBufferToBinaryString,
-  binaryStringToArrayBuffer,
-} from "./transferFile.js";
+  streamDownloadDecryptToDisk,
+} from "./util.js";
 
 let file = document.getElementById("fileDownload");
-let container = document.getElementById("downloadContainer");
 
-const token = `Bearer ${JSON.parse(localStorage.getItem("token"))["token"]}`;
-
-function hexToBuffer(hexString) {
-  let byteArray = new Uint8Array(hexString.length / 2);
-  for (let i = 0; i < byteArray.length; i++) {
-    byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
-  }
-  return byteArray;
-}
-
-const headers = {
-  Authorization: token,
-};
 file.addEventListener("click", async () => {
   console.log("download clicked");
-  const url = "https://192.168.29.34:3001/app/downloadFiles";
-
-  const fileUrl = "https://192.168.29.34:3001/app/getFilesSubfolders";
   const response = await fetch(csrftokenURL);
   const { CSRFToken } = await response.json();
   const headers = {
@@ -38,14 +26,15 @@ file.addEventListener("click", async () => {
 
   let file = {};
 
-  let res = await axios.post(fileUrl, {}, { headers: headers });
-
+  let res = await axios.post(filesFoldersURL, {}, { headers: headers });
+  console.log(res);
   res.data.files.forEach((element) => {
-    if (element.filename === "sandeep_amma_divya.exe") {
+    if (element.filename === "whereareyou.exe") {
       file.salt = element.salt;
       file.iv = element.iv;
     }
   });
+  console.log(file);
 
   const key = deriveKey("sandy86kumar", hexToBuffer(file.salt), 100000, 256);
 
@@ -55,31 +44,7 @@ file.addEventListener("click", async () => {
   const cipher = forge.cipher.createDecipher("AES-CBC", key);
   cipher.start({ iv: iv_binaryString });
 
-  async function streamDownloadDecryptToDisk(url) {
-    // create readable stream for ciphertext
-    let rs_src = fetch(url).then((response) => response.body);
-
-    // create writable stream for file
-    let ws_dest = window
-      .showSaveFilePicker()
-      .then((handle) => handle.createWritable());
-
-    // create transform stream for decryption
-    let ts_dec = new TransformStream({
-      async transform(chunk, controller) {
-        cipher.update(forge.util.createBuffer(chunk));
-        const decryptedChunk = cipher.output.getBytes();
-        const arrBuffer = binaryStringToArrayBuffer(decryptedChunk);
-        controller.enqueue(arrBuffer);
-      },
-    });
-
-    // stream cleartext to file
-    let rs_clear = rs_src.then((s) => s.pipeThrough(ts_dec));
-    return (await rs_clear).pipeTo(await ws_dest);
-  }
-
-  await streamDownloadDecryptToDisk(url);
+  await streamDownloadDecryptToDisk(downloadURL, cipher);
   let result = cipher.finish();
   if (result) {
     console.log("file decrypted");

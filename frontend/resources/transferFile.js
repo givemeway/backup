@@ -1,80 +1,11 @@
 import { fileUploadURL, username, devicename } from "../config/config.js";
+import { deriveKey, encryptMessage } from "./cryptoUtil.js";
 import {
-  encryptFile,
-  encryptData,
-  generateIVSaltDerivedKey,
-  getPasswordkey,
-} from "./encryptFile.js";
-
-import { hashChunk } from "./hashFile.js";
-
-const arrayBufferToHex = (buffer) => {
-  return [...new Uint8Array(buffer)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-};
-
-const generateRandomBytes = (len) => {
-  let buffer = new Uint8Array(len);
-  crypto.getRandomValues(buffer);
-  return buffer;
-};
-
-const deriveKey = (password, salt, iterations, length) => {
-  const md = forge.md.sha256.create();
-  const key = forge.pkcs5.pbkdf2(password, salt, iterations, length / 8, md);
-  return key;
-};
-
-const encryptChunk = async (key, iv, chunk) => {
-  let encryptedChunk = await window.crypto.subtle.encrypt(
-    {
-      name: "AES-CBC",
-      iv: iv,
-    },
-    key,
-    chunk
-  );
-  const previousIV = encryptedChunk.slice(-16);
-
-  return { encryptedChunk, previousIV };
-};
-
-const arrayBufferToBase64 = (buffer) => {
-  let binary = "";
-  let bytes = new Uint8Array(buffer);
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-};
-
-const arrayBufferToBinaryString = (buffer) => {
-  const bytes = new Uint8Array(buffer);
-  let binaryString = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binaryString += String.fromCharCode(bytes[i]);
-  }
-  return binaryString;
-};
-
-const binaryStringToArrayBuffer = (binaryString) => {
-  let buffer = new ArrayBuffer(binaryString.length);
-  let view = new Uint8Array(buffer);
-  for (let i = 0; i < binaryString.length; i++) {
-    view[i] = binaryString.charCodeAt(i);
-  }
-  return buffer;
-};
-
-const encryptMessage = (algorithm, text, key, iv) => {
-  let enc = new TextEncoder();
-  const cipher = forge.cipher.createCipher(algorithm, key);
-  cipher.start({ iv: iv });
-  cipher.update(forge.util.createBuffer(enc.encode(text)));
-  cipher.finish();
-  return cipher.output.toHex();
-};
+  arrayBufferToBinaryString,
+  binaryStringToArrayBuffer,
+  generateRandomBytes,
+  arrayBufferToHex,
+} from "./util.js";
 
 const uploadFile = (
   file,
@@ -167,7 +98,7 @@ const uploadFile = (
         if (headers["currentchunk"] === totalChunks) {
           fileStat.checksum = hash_file.digest().toHex();
           headers.enc_file_checksum = hash_enc_file.digest().toHex();
-          cipher.finish();
+          console.log("final chunk -- inside top");
         }
 
         headers.filestat = JSON.stringify(fileStat);
@@ -227,7 +158,14 @@ const uploadFile = (
         const chunk = event.target.result;
         hash_file.update(arrayBufferToBinaryString(chunk));
         cipher.update(forge.util.createBuffer(chunk));
-        const encryptedChunk = cipher.output.getBytes();
+        let encryptedChunk;
+        if (currentChunk === totalChunks - 1) {
+          console.log("final chunk");
+          cipher.finish();
+          encryptedChunk = cipher.output.getBytes();
+        } else {
+          encryptedChunk = cipher.output.getBytes();
+        }
         hash_enc_file.update(encryptedChunk);
         let hash_enc_chunk = forge.md.sha256.create();
         hash_enc_chunk.update(encryptedChunk);
@@ -245,9 +183,4 @@ const uploadFile = (
   });
 };
 
-export {
-  uploadFile,
-  deriveKey,
-  arrayBufferToBinaryString,
-  binaryStringToArrayBuffer,
-};
+export { uploadFile };
