@@ -1,4 +1,4 @@
-const domain = "172.26.96.1";
+const domain = "localhost";
 const host_url = `https://${domain}`;
 const origin = `${host_url}:3001`;
 

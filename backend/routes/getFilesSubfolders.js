@@ -12,7 +12,7 @@ const getFiles = async (req, res, next) => {
   const username = req.headers.username;
   const devicename = req.headers.devicename;
 
-  const filesInCurrentDirQuery = `select filename,salt,iv,directory from files 
+  const filesInCurrentDirQuery = `select id,filename,salt,iv,directory,versions,last_modified,size,device from files 
                                   WHERE 
                                   username = ?
                                   AND 

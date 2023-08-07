@@ -42,11 +42,7 @@ try {
   app.use("/app/test", sqlConn(dataDBConnection), test);
   app.use("/app/signup", sqlConn(usersDBConnection), signup);
   app.use("/app/sendFileInfo", sqlConn(dataDBConnection), fetchFilesInfo);
-  app.use(
-    "/app/getFilesSubfolders",
-    sqlConn(dataDBConnection),
-    getFilesSubfolders
-  );
+  app.use("/app/browseFolder", sqlConn(dataDBConnection), getFilesSubfolders);
   app.use(
     "/app/getCurrentDirFiles",
     sqlConn(dataDBConnection),
