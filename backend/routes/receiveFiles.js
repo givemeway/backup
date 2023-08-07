@@ -162,7 +162,6 @@ router.post(
   uploadFile,
   updateUtime,
   buildSQLQueryToUpdateFiles,
-  sqlExecute,
   createFolderIndex,
   (req, res) => {
     res.status(200).json(`file ${req.headers.filename} received`);
