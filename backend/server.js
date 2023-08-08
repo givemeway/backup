@@ -49,7 +49,7 @@ try {
     getCurrentDirFiles
   );
   app.use("/app/downloadFiles", sqlConn(dataDBConnection), downloadFiles);
-  app.use("/app/searchFiles", sqlConn(dataDBConnection), searchFiles);
+  app.use("/app/search", sqlConn(dataDBConnection), searchFiles);
   app.use("/app/csrftoken", csrftoken);
 } catch (err) {
   console.log(err);
