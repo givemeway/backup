@@ -7,7 +7,6 @@ await dotenv.config();
 import path from "node:path";
 import fs from "node:fs";
 import csrf from "csurf";
-import { sqlExecute } from "../controllers/sql_execute.js";
 
 const root = process.env.VARIABLE;
 
@@ -30,6 +29,7 @@ router.get("/", verifyToken, async (req, res) => {
     const device = req.query.device;
     const dir = req.query.dir;
     const filename = req.query.file;
+    console.log(username, device, dir, filename);
 
     const filePath = path.join(root, username, device, dir, filename);
     const query = `SELECT salt,iv from data.files where USERNAME = ? AND device = ? AND directory = ? AND filename = ?`;

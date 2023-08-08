@@ -72,7 +72,7 @@ const uploadFile = (
       const salt = generateRandomBytes(32);
       const iv_buffer = generateRandomBytes(16);
       const iv = arrayBufferToBinaryString(iv_buffer);
-      const key = deriveKey("sandy86kumar", salt, 100000, 256);
+      const key = await deriveKey("sandy86kumar", salt, 100000, 256);
 
       const enc_fileName = encryptMessage("AES-CBC", file.name, key, iv);
 
@@ -98,7 +98,6 @@ const uploadFile = (
         if (headers["currentchunk"] === totalChunks) {
           fileStat.checksum = hash_file.digest().toHex();
           headers.enc_file_checksum = hash_enc_file.digest().toHex();
-          console.log("final chunk -- inside top");
         }
 
         headers.filestat = JSON.stringify(fileStat);
@@ -160,7 +159,6 @@ const uploadFile = (
         cipher.update(forge.util.createBuffer(chunk));
         let encryptedChunk;
         if (currentChunk === totalChunks - 1) {
-          console.log("final chunk");
           cipher.finish();
           encryptedChunk = cipher.output.getBytes();
         } else {

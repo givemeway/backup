@@ -6,9 +6,9 @@ const router = express.Router();
 router.use(csrf({ cookie: true }));
 
 const findFiles = async (req, res, next) => {
-  const param = req.headers.searchparam;
+  const param = req.query.search;
   req.headers.data = {};
-  const fileSearchQuery = `SELECT filename,directory 
+  const fileSearchQuery = `SELECT id,filename,directory,size,versions,last_modified,iv,salt,device 
                     FROM data.files
                     WHERE 
                     MATCH(filename)
@@ -20,7 +20,7 @@ const findFiles = async (req, res, next) => {
 };
 
 const findFolders = async (req, res, next) => {
-  const param = req.headers.searchparam;
+  const param = req.query.search;
   req.headers.data.files = [...req.headers.queryStatus];
   const folderSearchQuery = `SELECT folder,path
                             FROM data.directories
