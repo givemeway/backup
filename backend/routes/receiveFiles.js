@@ -18,7 +18,12 @@ router.use(csrf({ cookie: true }));
 const createFolderIndex = async (req, res, next) => {
   const username = req.headers.username;
   const device = req.headers.devicename;
-  const dir = "/" + device + "/" + req.headers.dir;
+  let dir;
+  if (device !== "/") {
+    dir = "/" + device + "/" + req.headers.dir;
+  } else {
+    dir = "/" + req.headers.dir;
+  }
   const pathComponents = dir.split(/\//g);
   await insertPath(req, res, next, pathComponents, 0, null, username, device);
   next();
@@ -113,7 +118,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
                                     (username,device,directory, enc_directory,filename,
                                       enc_filename,hashed_filename,last_modified,hashvalue,
                                       enc_hashvalue,versions,size,snapshot,salt,iv)
-                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                     ON DUPLICATE KEY
                                     UPDATE versions = versions + 1;`;
     req.headers.query = insertVersionedFileQuery;

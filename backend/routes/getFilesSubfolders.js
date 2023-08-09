@@ -11,7 +11,6 @@ const getFiles = async (req, res, next) => {
   const order = req.headers.sortorder;
   const username = req.headers.username;
   const devicename = req.headers.devicename;
-
   const filesInCurrentDirQuery = `select id,filename,salt,iv,directory,versions,last_modified,size,device from files 
                                   WHERE 
                                   username = ?
@@ -59,9 +58,8 @@ const getFolders = async (req, res, next) => {
     path = `/${devicename}/${currentDir}`;
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
-
   const foldersQuery = `SELECT 
-                        folder,path 
+                        id,folder,path 
                         FROM data.directories 
                         WHERE username = ?
                         AND
