@@ -35,7 +35,6 @@ CREATE TABLE `directories`(
     `folder` VARCHAR(255) NOT NULL,
     `path` VARCHAR(255) NOT NULL,
      UNIQUE(`username`,`device`,`folder`,`path`),
-     FOREIGN KEY (`device`) REFERENCES files(`device`),
      FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
 

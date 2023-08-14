@@ -11,7 +11,9 @@ const getFiles = async (req, res, next) => {
   const order = req.headers.sortorder;
   const username = req.headers.username;
   const devicename = req.headers.devicename;
-  const filesInCurrentDirQuery = `select id,filename,salt,iv,directory,versions,last_modified,size,device from files 
+  const [start, end] = [0, 10000];
+  const filesInCurrentDirQuery = `select id,filename,salt,iv,directory,versions,last_modified,size,device 
+                                  from files 
                                   WHERE 
                                   username = ?
                                   AND 
@@ -19,7 +21,7 @@ const getFiles = async (req, res, next) => {
                                   AND 
                                   directory = ?
                                   ORDER BY 
-                                  filename ASC`;
+                                  filename ASC limit ${start},${end}`;
   req.headers.query = filesInCurrentDirQuery;
   req.headers.queryValues = [username, devicename, currentDir];
   await sqlExecute(req, res, next);
@@ -35,19 +37,12 @@ const getFolders = async (req, res, next) => {
   const order = req.headers.sortorder;
   const username = req.headers.username;
   const devicename = req.headers.devicename;
+  const [start, end] = [0, 1000000];
   let regex = `^\\.?${currentDir}(/[^/]+)$`;
   if (currentDir === "/") {
     regex = `^([^/]+)$`;
   }
-  const foldersinCurrentDirQuery = `select DISTINCT directory from files 
-                                    WHERE 
-                                    username = '${username}' 
-                                    AND 
-                                    device = '${devicename}' 
-                                    AND 
-                                    directory REGEXP '${regex}'
-                                    ORDER BY 
-                                    directory ${order};`;
+
   let regex_2 = ``;
   let path = ``;
   if (devicename === "/") {
@@ -63,7 +58,7 @@ const getFolders = async (req, res, next) => {
                         FROM data.directories 
                         WHERE username = ?
                         AND
-                        path REGEXP ?;`;
+                        path REGEXP ? limit ${start},${end};`;
 
   req.headers.query = foldersQuery;
   req.headers.queryValues = [username, regex_2];
