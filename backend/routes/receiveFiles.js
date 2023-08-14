@@ -22,7 +22,7 @@ const createFolderIndex = async (req, res, next) => {
   if (device !== "/") {
     dir = "/" + device + "/" + req.headers.dir;
   } else {
-    dir = "/" + req.headers.dir;
+    dir = "/" + req.headers.dir === "/" ? "" : req.headers.dir;
   }
   const pathComponents = dir.split(/\//g);
   await insertPath(req, res, next, pathComponents, 0, null, username, device);
@@ -42,7 +42,10 @@ async function insertPath(
   if (index >= pathComponents.length) {
     return;
   }
-  const path = pathComponents.slice(0, index + 1).join("/");
+  const path =
+    pathComponents.slice(0, index + 1).join("/") === ""
+      ? "/"
+      : pathComponents.slice(0, index + 1).join("/");
   const sql = `INSERT INTO directories 
               (username,device,folder,path) 
               VALUES (?, ?, ?, ?) 

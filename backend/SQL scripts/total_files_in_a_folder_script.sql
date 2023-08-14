@@ -1,12 +1,17 @@
 select count(*) 
 from  data.files 
-WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP' 
-AND directory REGEXP '^ticket_automation(/[^/]+)+$';
+WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'backup' 
+AND directory REGEXP '^frontend(/[^/]+)+$';
 
 select count(*)
 from data.files 
-WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'DESKTOP' 
-AND directory = 'ticket_automation' ORDER BY filename ASC;
+WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'backup' 
+AND directory = 'frontend' ORDER BY filename ASC;
+
+select folder,path
+from data.directories
+WHERE username = 'sandeep.kumar@idriveinc.com' AND device = 'backup' 
+AND path = 'frontend';
 
 -- SET SESSION group_concat_max_len = 10000000;
 
