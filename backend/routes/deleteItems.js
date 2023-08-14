@@ -33,10 +33,11 @@ const deleteFiles = (req, res, next) => {
       await sqlExecute(req, res, next);
     } catch (err) {
       failed.push({ ...file, error: err.message });
-      console.log(err);
+      console.log(err.message);
     }
   });
   req.failed.files = [...failed];
+  console.log(req.failed.files);
   next();
 };
 
@@ -63,24 +64,13 @@ const deleteFolders = (req, res, next) => {
                                     AND device = ?
                                     AND directory 
                                     REGEXP ?`;
-        const regexp = `^${folder.dir}(/[^/]+)+$`;
-        console.log(folder.dir, regexp);
+        const regexp = `^${folder.dir}(/[^/]+)*$`;
         req.headers.query = deleteSubFolderQuery;
         req.headers.queryValues = [folder.username, folder.device, regexp];
-        await sqlExecute(req, res, next);
       }
 
-      const deleteFolderRootFilesQuery = `DELETE FROM
-                                          data.files
-                                          WHERE username = ?
-                                          AND device = ?
-                                          AND directory = ?`;
-      req.headers.query = deleteFolderRootFilesQuery;
-      req.headers.queryValues = [folder.username, folder.device, folder.dir];
-      await sqlExecute(req, res, next);
       let regex;
-      regex = `^\\.?${folder.path}(/[^/]+)+$`;
-      console.log(regex, folder.id);
+      regex = `^${folder.path}(/[^/]+)*$`;
       const foldersQuery = `DELETE
                             FROM data.directories 
                             WHERE 
@@ -92,20 +82,13 @@ const deleteFolders = (req, res, next) => {
       req.headers.query = foldersQuery;
       req.headers.queryValues = [folder.username, folder.device, regex];
       await sqlExecute(req, res, next);
-      const folderQuery = `DELETE
-                          FROM data.directories 
-                          WHERE 
-                          id = ?`;
-      req.headers.query = folderQuery;
-      req.headers.queryValues = [folder.id];
-      await sqlExecute(req, res, next);
     } catch (err) {
       console.log(err);
       failed.push({ ...folder, error: err });
     }
-    req.failed.folders = [...failed];
-    next();
   });
+  req.failed.folders = [...failed];
+  next();
 };
 
 const getDeletedItemsList = (req, res, next) => {
@@ -114,6 +97,7 @@ const getDeletedItemsList = (req, res, next) => {
   const files = JSON.parse(req.body.fileIds);
 
   const filesToDelete = files.map((file) => {
+    console.log(file.path);
     const params = new URLSearchParams(file.path);
     const device = params.get("device");
     const dir = params.get("dir");
@@ -139,14 +123,22 @@ const getDeletedItemsList = (req, res, next) => {
   req.files = filesToDelete;
   req.folders = foldersToDelete;
   req.failed = { files: [], folders: [] };
+  console.log(filesToDelete);
   next();
 };
 
-router.post("/", verifyToken, getDeletedItemsList, (req, res) => {
-  console.log(req.files);
-  console.log(req.folders);
-  // console.log(req.failed);
-  res.status(200).json("req.failed");
-});
+router.post(
+  "/",
+  verifyToken,
+  getDeletedItemsList,
+  deleteFiles,
+  deleteFolders,
+  (req, res) => {
+    // console.log(req.files);
+    // console.log(req.folders);
+    console.log(req.failed);
+    res.status(200).json(req.failed);
+  }
+);
 
 export { router as deleteItems };
