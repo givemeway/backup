@@ -46,15 +46,18 @@ async function insertPath(
     pathComponents.slice(0, index + 1).join("/") === ""
       ? "/"
       : pathComponents.slice(0, index + 1).join("/");
-  const sql = `INSERT INTO directories 
-              (username,device,folder,path) 
-              VALUES (?, ?, ?, ?) 
-              ON DUPLICATE KEY 
-              UPDATE id = LAST_INSERT_ID(id)`;
-  req.headers.query = sql;
-  req.headers.queryValues = [username, device, pathComponents[index], path];
-  await sqlExecute(req, res, next);
-  parentId = req.headers.queryStatus.insertId;
+  if (path !== "/" && pathComponents[index].length > 0) {
+    const sql = `INSERT INTO directories 
+    (username,device,folder,path) 
+    VALUES (?, ?, ?, ?) 
+    ON DUPLICATE KEY 
+    UPDATE id = LAST_INSERT_ID(id)`;
+    req.headers.query = sql;
+    req.headers.queryValues = [username, device, pathComponents[index], path];
+    await sqlExecute(req, res, next);
+    parentId = req.headers.queryStatus.insertId;
+  }
+
   await insertPath(
     req,
     res,
