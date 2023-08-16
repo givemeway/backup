@@ -23,6 +23,8 @@
   },
   "homepage": "https://github.com/givemeway/backup#readme",
   "dependencies": {
+    "adm-zip": "^0.5.10",
+    "archiver": "^5.3.1",
     "body-parser": "^1.20.2",
     "busboy": "^1.6.0",
     "cookie": "^0.5.0",
