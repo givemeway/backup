@@ -16,6 +16,7 @@ import { sqlConn } from "./controllers/sql_conn.js";
 import { searchFiles } from "./routes/searchItems.js";
 import { csrftoken } from "./routes/getCSRFToken.js";
 import { deleteItems } from "./routes/deleteItems.js";
+import { downloadItems } from "./routes/DownloadItems.js";
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -53,6 +54,7 @@ try {
   app.use("/app/search", sqlConn(dataDBConnection), searchFiles);
   app.use("/app/csrftoken", csrftoken);
   app.use("/app/delete", sqlConn(dataDBConnection), deleteItems);
+  app.use("/app/downloadFolders", sqlConn(dataDBConnection), downloadItems);
 } catch (err) {
   console.log(err);
 }
