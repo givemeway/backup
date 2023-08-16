@@ -7,7 +7,7 @@ import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 await dotenv.config();
 
-import AdmZip from "adm-zip";
+// import AdmZip from "adm-zip";
 import archiver from "archiver";
 
 const root = process.env.VARIABLE;
@@ -60,16 +60,16 @@ const archiveDirectories = (req, res, next) => {
   archive.finalize();
 };
 
-const zipDirectories = async (sourceDirs, sourceFiles, outputFilePath) => {
-  const zip = new AdmZip();
-  sourceDirs.forEach((sourceDir) => {
-    zip.addLocalFolder(sourceDir);
-  });
-  sourceFiles.forEach((file) => {
-    zip.addLocalFile(file);
-  });
-  await zip.writeZipPromise(outputFilePath);
-};
+// const zipDirectories = async (sourceDirs, sourceFiles, outputFilePath) => {
+//   const zip = new AdmZip();
+//   sourceDirs.forEach((sourceDir) => {
+//     zip.addLocalFolder(sourceDir);
+//   });
+//   sourceFiles.forEach((file) => {
+//     zip.addLocalFile(file);
+//   });
+//   await zip.writeZipPromise(outputFilePath);
+// };
 
 const getItemsToDownload = (req, res, next) => {
   const username = req.user.Username;
