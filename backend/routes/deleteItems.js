@@ -134,8 +134,6 @@ router.post(
   deleteFiles,
   deleteFolders,
   (req, res) => {
-    // console.log(req.files);
-    // console.log(req.folders);
     console.log(req.failed);
     res.status(200).json(req.failed);
   }

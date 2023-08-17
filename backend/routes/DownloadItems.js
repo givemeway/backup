@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 await dotenv.config();
+import { sqlExecute } from "../controllers/sql_execute.js";
+import { getFilesInDirectory } from "../controllers/getFilesInDirectory.js";
 
 // import AdmZip from "adm-zip";
 import archiver from "archiver";
@@ -23,20 +25,68 @@ router.use((req, res, next) => {
   next();
 });
 
+const listAllFiles = async (dir) => {
+  let allFiles = [];
+  try {
+    const files = await fs.promises.readdir(dir);
+
+    for (let file of files) {
+      try {
+        const fullPath = path.join(dir, file);
+        const stat = await fs.promises.stat(fullPath);
+        if (stat.isDirectory()) {
+          const subFiles = await listAllFiles(fullPath);
+          allFiles = allFiles.concat(subFiles);
+        } else {
+          allFiles.push(fullPath);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  return allFiles;
+};
+
+const getSaltIVForFiles = async (req, res, next) => {
+  const fileQuery = `SELECT salt,iv FROM data.files where id=?`;
+  req.download = { files: [] };
+  const files = req.files;
+  const folders = req.folders;
+  try {
+    for (let i = 0; i < files.length; i++) {
+      req.headers.query = fileQuery;
+      console.log(files[i]);
+      req.headers.queryValues = [files[i].id];
+      try {
+        const con = req.headers.connection;
+        const [rows] = await con.execute(req.headers.query, [
+          ...req.headers.queryValues,
+        ]);
+        req.headers.queryStatus = rows;
+        req.headers.query_success = true;
+      } catch (error) {
+        console.log(error);
+      }
+      req.download.files.push({ ...req.headers.queryStatus[0], ...files[i] });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+
+  next();
+};
+
 const archiveDirectories = (req, res, next) => {
-  const output = fs.createWriteStream("./sandeep.zip");
   const archive = archiver("zip", {
     zlib: { level: 9 }, // Sets the compression level.
   });
-  output.on("close", function () {
+  archive.on("close", () => {
     console.log(archive.pointer() + " total bytes");
-    console.log(
-      "archiver has been finalized and the output file descriptor has closed."
-    );
+    console.log("close event");
     next();
-  });
-  output.on("end", function () {
-    console.log("Data has been drained");
   });
   archive.on("warning", function (err) {
     if (err.code === "ENOENT") {
@@ -50,7 +100,7 @@ const archiveDirectories = (req, res, next) => {
     res.status(500).json(err);
     res.end();
   });
-  archive.pipe(output);
+  archive.pipe(res);
   req.folders.forEach((dir) => {
     archive.directory(dir.absPath, dir.path);
   });
@@ -60,32 +110,26 @@ const archiveDirectories = (req, res, next) => {
   archive.finalize();
 };
 
-// const zipDirectories = async (sourceDirs, sourceFiles, outputFilePath) => {
-//   const zip = new AdmZip();
-//   sourceDirs.forEach((sourceDir) => {
-//     zip.addLocalFolder(sourceDir);
-//   });
-//   sourceFiles.forEach((file) => {
-//     zip.addLocalFile(file);
-//   });
-//   await zip.writeZipPromise(outputFilePath);
-// };
-
 const getItemsToDownload = (req, res, next) => {
   const username = req.user.Username;
-  const folders = JSON.parse(req.body.directories);
-  const files = JSON.parse(req.body.files);
+  req.headers.username = username;
+  const folders = req.body.directories;
+  const files = req.body.files;
   const foldersToDownload = folders.map((folder) => {
     const device = folder.path.split("/")[1];
+    req.headers.devicename = device;
     const dirParts = folder.path.split("/").slice(2).join("/");
     const dir = dirParts === "" ? "/" : dirParts;
+    req.headers.currentdirectory = dir;
     const folderPath = path.join(root, username, device, dir);
-    return { absPath: folderPath, path: folder.path };
+    return { absPath: folderPath, path: folder.path, device, dir, username };
   });
   const filesToDownload = files.map((file) => {
     const params = new URLSearchParams(file.path);
     const device = params.get("device");
+    req.headers.devicename = device;
     const dir = params.get("dir");
+    req.headers.currentdirectory = dir;
     const fileName = params.get("file");
     const filePath = path.join(root, username, device, dir, fileName);
     return { id: file.id, path: filePath };
@@ -100,8 +144,9 @@ router.post(
   "/",
   verifyToken,
   getItemsToDownload,
-  archiveDirectories,
-  async (req, res) => {
+  getSaltIVForFiles,
+  (req, res) => {
+    console.log("req.download.files");
     res.status(200).json("Downloaded!");
   }
 );
