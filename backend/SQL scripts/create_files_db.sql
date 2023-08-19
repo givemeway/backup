@@ -5,7 +5,7 @@ SET NAMES utf8;
 SET character_set_client = utf8mb4;
 
 CREATE TABLE `files`(
-    `id` INTEGER AUTO_INCREMENT PRIMARY KEY,
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(70) NOT NULL,
     `device` VARCHAR(70) NOT NULL,
     `directory` VARCHAR(255) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE `files`(
     `hashvalue` CHAR(64) NOT NULL,
     `enc_hashvalue` CHAR(64) NOT NULL,
     `versions` INTEGER NOT NULL,
-    `size` INTEGER NOT NULL,
+    `size` BIGINT UNSIGNED NOT NULL,
     `snapshot` VARCHAR(255) NOT NULL,
     `salt` VARCHAR(255) NOT NULL,
     `iv` VARCHAR(255) NOT NULL,

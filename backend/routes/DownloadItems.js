@@ -5,6 +5,7 @@ import fs from "node:fs";
 import dotenv from "dotenv";
 import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
+import { decryptFile } from "../utils/decrypt.js";
 await dotenv.config();
 
 import archiver from "archiver";
@@ -62,31 +63,6 @@ router.use((req, res, next) => {
   next();
 });
 
-const listAllFiles = async (dir) => {
-  let allFiles = [];
-  try {
-    const files = await fs.promises.readdir(dir);
-
-    for (let file of files) {
-      try {
-        const fullPath = path.join(dir, file);
-        const stat = await fs.promises.stat(fullPath);
-        if (stat.isDirectory()) {
-          const subFiles = await listAllFiles(fullPath);
-          allFiles = allFiles.concat(subFiles);
-        } else {
-          allFiles.push(fullPath);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    }
-  } catch (error) {
-    console.log(error);
-  }
-  return allFiles;
-};
-
 const extractFilesInforFromDB = async (req, res, next) => {
   const username = req.user.Username;
   req.headers.username = username;
@@ -105,189 +81,95 @@ const extractFilesInforFromDB = async (req, res, next) => {
     for (let j = 0; j < dirFiles.length; j++) {
       const { filename, salt, iv, directory } = dirFiles[j];
       const filePath = path.join(root, username, device, directory, filename);
+      const actualPath = path.join(device, directory);
       const fileData = {
         filename,
         salt,
         iv,
         path: filePath,
-        relativePath: dir === "/" ? path.dirname(dir) : directory,
+        relativePath:
+          dir === "/"
+            ? actualPath
+            : path.join(dir, actualPath.split(dir).slice(1).join("/")),
       };
       req.files.push(fileData);
     }
   }
 
-  // for (let i = 0; i < files.length; i++) {
-  //   req.headers.query = fileQuery;
-  //   req.headers.queryValues = [parseInt(files[i].id)];
-  //   await sqlExecute(req, res);
-  //   const { salt, iv, device, filename, directory } =
-  //     req.headers.queryValues[0];
-  //   console.log(salt, iv, device, filename, directory);
-  //   const filePath = path.join(root, username, device, directory, filename);
-  //   req.files.push({
-  //     filename,
-  //     salt,
-  //     iv,
-  //     path: filePath,
-  //     relativePath: "",
-  //   });
-  // }
-
-  // files.forEach(async (file) => {
-  //   req.headers.query = fileQuery;
-  //   req.headers.queryValues = [file.id];
-  //   await sqlExecute(req, res);
-  //   const { salt, iv, device, filename, directory } =
-  //     req.headers.queryValues[0];
-  //   const filePath = path.join(root, username, device, directory, filename);
-  //   req.files.push({
-  //     filename,
-  //     salt,
-  //     iv,
-  //     path: filePath,
-  //     relativePath: "",
-  //   });
-  // });
-  console.log(req.files.length);
-  next();
-};
-
-const getSaltIVForFiles = async (req, res, next) => {
-  const fileQuery = `SELECT salt,iv,filename FROM data.files where id=?`;
-
-  const files = req.files;
-  const folders = req.folders;
-  try {
-    for (let i = 0; i < files.length; i++) {
-      req.headers.query = fileQuery;
-      console.log(files[i]);
-      req.headers.queryValues = [files[i].id];
-      try {
-        const con = req.headers.connection;
-        const [rows] = await con.execute(req.headers.query, [
-          ...req.headers.queryValues,
-        ]);
-        req.headers.queryStatus = rows;
-        req.headers.query_success = true;
-      } catch (error) {
-        console.log(error);
-      }
-      req.download.files.push({ ...req.headers.queryStatus[0], ...files[i] });
-    }
-  } catch (err) {
-    console.log(err);
+  for (let i = 0; i < files.length; i++) {
+    req.headers.query = fileQuery;
+    req.headers.queryValues = [parseInt(files[i].id)];
+    await sqlExecute(req, res);
+    const { salt, iv, device, filename, directory } =
+      req.headers.queryStatus[0];
+    const filePath = path.join(root, username, device, directory, filename);
+    req.files.push({
+      filename,
+      salt,
+      iv,
+      path: filePath,
+      relativePath: "",
+    });
   }
-
   next();
 };
 
 const archiveDirectoriesAndFiles = (req, res, next) => {
-  console.log(req.files.length);
   const archive = archiver("zip", {
     zlib: { level: 9 }, // Sets the compression level.
   });
-  archive.on("close", () => {
+  archive.on("end", () => {
     console.log(archive.pointer() + " total bytes");
-    console.log("close event");
+    console.debug("end event");
     next();
   });
   archive.on("warning", function (err) {
     if (err.code === "ENOENT") {
       // log warning
-      console.log(err);
+      console.error(err);
     } else {
       // throw error
-      console.log(err);
+      console.error(err);
     }
   });
   archive.on("error", function (err) {
-    console.log(err);
-    res.status(500).json(err);
+    console.error(err);
+    res.status(500).send(err);
     res.end();
   });
   archive.pipe(res);
-  req.files.forEach((file) => {
-    archive.file(file.path, {
-      name: file.filename,
-      prefix: file.relativePath,
-    });
-  });
-  console.log("here");
-  archive.finalize();
-};
+  const files = req.files;
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const inputFile = fs.createReadStream(files[i].path);
+      const fileStream = decryptFile(
+        inputFile,
+        files[i].salt,
+        files[i].iv,
+        "sandy86kumar"
+      );
+      inputFile.on("error", (err) => {
+        res.send(err);
+        res.end();
+      });
 
-const archiveDirectories = (req, res, next) => {
-  console.log(req.files);
-  const archive = archiver("zip", {
-    zlib: { level: 9 }, // Sets the compression level.
-  });
-  archive.on("close", () => {
-    console.log(archive.pointer() + " total bytes");
-    console.log("close event");
-    next();
-  });
-  archive.on("warning", function (err) {
-    if (err.code === "ENOENT") {
-      // log warning
-      console.log(err);
-    } else {
-      // throw error
-      console.log(err);
+      archive.append(fileStream, {
+        name: files[i].filename,
+        prefix: files[i].relativePath,
+      });
     }
-  });
-  archive.on("error", function (err) {
-    console.log(err, "inside error");
-    res.status(500).json(err);
+  } catch (err) {
+    res.send(err);
     res.end();
-  });
-  archive.pipe(res);
-  req.folders.forEach((dir) => {
-    archive.directory(dir.absPath, dir.path);
-  });
-  req.files.forEach((file) => {
-    archive.file(file.path, { name: path.basename(file.path) });
-  });
+  }
   archive.finalize();
-};
-
-const getItemsToDownload = (req, res, next) => {
-  const username = req.user.Username;
-  req.headers.username = username;
-  const folders = req.body.directories;
-  const files = req.body.files;
-  const foldersToDownload = folders.map((folder) => {
-    const device = folder.path.split("/")[1];
-    req.headers.devicename = device;
-    const dirParts = folder.path.split("/").slice(2).join("/");
-    const dir = dirParts === "" ? "/" : dirParts;
-    req.headers.currentdirectory = dir;
-    const folderPath = path.join(root, username, device, dir);
-    return { absPath: folderPath, path: folder.path, device, dir, username };
-  });
-  const filesToDownload = files.map((file) => {
-    const params = new URLSearchParams(file.path);
-    const device = params.get("device");
-    req.headers.devicename = device;
-    const dir = params.get("dir");
-    req.headers.currentdirectory = dir;
-    const fileName = params.get("file");
-    const filePath = path.join(root, username, device, dir, fileName);
-    return { id: file.id, path: filePath };
-  });
-  req.folders = foldersToDownload;
-  req.files = filesToDownload;
-  req.download = { files: [], folders: [] };
-  next();
 };
 
 router.post(
   "/",
   verifyToken,
   extractFilesInforFromDB,
-  archiveDirectoriesAndFiles,
-  (req, res) => {
-    res.status(200).json("Downloaded");
-  }
+  archiveDirectoriesAndFiles
 );
 
 export { router as downloadItems };

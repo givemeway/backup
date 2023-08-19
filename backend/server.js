@@ -10,7 +10,7 @@ import { signup } from "./routes/signup.js";
 import { fetchFilesInfo } from "./routes/fetchFilesInfo.js";
 import { getFilesSubfolders } from "./routes/getFilesSubfolders.js";
 import { getCurrentDirFiles } from "./routes/getCurrentDirFiles.js";
-import { downloadFiles } from "./routes/downloadFiles.js";
+import { downloadFile } from "./routes/downloadFile.js";
 import { createConnection } from "./controllers/createConnection.js";
 import { sqlConn } from "./controllers/sql_conn.js";
 import { searchFiles } from "./routes/searchItems.js";
@@ -50,7 +50,7 @@ try {
     sqlConn(dataDBConnection),
     getCurrentDirFiles
   );
-  app.use("/app/downloadFiles", sqlConn(dataDBConnection), downloadFiles);
+  app.use("/app/downloadFile", sqlConn(dataDBConnection), downloadFile);
   app.use("/app/search", sqlConn(dataDBConnection), searchFiles);
   app.use("/app/csrftoken", csrftoken);
   app.use("/app/delete", sqlConn(dataDBConnection), deleteItems);

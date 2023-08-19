@@ -97,7 +97,6 @@ const getDeletedItemsList = (req, res, next) => {
   const files = JSON.parse(req.body.fileIds);
 
   const filesToDelete = files.map((file) => {
-    console.log(file.path);
     const params = new URLSearchParams(file.path);
     const device = params.get("device");
     const dir = params.get("dir");
