@@ -58,10 +58,10 @@ function moveDirectory(sourceDir, destinationDir) {
     }
 
     // remove source directory
-    rimraf(sourceDir, { preserveRoot: false }, function (err) {
-      if (err) throw err;
-      console.log("Directory removed successfully");
-    });
+    // rimraf(sourceDir, { preserveRoot: false }, function (err) {
+    //   if (err) console.log(err);
+    //   else console.log("Directory removed successfully");
+    // });
   } catch (err) {
     console.log(err);
   }
@@ -127,6 +127,14 @@ router.post("/", verifyToken, async (req, res) => {
   console.log(sourceAbsPath, destinationAbspath);
 
   moveDirectory(sourceAbsPath, destinationAbspath);
+  try {
+    rimraf(sourceAbsPath, { preserveRoot: false }, function (err) {
+      if (err) console.log(err);
+      else console.log("Directory removed successfully");
+    });
+  } catch (err) {
+    console.log(err);
+  }
 
   res.status(200).json("success");
 });
