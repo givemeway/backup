@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { decryptFile } from "../utils/decrypt.js";
+import { Worker } from "node:worker_threads";
+import { Readable } from "node:stream";
 await dotenv.config();
 
 import archiver from "archiver";
@@ -165,11 +167,31 @@ const archiveDirectoriesAndFiles = (req, res, next) => {
   archive.finalize();
 };
 
-router.post(
-  "/",
-  verifyToken,
-  extractFilesInforFromDB,
-  archiveDirectoriesAndFiles
-);
+router.post("/", verifyToken, extractFilesInforFromDB, (req, res) => {
+  const worker = new Worker("../backend/controllers/DownloadWorker.js");
+  const channel = new MessageChannel();
+  const readable = new Readable({
+    read() {},
+  });
+
+  worker.postMessage({ files: req.files, port: channel.port1 }, [
+    channel.port1,
+  ]);
+  channel.port2.on("message", ({ mode, chunk }) => {
+    if (mode === "chunk") {
+      readable.push(chunk);
+    } else {
+      readable.push(null);
+    }
+  });
+
+  readable.pipe(res);
+  channel.port2.on("error", (err) => {
+    console.error(err);
+  });
+  worker.on("error", (err) => {
+    console.error(err);
+  });
+});
 
 export { router as downloadItems };
