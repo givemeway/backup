@@ -7,9 +7,35 @@ await dotenv.config();
 import { parentPort } from "node:worker_threads";
 import async from "async";
 
-const archiveDirectoriesAndFiles = (files, port) => {
+const addFilesToArchive = (file, archive) => {
+  return new Promise((resolve, reject) => {
+    const inputFile = fs.createReadStream(file.path);
+    const fileStream = decryptFile(
+      inputFile,
+      file.salt,
+      file.iv,
+      "sandy86kumar"
+    );
+    inputFile.on("error", (err) => {
+      console.error(err);
+      reject(err);
+    });
+    fileStream.on("end", () => {
+      inputFile.destroy();
+      resolve();
+    });
+
+    archive.append(fileStream, {
+      name: file.filename,
+      prefix: file.relativePath,
+    });
+  });
+};
+
+const archiveDirectoriesAndFiles = async (files, port) => {
   const archive = archiver("zip", {
     zlib: { level: 9 },
+    statConcurrency: 8,
   });
   archive.on("end", () => {
     console.log(archive.pointer() + " total bytes");
@@ -24,6 +50,9 @@ const archiveDirectoriesAndFiles = (files, port) => {
       console.error(err);
     }
   });
+  archive.on("entry", (entry) => {
+    console.log(entry.name);
+  });
   archive.on("error", function (err) {
     console.error(err);
   });
@@ -32,23 +61,13 @@ const archiveDirectoriesAndFiles = (files, port) => {
   });
 
   try {
-    for (let i = 0; i < files.length; i++) {
-      const inputFile = fs.createReadStream(files[i].path);
-      const fileStream = decryptFile(
-        inputFile,
-        files[i].salt,
-        files[i].iv,
-        "sandy86kumar"
-      );
-      inputFile.on("error", (err) => {
-        console.error(err);
-      });
-
-      archive.append(fileStream, {
-        name: files[i].filename,
-        prefix: files[i].relativePath,
-      });
-    }
+    await async.eachLimit(files, 10, async (file) => {
+      try {
+        await addFilesToArchive(file, archive);
+      } catch (err) {
+        console.error(`Error Adding file ${file.filename}`);
+      }
+    });
   } catch (err) {
     console.error(err);
   }
