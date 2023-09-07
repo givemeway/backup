@@ -35,7 +35,7 @@ const getFolders = async (con, currentDir, username, devicename) => {
     path = `/${devicename}/${currentDir}`;
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
-
+  console.log(regex_2);
   const foldersQuery = `SELECT 
                         id,folder,path,device 
                         FROM data.directories 
@@ -126,10 +126,10 @@ const moveFiles = async (username, from, to, sourceAbsPath) => {
 };
 
 const organizeFoldersInDB = async (req, res, next) => {
-  // from = /canned
-  // to = /new
-  // result = /canned/new
-  // 1.
+  // from = New folder/canned
+  // to = New folder/new
+  // path = New folder/new/canned
+  // UPDATE files.directories SET device =?, path = ?  WHERE username = ? AND path regexp `^\.?/${}/${}(/[^/]+)$`
 };
 
 const organizeFilesInDB = async (req, res, next) => {
@@ -148,31 +148,32 @@ const organizeFilesInDB = async (req, res, next) => {
   const to = req.query.to;
 
   const srcFolder =
-    from.split("/").length > 1 ? from.split("/")[1] : from.split("/")[0];
-  const dst = to + "/" + srcFolder;
+    from.split("/").length > 1
+      ? from.split("/").slice(-1)[0]
+      : from.split("/")[0];
+  let dst = to + "/" + srcFolder;
   console.log(srcFolder, dst);
+  if (to === "/") {
+    dst = srcFolder;
+  }
 
   const from_device = from === "/" ? "/" : from.split("/")[0];
-  const from_dirParts = from.split("/").slice(-1).join("/");
+  const from_dirParts = from.split("/").slice(1).join("/");
   const from_dir = from_dirParts === "" ? "/" : from_dirParts;
+  console.log(from_device);
 
-  const to_device = dst === "/" ? "/" : dst.split("/")[0];
+  const to_device = dst.split("/")[0];
   const to_dirParts = dst.split("/").slice(1).join("/");
   const to_dir_ori = to_dirParts === "" ? "/" : to_dirParts;
 
-  const updateDB = async (
-    to_dir,
-    to_device,
-    from_dir,
-    from_device,
-    username
-  ) => {
+  const updateDB = async (dst_dir, src_dir) => {
     const filesInDirRoot = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND username= ?`;
-    const values = [to_dir, to_device, from_dir, from_device, username];
+    console.log(dst_dir, "|", to_device, "|", src_dir, "|", from_device);
+    const values = [dst_dir, to_device, src_dir, from_device, username];
     await sqlExecute(con, filesInDirRoot, values);
     const foldersInDirRoot = await getFolders(
       con,
-      from_dir,
+      src_dir,
       username,
       from_device
     );
@@ -181,16 +182,45 @@ const organizeFilesInDB = async (req, res, next) => {
       console.log("no folder in current dir");
       return;
     }
-    for (let i = 0; i < foldersInDirRoot.length; i++) {
-      const dir = foldersInDirRoot[i].path.split("/").slice(2).join("/");
-      const new_to_dir = dir === "" ? "/" : dir;
-      await updateDB(new_to_dir, to_device, new_to_dir, from_device, username);
+
+    for (const folder of foldersInDirRoot) {
+      console.log(folder.path);
+
+      const dirParts = folder.path.split("/").slice(2).join("/");
+      const dir = dirParts === "" ? "/" : dirParts;
+      console.log(
+        "|",
+        to_dir_ori,
+        "|",
+        to_dir_ori + folder.path.split(from)[1],
+        "|",
+        dir
+      );
+      let dstPath;
+      if (to_dir_ori === "/") {
+        dstPath = folder.path.split(from)[1].split("/")[1];
+      } else {
+        dstPath = to_dir_ori + folder.path.split(from)[1];
+      }
+      const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ?`;
+      const pth = `/${to_device}/${dstPath}`;
+      const val = [to_device, pth, username, from_device, folder.path];
+      await sqlExecute(con, query, val);
+      await updateDB(dstPath, dir);
     }
+    const query = `INSERT INTO data.directories (username,device,folder,path) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)`;
+    if (to === "/") {
+    } else {
+      const pth = `/${to_device}/${srcFolder}`;
+      const val = [username, to_device, srcFolder, pth];
+      await sqlExecute(con, query, val);
+    }
+
     console.log("exited");
   };
 
-  console.log(to_dir_ori, to_device, from_dir, from_device, username);
-  updateDB(to_dir_ori, to_device, from_dir, from_device, username);
+  console.log(to_dir_ori, to_device, from_dir, from_device);
+  updateDB(to_dir_ori, from_dir);
 };
 
 router.post("/", verifyToken, organizeFilesInDB, async (req, res) => {
