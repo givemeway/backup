@@ -15,15 +15,22 @@ const multerInstance = multer({
       const device = req.headers.devicename;
       const filePath = req.headers.dir;
       const userName = req.headers.username;
-      return cb(null, path.join(`${root}/${userName}`, device, filePath));
+      return cb(null, path.join(`${root}/${userName}`, "/"));
+
+      // return cb(null, path.join(`${root}/${userName}`, device, filePath));
     },
     filename: (req, file, cb) => {
       const fileStat = JSON.parse(req.headers.filestat);
       let filename = req.headers.filename;
       if (fileStat.modified === true) {
-        filename = `${filename}$$$${fileStat.checksum}$$$NA`;
+        // filename = `${filename}$$$${fileStat.checksum}$$$NA`;
+        req.headers.uuid_new = req.headers.uuid;
+        req.headers.uuid = fileStat.uuid;
+        return cb(null, req.headers.uuid_new);
       }
-      return cb(null, filename);
+      return cb(null, req.headers.uuid);
+
+      // return cb(null, filename);
     },
   }),
 });
@@ -37,7 +44,7 @@ const uploadFile = (req, res, next) => {
       res.status(500).json(error);
       res.end();
     } else if (error) {
-      console.log(error);
+      console.error(error);
       res.status(500).json(error);
       res.end();
     } else {

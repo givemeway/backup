@@ -29,17 +29,23 @@ router.get("/", verifyToken, async (req, res) => {
     const device = req.query.device;
     const dir = req.query.dir;
     const filename = req.query.file;
+    const uuid = req.query.uuid;
 
-    const filePath = path.join(root, username, device, dir, filename);
-    const query = `SELECT salt,iv from data.files where USERNAME = ? AND device = ? AND directory = ? AND filename = ?`;
+    // const filePath = path.join(root, username, device, dir, filename);
+    const filePath = path.join(root, username, uuid);
+    // const query = `SELECT salt,iv from data.files where USERNAME = ? AND device = ? AND directory = ? AND filename = ?`;
+    const query = `SELECT salt,iv,size from data.files where uuid = ?`;
+
     const con = req.headers.connection;
-    const values = [username, device, dir, filename];
+    // const values = [username, device, dir, filename];
+    const values = [uuid];
     const [rows, fields] = await con.execute(query, values);
-    const fileStat = fs.statSync(filePath);
+    // const fileStat = fs.statSync(filePath);
     const readStream = fs.createReadStream(filePath, {
       highWaterMark: 1024 * 1024 * 1,
     });
-    res.set("Content-Length", fileStat.size);
+    // res.set("Content-Length", fileStat.size);
+    res.set("Content-Length", rows[0]["size"]);
     res.set("salt", rows[0]["salt"]);
     res.set("iv", rows[0]["iv"]);
     res.set("Content-Disposition", `attachment; filename="${filename}"`);

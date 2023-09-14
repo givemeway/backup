@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "node:fs";
 import dotenv from "dotenv";
 await dotenv.config();
+import { v4 as uuidv4 } from "uuid";
 
 const root = process.env.VARIABLE;
 
@@ -16,11 +17,13 @@ const createDir = async (req, res, next) => {
   const fileName = req.headers.filename;
   const deviceName = req.headers.devicename;
   const userName = req.headers.username;
+  req.headers.uuid = uuidv4();
   const fileAbsPath = path.join(
     `${root}/${userName}`,
-    deviceName,
-    dir,
-    fileName
+    req.headers.uuid
+    // deviceName,
+    // dir,
+    // fileName
   );
   fs.access(path.dirname(fileAbsPath), (err) => {
     if (err) {

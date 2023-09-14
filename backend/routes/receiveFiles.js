@@ -72,6 +72,7 @@ async function insertPath(
 
 const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const username = req.headers.username;
+  let uuid = req.headers.uuid;
   let filename = req.headers.filename;
   const device = req.headers.devicename;
   const enc_file_checksum = req.headers.enc_file_checksum;
@@ -84,67 +85,92 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
     .replace("T", " ");
   const checksum = fileStat.checksum;
   const versions = 1;
-  const snapshot = "newsnapshot";
-  const hashed_filename = `${filename}$$$${checksum}$$$NA`;
   const size = `${fileStat.size}`;
   const salt = fileStat.salt;
   const iv = fileStat.iv;
-  const enc_filename = fileStat.enc_filename;
-  const enc_directory = fileStat.enc_directory;
-
+  // const enc_filename = fileStat.enc_filename;
+  // const enc_directory = fileStat.enc_directory;
+  const origin = uuid;
   const insertQuery = `INSERT INTO files 
-                (username,device,directory, enc_directory,filename,
-                  enc_filename,hashed_filename,last_modified,hashvalue,
-                enc_hashvalue,versions,size,snapshot,salt,iv)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                ON DUPLICATE KEY
-                UPDATE versions = versions + 1;`;
+                      (username,device,directory,uuid,origin,filename,
+                      last_modified,hashvalue,
+                      enc_hashvalue,versions,size,salt,iv)
+                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                      ON DUPLICATE KEY
+                      UPDATE versions = versions + 1;`;
   req.headers.query = insertQuery;
   req.headers.queryValues = [
     username,
     device,
     directory,
-    enc_directory,
+    uuid,
+    origin,
     filename,
-    enc_filename,
-    hashed_filename,
     isoString,
     checksum,
     enc_file_checksum,
     versions,
     size,
-    snapshot,
     salt,
     iv,
   ];
   await sqlExecute(req, res, next);
   if (fileStat.modified === true) {
-    filename = hashed_filename;
-    const insertVersionedFileQuery = `INSERT INTO files 
-                                    (username,device,directory, enc_directory,filename,
-                                      enc_filename,hashed_filename,last_modified,hashvalue,
-                                      enc_hashvalue,versions,size,snapshot,salt,iv)
-                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                                    ON DUPLICATE KEY
-                                    UPDATE versions = versions + 1;`;
-    req.headers.query = insertVersionedFileQuery;
+    console.log("modified triggered");
+    uuid = req.headers.uuid_new;
+    console.log(uuid);
+    console.log(origin);
+    const insertQuery = `INSERT INTO data.files 
+                      (username,device,directory,uuid,origin,filename,
+                      last_modified,hashvalue,
+                      enc_hashvalue,versions,size,salt,iv)
+                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                      ON DUPLICATE KEY
+                      UPDATE versions = versions + 1;`;
+    req.headers.query = insertQuery;
     req.headers.queryValues = [
       username,
       device,
       directory,
-      enc_directory,
+      uuid,
+      origin,
       filename,
-      enc_filename,
-      hashed_filename,
       isoString,
       checksum,
       enc_file_checksum,
       versions,
       size,
-      snapshot,
       salt,
       iv,
     ];
+    console.log(req.headers.queryValues);
+    // filename = hashed_filename;
+    // const insertVersionedFileQuery = `INSERT INTO files
+    //                                 (username,device,directory, enc_directory,filename,
+    //                                   enc_filename,hashed_filename,last_modified,hashvalue,
+    //                                   enc_hashvalue,versions,size,snapshot,salt,iv)
+    //                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    //                                 ON DUPLICATE KEY
+    //                                 UPDATE versions = versions + 1;`;
+    // const versionsFileQuery = `INSERT INTO data.versions (original_uuid)`;
+    // req.headers.query = insertVersionedFileQuery;
+    // req.headers.queryValues = [
+    //   username,
+    //   device,
+    //   directory,
+    //   enc_directory,
+    //   filename,
+    //   enc_filename,
+    //   hashed_filename,
+    //   isoString,
+    //   checksum,
+    //   enc_file_checksum,
+    //   versions,
+    //   size,
+    //   snapshot,
+    //   salt,
+    //   iv,
+    // ];
     await sqlExecute(req, res, next);
   }
   next();
@@ -171,7 +197,7 @@ router.post(
   verifyToken,
   createDir,
   uploadFile,
-  updateUtime,
+  // updateUtime,
   buildSQLQueryToUpdateFiles,
   createFolderIndex,
   (req, res) => {

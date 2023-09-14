@@ -12,10 +12,10 @@ await dotenv.config();
 
 import archiver from "archiver";
 
-const fileQuery = `SELECT filename,directory,device,salt,iv FROM data.files where id=?`;
-const filesInSubDirectories = `SELECT filename,salt,iv,directory FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
-const filesInCurrentDirectory = `SELECT filename,salt,iv,directory FROM files WHERE  username = ? AND device = ? AND directory = ?`;
-const filesInDevice = `SELECT filename,salt,iv,directory FROM  data.files where username = ? AND device = ?`;
+const fileQuery = `SELECT filename,directory,device,salt,iv FROM data.files where uuid=?`;
+const filesInSubDirectories = `SELECT uuid,filename,salt,iv,directory FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
+const filesInCurrentDirectory = `SELECT uuid,filename,salt,iv,directory FROM files WHERE  username = ? AND device = ? AND directory = ?`;
+const filesInDevice = `SELECT uuid,filename,salt,iv,directory FROM  data.files where username = ? AND device = ?`;
 const root = process.env.VARIABLE;
 
 const sqlExecute = async (req, res) => {
@@ -81,8 +81,9 @@ const extractFilesInforFromDB = async (req, res, next) => {
     await getFilesInDirectory(req, res);
     const dirFiles = req.headers.data;
     for (let j = 0; j < dirFiles.length; j++) {
-      const { filename, salt, iv, directory } = dirFiles[j];
-      const filePath = path.join(root, username, device, directory, filename);
+      const { filename, salt, iv, directory, uuid } = dirFiles[j];
+      // const filePath = path.join(root, username, device, directory, filename);
+      const filePath = path.join(root, username, uuid);
       const actualPath = path.join(device, directory);
       const fileData = {
         filename,
@@ -100,11 +101,13 @@ const extractFilesInforFromDB = async (req, res, next) => {
 
   for (let i = 0; i < files.length; i++) {
     req.headers.query = fileQuery;
-    req.headers.queryValues = [parseInt(files[i].id)];
+    req.headers.queryValues = [files[i].id];
     await sqlExecute(req, res);
     const { salt, iv, device, filename, directory } =
       req.headers.queryStatus[0];
-    const filePath = path.join(root, username, device, directory, filename);
+    // const filePath = path.join(root, username, device, directory, filename);
+    const filePath = path.join(root, username, files[i].id);
+
     req.files.push({
       filename,
       salt,
@@ -114,57 +117,6 @@ const extractFilesInforFromDB = async (req, res, next) => {
     });
   }
   next();
-};
-
-const archiveDirectoriesAndFiles = (req, res, next) => {
-  const archive = archiver("zip", {
-    zlib: { level: 9 }, // Sets the compression level.
-  });
-  archive.on("end", () => {
-    console.log(archive.pointer() + " total bytes");
-    console.debug("end event");
-    next();
-  });
-  archive.on("warning", function (err) {
-    if (err.code === "ENOENT") {
-      // log warning
-      console.error(err);
-    } else {
-      // throw error
-      console.error(err);
-    }
-  });
-  archive.on("error", function (err) {
-    console.error(err);
-    res.status(500).send(err);
-    res.end();
-  });
-  archive.pipe(res);
-  const files = req.files;
-  try {
-    for (let i = 0; i < files.length; i++) {
-      const inputFile = fs.createReadStream(files[i].path);
-      const fileStream = decryptFile(
-        inputFile,
-        files[i].salt,
-        files[i].iv,
-        "sandy86kumar"
-      );
-      inputFile.on("error", (err) => {
-        res.send(err);
-        res.end();
-      });
-
-      archive.append(fileStream, {
-        name: files[i].filename,
-        prefix: files[i].relativePath,
-      });
-    }
-  } catch (err) {
-    res.send(err);
-    res.end();
-  }
-  archive.finalize();
 };
 
 router.post("/", verifyToken, extractFilesInforFromDB, (req, res) => {

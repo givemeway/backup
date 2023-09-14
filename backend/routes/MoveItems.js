@@ -235,10 +235,8 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
         const val = [to_device, pth, username, from_device, "/" + from];
         await sqlExecute(con, query, val);
       }
-      // next();
     })
     .catch((err) => {
-      // res.status(500).json(err);
       console.error(err);
       failed.push(err);
     });
