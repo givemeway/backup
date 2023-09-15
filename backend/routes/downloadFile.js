@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
+import { decryptFile } from "../utils/decrypt.js";
 import dotenv from "dotenv";
 await dotenv.config();
 import path from "node:path";
@@ -30,6 +31,7 @@ router.get("/", verifyToken, async (req, res) => {
     const dir = req.query.dir;
     const filename = req.query.file;
     const uuid = req.query.uuid;
+    console.log(uuid);
 
     // const filePath = path.join(root, username, device, dir, filename);
     const filePath = path.join(root, username, uuid);
@@ -44,12 +46,19 @@ router.get("/", verifyToken, async (req, res) => {
     const readStream = fs.createReadStream(filePath, {
       highWaterMark: 1024 * 1024 * 1,
     });
+    const decryptStream = decryptFile(
+      readStream,
+      rows[0]["salt"],
+      rows[0]["iv"],
+      "sandy86kumar"
+    );
     // res.set("Content-Length", fileStat.size);
     res.set("Content-Length", rows[0]["size"]);
     res.set("salt", rows[0]["salt"]);
     res.set("iv", rows[0]["iv"]);
     res.set("Content-Disposition", `attachment; filename="${filename}"`);
-    readStream.pipe(res);
+    decryptStream.pipe(res);
+    // readStream.pipe(res);
   } catch (err) {
     res.status(500).json(err);
   }

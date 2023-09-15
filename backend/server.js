@@ -13,11 +13,16 @@ import { getCurrentDirFiles } from "./routes/getCurrentDirFiles.js";
 import { downloadFile } from "./routes/downloadFile.js";
 import { createConnection } from "./controllers/createConnection.js";
 import { sqlConn } from "./controllers/sql_conn.js";
+import { createShare } from "./routes/createShare.js";
+import mongoConn from "./controllers/mongo_conn.js";
 import { searchFiles } from "./routes/searchItems.js";
 import { csrftoken } from "./routes/getCSRFToken.js";
 import { deleteItems } from "./routes/deleteItems.js";
 import { downloadItems } from "./routes/DownloadItems.js";
 import { moveItems } from "./routes/MoveItems.js";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+await dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -27,6 +32,19 @@ import path, { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+(async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+})();
+
+mongoose.Promise = global.Promise;
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -39,7 +57,6 @@ try {
   const dataDBConnection = createConnection("data");
   const usersDBConnection = createConnection("customers");
   const cryptoDBConnection = createConnection("cryptoKeys");
-
   app.use("/app/login", sqlConn(usersDBConnection), login);
   app.use("/app/receiveFiles", sqlConn(dataDBConnection), receiveFiles);
   app.use("/app/test", sqlConn(dataDBConnection), test);
@@ -57,6 +74,7 @@ try {
   app.use("/app/delete", sqlConn(dataDBConnection), deleteItems);
   app.use("/app/downloadFolders", sqlConn(dataDBConnection), downloadItems);
   app.use("/app/moveItems", sqlConn(dataDBConnection), moveItems);
+  app.use("/app/get_download_zip", createShare);
 } catch (err) {
   console.log(err);
 }

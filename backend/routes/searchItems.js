@@ -8,7 +8,7 @@ router.use(csrf({ cookie: true }));
 const findFiles = async (req, res, next) => {
   const param = req.query.search;
   req.headers.data = {};
-  const fileSearchQuery = `SELECT id,filename,directory,size,versions,last_modified,iv,salt,device 
+  const fileSearchQuery = `SELECT uuid,filename,directory,size,versions,last_modified,iv,salt,device 
                     FROM data.files
                     WHERE 
                     MATCH(filename)
