@@ -67,7 +67,7 @@ router.use((req, res, next) => {
   next();
 });
 
-const getFilesFoldersFromShare = async (req, res, next) => {
+const getFilesFoldersFromDownloadID = async (req, res, next) => {
   try {
     const share = await Share.findById({ _id: req.query.key }).exec();
     req.body.files = share.files.map((file) => ({
@@ -144,7 +144,7 @@ const extractFilesInforFromDB = async (req, res, next) => {
 router.get(
   "/",
   verifyToken,
-  getFilesFoldersFromShare,
+  getFilesFoldersFromDownloadID,
   extractFilesInforFromDB,
   async (req, res) => {
     const worker = new Worker("../backend/controllers/DownloadWorker.js");

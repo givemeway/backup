@@ -27,6 +27,7 @@ ALTER TABLE data.files ADD FULLTEXT(filename);
 
 CREATE TABLE `directories`(
     `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `uuid` VARCHAR(36) NOT NULL,
     `username` VARCHAR(70) NOT NULL,
     `device` VARCHAR(70) NOT NULL,
     `folder` VARCHAR(255) NOT NULL,

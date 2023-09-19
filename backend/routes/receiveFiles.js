@@ -4,6 +4,7 @@ import { createDir } from "../controllers/createFilePath.js";
 import { uploadFile } from "../controllers/uploadFile.js";
 import updateUtime from "../controllers/updateUtimes.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
+import { v4 as uuidv4 } from "uuid";
 import { origin } from "../config/config.js";
 import bodyParser from "body-parser";
 import csrf from "csurf";
@@ -48,12 +49,18 @@ async function insertPath(
       : pathComponents.slice(0, index + 1).join("/");
   if (path !== "/" && pathComponents[index].length > 0) {
     const sql = `INSERT INTO directories 
-    (username,device,folder,path) 
-    VALUES (?, ?, ?, ?) 
+    (uuid,username,device,folder,path) 
+    VALUES (?, ?, ?, ?, ?) 
     ON DUPLICATE KEY 
     UPDATE id = LAST_INSERT_ID(id)`;
     req.headers.query = sql;
-    req.headers.queryValues = [username, device, pathComponents[index], path];
+    req.headers.queryValues = [
+      uuidv4(),
+      username,
+      device,
+      pathComponents[index],
+      path,
+    ];
     await sqlExecute(req, res, next);
     parentId = req.headers.queryStatus.insertId;
   }

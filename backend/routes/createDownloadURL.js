@@ -35,7 +35,6 @@ const get_download_url = async (req, res) => {
     res
       .status(200)
       .json({ key: data._id.toString(), success: true, msg: "success" });
-    console.log(data._id.toString(), req.path + "/sh/" + data._id.toString());
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, msg: err });
@@ -44,4 +43,4 @@ const get_download_url = async (req, res) => {
 
 router.post("/", verifyToken, get_download_url);
 
-export { router as createShare };
+export { router as createDownloadURL };

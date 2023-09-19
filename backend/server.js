@@ -13,13 +13,14 @@ import { getCurrentDirFiles } from "./routes/getCurrentDirFiles.js";
 import { downloadFile } from "./routes/downloadFile.js";
 import { createConnection } from "./controllers/createConnection.js";
 import { sqlConn } from "./controllers/sql_conn.js";
-import { createShare } from "./routes/createShare.js";
+import { createDownloadURL } from "./routes/createDownloadURL.js";
 import mongoConn from "./controllers/mongo_conn.js";
 import { searchFiles } from "./routes/searchItems.js";
 import { csrftoken } from "./routes/getCSRFToken.js";
 import { deleteItems } from "./routes/deleteItems.js";
 import { downloadItems } from "./routes/DownloadItems.js";
 import { moveItems } from "./routes/MoveItems.js";
+import { share } from "./routes/share.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 await dotenv.config();
@@ -72,9 +73,14 @@ try {
   app.use("/app/search", sqlConn(dataDBConnection), searchFiles);
   app.use("/app/csrftoken", csrftoken);
   app.use("/app/delete", sqlConn(dataDBConnection), deleteItems);
-  app.use("/app/downloadFolders", sqlConn(dataDBConnection), downloadItems);
+  app.use("/app/downloadItems", sqlConn(dataDBConnection), downloadItems);
+  app.use("/app/sh", sqlConn(dataDBConnection), share);
   app.use("/app/moveItems", sqlConn(dataDBConnection), moveItems);
-  app.use("/app/get_download_zip", createShare);
+  app.use(
+    "/app/get_download_zip",
+    sqlConn(dataDBConnection),
+    createDownloadURL
+  );
 } catch (err) {
   console.log(err);
 }
