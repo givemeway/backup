@@ -20,7 +20,7 @@ import { csrftoken } from "./routes/getCSRFToken.js";
 import { deleteItems } from "./routes/deleteItems.js";
 import { downloadItems } from "./routes/DownloadItems.js";
 import { moveItems } from "./routes/MoveItems.js";
-import { share } from "./routes/share.js";
+import { createShare } from "./routes/createShareLink.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 await dotenv.config();
@@ -30,6 +30,7 @@ const app = express();
 
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
+import { share } from "./routes/share.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -74,6 +75,7 @@ try {
   app.use("/app/csrftoken", csrftoken);
   app.use("/app/delete", sqlConn(dataDBConnection), deleteItems);
   app.use("/app/downloadItems", sqlConn(dataDBConnection), downloadItems);
+  app.use("/app/createShare", sqlConn(dataDBConnection), createShare);
   app.use("/app/sh", sqlConn(dataDBConnection), share);
   app.use("/app/moveItems", sqlConn(dataDBConnection), moveItems);
   app.use(

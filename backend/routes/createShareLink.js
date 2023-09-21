@@ -2,8 +2,9 @@ import express from "express";
 const router = express.Router();
 import csrf from "csurf";
 
-import { origin } from "../config/config.js";
+import { origin, serverDomain } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
+import Share from "../models/mongodb.js";
 
 router.use(csrf({ cookie: true }));
 
@@ -46,6 +47,34 @@ const getShareLink = async (req, res, next) => {
   }
 };
 
-router.post("/", verifyToken, getShareLink);
+const createShareLink = async (req, res) => {
+  const folders = req.body.directories;
+  const files = req.body.files;
+  const username = req.user.Username;
+  const mapFiles = files.map((file) => ({ file: file.file, uuid: file.id }));
+  const mapFolders = folders.map((folder) => ({
+    folder: folder.folder,
+    path: folder.path,
+  }));
 
-export { router as createDownloadURL };
+  const obj = {
+    username,
+    files: mapFiles,
+    folders: mapFolders,
+  };
+  try {
+    const data = await Share.create(obj);
+    res.status(200).json({
+      success: true,
+      msg: "success",
+      url: `${serverDomain}/sh/sh?k=${data._id.toString()}&t=mi&dl=0`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, msg: err });
+  }
+};
+
+router.post("/", verifyToken, createShareLink);
+
+export { router as createShare };
