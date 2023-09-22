@@ -55,6 +55,7 @@ const createShareLink = async (req, res) => {
   const mapFolders = folders.map((folder) => ({
     folder: folder.folder,
     path: folder.path,
+    uuid: folder.uuid,
   }));
 
   const obj = {

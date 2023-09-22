@@ -9,6 +9,7 @@ const fileSchema = new Schema({
 const folderSchema = new Schema({
   folder: String,
   path: String,
+  uuid: String,
 });
 const shareSchema = new Schema({
   username: String,
