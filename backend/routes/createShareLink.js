@@ -4,7 +4,8 @@ import csrf from "csurf";
 
 import { origin, serverDomain } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
-import Share from "../models/mongodb.js";
+import { Transfer, Share } from "../models/mongodb.js";
+import { createConnection } from "../controllers/createConnection.js";
 
 router.use(csrf({ cookie: true }));
 
@@ -48,31 +49,101 @@ const getShareLink = async (req, res, next) => {
 };
 
 const createShareLink = async (req, res) => {
+  const type = req.query.t;
   const folders = req.body.directories;
   const files = req.body.files;
-  const username = req.user.Username;
-  const mapFiles = files.map((file) => ({ file: file.file, uuid: file.id }));
-  const mapFolders = folders.map((folder) => ({
-    folder: folder.folder,
-    path: folder.path,
-    uuid: folder.uuid,
-  }));
-
-  const obj = {
-    username,
-    files: mapFiles,
-    folders: mapFolders,
-  };
+  const owner = req.user.Username;
+  const mapFiles = files.map((file) => ({ uuid: file.id }));
+  const mapFolders = folders.map((folder) => ({ uuid: folder.uuid }));
+  const userDBCon = await createConnection("customers");
+  let fullname;
   try {
-    const data = await Share.create(obj);
-    res.status(200).json({
-      success: true,
-      msg: "success",
-      url: `${serverDomain}/sh/sh?k=${data._id.toString()}&t=mi&dl=0`,
-    });
+    const query = `SELECT first_name, last_name from customers.users where username=?;`;
+    const val = [owner];
+    const [rows] = await userDBCon.execute(query, val);
+    const { first_name, last_name } = rows[0];
+    fullname = `${first_name} ${last_name}`;
+    await userDBCon.end();
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, msg: err });
+  }
+
+  let obj = {
+    owner,
+    sharedBy: fullname,
+  };
+
+  let success_msg = {
+    success: true,
+    msg: "success",
+  };
+
+  if (type === "fi") {
+    try {
+      obj.uuid = mapFiles[0].uuid;
+      obj.item = "fi";
+      const fi = await Share.findOneAndUpdate(
+        { uuid: obj.uuid },
+        {
+          created_at: Date.now(),
+          expires_at: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        }
+      );
+      if (fi === null) {
+        const data = await Share.create(obj);
+        success_msg.url = `${serverDomain}/sh/fi/${data._id.toString()}/${
+          mapFiles[0].name
+        }?k=${obj.uuid}&dl=0`;
+        res.status(200).json(success_msg);
+      } else {
+        success_msg.url = `${serverDomain}/sh/fi/${fi._id.toString()}/${
+          mapFiles[0].name
+        }?k=${obj.uuid}&dl=0`;
+        res.status(200).json(success_msg);
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ success: false, msg: err });
+    }
+  } else if (type === "fo") {
+    try {
+      obj.uuid = mapFolders[0].uuid;
+      obj.item = "fo";
+      const fo = await Share.findOneAndUpdate(
+        { uuid: obj.uuid },
+        {
+          created_at: Date.now(),
+          expires_at: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        }
+      );
+      if (fo === null) {
+        const data = await Share.create(obj);
+        success_msg.url = `${serverDomain}/sh/fo/${data._id.toString()}/h?k=${
+          obj.uuid
+        }&dl=0`;
+        res.status(200).json(success_msg);
+      } else {
+        success_msg.url = `${serverDomain}/sh/fo/${fo._id.toString()}/h?k=${
+          obj.uuid
+        }&dl=0`;
+        res.status(200).json(success_msg);
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ success: false, msg: err });
+    }
+  } else {
+    try {
+      obj.files = mapFiles;
+      obj.folders = mapFolders;
+      const data = await Transfer.create(obj);
+      success_msg.url = `${serverDomain}/sh/t/${data._id.toString()}`;
+      res.status(200).json(success_msg);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ success: false, msg: err });
+    }
   }
 };
 

@@ -81,8 +81,8 @@ const decryptFileMiddleWare = async (req, res, next) => {
   next();
 };
 
-router.get("/", decryptFileMiddleWare, (req, res) => {
-  res.status(200).json("file encrypted");
+router.get("*", (req, res) => {
+  res.status(200).json({ query: req.query, path: req.path });
   // res.status(200).json("fileEncrypted");
 });
 

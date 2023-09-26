@@ -4,7 +4,7 @@ import csrf from "csurf";
 
 import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
-import Share from "../models/mongodb.js";
+import { DownloadZip } from "../models/mongodb.js";
 
 router.use(csrf({ cookie: true }));
 
@@ -18,7 +18,7 @@ router.use("/", (req, res, next) => {
 const get_download_url = async (req, res) => {
   const folders = req.body.directories;
   const files = req.body.files;
-  const username = req.user.Username;
+  const owner = req.user.Username;
   const mapFiles = files.map((file) => ({ file: file.file, uuid: file.id }));
   const mapFolders = folders.map((folder) => ({
     folder: folder.folder,
@@ -26,12 +26,12 @@ const get_download_url = async (req, res) => {
   }));
 
   const obj = {
-    username,
+    owner,
     files: mapFiles,
     folders: mapFolders,
   };
   try {
-    const data = await Share.create(obj);
+    const data = await DownloadZip.create(obj);
     res
       .status(200)
       .json({ key: data._id.toString(), success: true, msg: "success" });

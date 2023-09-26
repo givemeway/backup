@@ -9,7 +9,7 @@ import { verifyToken } from "../auth/auth.js";
 import { decryptFile } from "../utils/decrypt.js";
 import { Worker } from "node:worker_threads";
 import { Readable } from "node:stream";
-import Share from "../models/mongodb.js";
+import { DownloadZip } from "../models/mongodb.js";
 await dotenv.config();
 
 import archiver from "archiver";
@@ -69,7 +69,7 @@ router.use((req, res, next) => {
 
 const getFilesFoldersFromDownloadID = async (req, res, next) => {
   try {
-    const share = await Share.findById({ _id: req.query.key }).exec();
+    const share = await DownloadZip.findById({ _id: req.query.key }).exec();
     req.body.files = share.files.map((file) => ({
       id: file.uuid,
     }));
