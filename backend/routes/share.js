@@ -7,10 +7,15 @@ import { getFilesSubfolders } from "./getFilesSubfolders.js";
 import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 
-const getFiles = (folderdata, username) => {
+const getFiles = (folderdata, username, nav) => {
   const { path, device } = folderdata;
   const dirPart = path.split("/").slice(2).join("/");
-  const currentDir = dirPart === "" ? "/" : dirPart;
+  let currentDir = dirPart === "" ? "/" : dirPart;
+  const curNavPath = nav.split("/").slice(1).join("/");
+  if (nav !== "h") {
+    currentDir =
+      currentDir === "/" ? curNavPath : currentDir + "/" + curNavPath;
+  }
   const [start, end] = [0, 10000];
   const fileQuery = `select uuid,origin,filename,salt,iv,directory,versions,last_modified,size,device 
                                   from data.files 
@@ -26,8 +31,8 @@ const getFiles = (folderdata, username) => {
   return { fileQuery, fileValues };
 };
 
-const getFolders = (folderdata, username) => {
-  const { path, device } = folderdata;
+const getFolders = (folderdata, username, nav) => {
+  let { path, device } = folderdata;
   const [start, end] = [0, 1000000];
   let regex = ``;
   if (device === "/") {
@@ -35,6 +40,9 @@ const getFolders = (folderdata, username) => {
   } else if (path === "/") {
     regex = `^/${device}(/[^/]+)$`;
   } else {
+    if (nav !== "h") {
+      path = path + "/" + nav.split("/").slice(1).join("/");
+    }
     regex = `^${path}(/[^/]+)$`;
   }
   const folderQuery = `SELECT 
@@ -70,8 +78,8 @@ router.use("/", (req, res, next) => {
 });
 
 const getFilesFoldersFromShareID = async (req, res, next) => {
-  const { t, k, id, dl } = req.query;
-  console.log({ t, k, id, dl });
+  const { t, k, id, dl, nav } = req.query;
+  console.log({ t, k, id, dl, nav });
   if (t === "fi") {
     try {
       const shareExists = await Share.findById({ _id: id }).exec();
@@ -98,12 +106,14 @@ const getFilesFoldersFromShareID = async (req, res, next) => {
         const folderdata = await sqlExecute(con, query, val);
         const { fileQuery, fileValues } = getFiles(
           folderdata[0],
-          shareExists.owner
+          shareExists.owner,
+          nav
         );
         const files = await sqlExecute(con, fileQuery, fileValues);
         const { folderQuery, folderValues } = getFolders(
           folderdata[0],
-          shareExists.owner
+          shareExists.owner,
+          nav
         );
         const directories = await sqlExecute(con, folderQuery, folderValues);
         res.status(200).json({ files, directories });
