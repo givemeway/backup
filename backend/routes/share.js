@@ -1,11 +1,8 @@
 import express from "express";
 const router = express.Router();
-import csrf from "csurf";
 import { Share, Transfer } from "../models/mongodb.js";
-import { getFilesSubfolders } from "./getFilesSubfolders.js";
-
-import { origin } from "../config/config.js";
-import { verifyToken } from "../auth/auth.js";
+import cookie from "cookie";
+import { origin, domain } from "../config/config.js";
 
 const getFiles = (folderdata, username, nav) => {
   const { path, device } = folderdata;
@@ -43,6 +40,7 @@ const getFolders = (folderdata, username, nav) => {
     if (nav !== "h") {
       path = path + "/" + nav.split("/").slice(1).join("/");
     }
+
     regex = `^${path}(/[^/]+)$`;
   }
   const folderQuery = `SELECT 
@@ -77,6 +75,8 @@ router.use("/", (req, res, next) => {
   next();
 });
 
+const browseTransferData = async (req, res, next) => {};
+
 const getFilesFoldersFromShareID = async (req, res, next) => {
   const { t, k, id, dl, nav } = req.query;
   console.log({ t, k, id, dl, nav });
@@ -100,7 +100,7 @@ const getFilesFoldersFromShareID = async (req, res, next) => {
     try {
       const shareExists = await Share.findById({ _id: id }).exec();
       if (shareExists) {
-        const query = `SELECT folder,path,device from data.directories where uuid=?`;
+        const query = `SELECT folder,path,device,uuid from data.directories where uuid=?`;
         const val = [k];
         const con = req.headers.connection;
         const folderdata = await sqlExecute(con, query, val);
@@ -116,7 +116,13 @@ const getFilesFoldersFromShareID = async (req, res, next) => {
           nav
         );
         const directories = await sqlExecute(con, folderQuery, folderValues);
-        res.status(200).json({ files, directories });
+
+        res.status(200).json({
+          files,
+          directories,
+          home: folderdata[0].folder,
+          path: folderdata[0].path,
+        });
       } else {
         res
           .status(404)
@@ -127,22 +133,44 @@ const getFilesFoldersFromShareID = async (req, res, next) => {
       res.status(500).json({ success: false, msg: err });
     }
   } else {
+    console.log("inside transfer");
     try {
+      const { nav_tracking } = req.query;
+      if (nav_tracking) return browseTransferData(req, res, next);
       const share = await Transfer.findById({ _id: id }).exec();
       if (share) {
-        const files = share.files.map((file) => ({
-          uuid: file.uuid,
-        }));
-        const directories = share.folders.map((folder) => ({
-          uuid: folder.uuid,
-        }));
-        res.status(200).json({ files, directories });
+        const query = `SELECT filename,uuid,directory,device,origin,versions,size from data.files where uuid=?`;
+
+        const con = req.headers.connection;
+        let files = [];
+        const db_files = Object.fromEntries(share.files);
+        for (const [key, value] of Object.entries(db_files)) {
+          const val = [key];
+          const fi = await sqlExecute(con, query, val);
+          files.push(fi[0]);
+        }
+        const folderQuery = `SELECT folder,path,device,uuid from data.directories where uuid=?`;
+        let directories = [];
+        const db_folders = Object.fromEntries(share.folders);
+        for (const [key, value] of Object.entries(db_folders)) {
+          const val = [key];
+          const fo = await sqlExecute(con, folderQuery, val);
+          directories.push(fo[0]);
+        }
+        const dir = directories[0].path.split("/").slice(0, -1).join("/");
+        res.status(200).json({
+          files,
+          directories,
+          home: "/",
+          path: dir === "" ? "/" : dir,
+        });
       } else {
         res
           .status(404)
           .json({ sucess: false, msg: "Shared Expired or Deleted" });
       }
     } catch (err) {
+      console.error(err);
       res.status(500).json({ success: false, msg: err });
     }
   }

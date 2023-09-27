@@ -16,8 +16,8 @@ const transferSchema = new Schema({
   sharedBy: String,
   sharedWith: { type: Map },
   password: { type: String, default: "" },
-  files: [fileSchema],
-  folders: [folderSchema],
+  files: { type: Map },
+  folders: { type: Map },
   created_at: { type: Date, default: Date.now },
   expires_at: {
     type: Date,

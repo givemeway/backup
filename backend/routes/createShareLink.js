@@ -53,8 +53,12 @@ const createShareLink = async (req, res) => {
   const folders = req.body.directories;
   const files = req.body.files;
   const owner = req.user.Username;
-  const mapFiles = files.map((file) => ({ uuid: file.id }));
-  const mapFolders = folders.map((folder) => ({ uuid: folder.uuid }));
+  // const mapFiles = files.map((file) => ({ uuid: file.id }));
+  let mapFiles = {};
+  files.forEach((file) => (mapFiles[file.id] = file.file));
+  // const mapFolders = folders.map((folder) => ({ uuid: folder.uuid }));
+  let mapFolders = {};
+  folders.forEach((folder) => (mapFolders[folder.uuid] = folder.folder));
   const userDBCon = await createConnection("customers");
   let fullname;
   try {
@@ -81,7 +85,7 @@ const createShareLink = async (req, res) => {
 
   if (type === "fi") {
     try {
-      obj.uuid = mapFiles[0].uuid;
+      obj.uuid = Object.keys(mapFiles)[0];
       obj.item = "fi";
       const fi = await Share.findOneAndUpdate(
         { uuid: obj.uuid },
@@ -93,12 +97,12 @@ const createShareLink = async (req, res) => {
       if (fi === null) {
         const data = await Share.create(obj);
         success_msg.url = `${serverDomain}/sh/fi/${data._id.toString()}/${
-          mapFiles[0].name
+          mapFiles[obj.uuid]
         }?k=${obj.uuid}&dl=0`;
         res.status(200).json(success_msg);
       } else {
         success_msg.url = `${serverDomain}/sh/fi/${fi._id.toString()}/${
-          mapFiles[0].name
+          mapFiles[obj.uuid]
         }?k=${obj.uuid}&dl=0`;
         res.status(200).json(success_msg);
       }
@@ -108,7 +112,7 @@ const createShareLink = async (req, res) => {
     }
   } else if (type === "fo") {
     try {
-      obj.uuid = mapFolders[0].uuid;
+      obj.uuid = Object.keys(mapFolders)[0];
       obj.item = "fo";
       const fo = await Share.findOneAndUpdate(
         { uuid: obj.uuid },
