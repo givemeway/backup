@@ -49,4 +49,22 @@ CREATE TABLE `versions` (
     UNIQUE(`original_uuid`,`uuid`)
 );
 
+CREATE TABLE `deleted` (
+    `username` VARCHAR(70) NOT NULL,
+    `device` VARCHAR(70) NOT NULL,
+    `directory` VARCHAR(255) NOT NULL,
+    `uuid` VARCHAR(36) PRIMARY KEY,
+    `origin` VARCHAR(36) NOT NULL,
+    `filename` VARCHAR(255) NOT NULL,
+    `last_modified` DATETIME NOT NULL,
+    `hashvalue` CHAR(64) NOT NULL,
+    `enc_hashvalue` CHAR(64) NOT NULL,
+    `versions` INTEGER NOT NULL,
+    `size` BIGINT UNSIGNED NOT NULL,
+    `salt` VARCHAR(64) NOT NULL,
+    `iv` VARCHAR(64) NOT NULL,
+    UNIQUE(`username`,`device`,`directory`,`filename`,`uuid`),
+    FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
+)
+
 CREATE INDEX versions_device_index ON versions(original_uuid);

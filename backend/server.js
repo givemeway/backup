@@ -9,6 +9,7 @@ import { test } from "./routes/test.js";
 import { signup } from "./routes/signup.js";
 import { fetchFilesInfo } from "./routes/fetchFilesInfo.js";
 import { getFilesSubfolders } from "./routes/getFilesSubfolders.js";
+import { subFolders } from "./routes/getSubFolders.js";
 import { getCurrentDirFiles } from "./routes/getCurrentDirFiles.js";
 import { downloadFile } from "./routes/downloadFile.js";
 import { createConnection } from "./controllers/createConnection.js";
@@ -65,6 +66,7 @@ try {
   app.use("/app/signup", sqlConn(usersDBConnection), signup);
   app.use("/app/sendFileInfo", sqlConn(dataDBConnection), fetchFilesInfo);
   app.use("/app/browseFolder", sqlConn(dataDBConnection), getFilesSubfolders);
+  app.use("/app/getSubFolders", sqlConn(dataDBConnection), subFolders);
   app.use(
     "/app/getCurrentDirFiles",
     sqlConn(dataDBConnection),
