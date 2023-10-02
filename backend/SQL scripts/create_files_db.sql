@@ -63,8 +63,9 @@ CREATE TABLE `deleted` (
     `size` BIGINT UNSIGNED NOT NULL,
     `salt` VARCHAR(64) NOT NULL,
     `iv` VARCHAR(64) NOT NULL,
+    `deletion_date` DATETIME NOT NULL,
     UNIQUE(`username`,`device`,`directory`,`filename`,`uuid`),
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
-)
+);
 
 CREATE INDEX versions_device_index ON versions(original_uuid);

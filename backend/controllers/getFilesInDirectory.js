@@ -21,7 +21,7 @@ const getFilesInDirectory = async (req, res, next) => {
   req.headers.data = [];
   if (currentdirectory === "/") {
     const filesInOtherDirectories = `SELECT 
-                                    directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin
+                                    directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
                                     FROM  
                                     data.files 
                                     where 
@@ -34,12 +34,12 @@ const getFilesInDirectory = async (req, res, next) => {
     req.headers.data.push(...req.headers.queryStatus);
   } else {
     const regex_other_files = `^${currentdirectory}(/[^/]+)+$`;
-    const filesInOtherDirectories = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
+    const filesInOtherDirectories = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
     req.headers.query = filesInOtherDirectories;
     req.headers.queryValues = [username, devicename, regex_other_files];
     await sqlExecute(req, res, next);
     req.headers.data.push(...req.headers.queryStatus);
-    const filesInCurrentDirectory = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin FROM files WHERE  username = ? AND device = ? AND directory = ?`;
+    const filesInCurrentDirectory = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions FROM files WHERE  username = ? AND device = ? AND directory = ?`;
 
     req.headers.query = filesInCurrentDirectory;
     req.headers.queryValues = [username, devicename, currentdirectory];

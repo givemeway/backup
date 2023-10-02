@@ -24,13 +24,33 @@ const deleteFiles = (req, res, next) => {
   const failed = [];
   req.files.forEach(async (file) => {
     try {
-      await fs.unlinkSync(file.path);
-      const deleteQuery = `DELETE FROM
-                           data.files
-                           WHERE id = ?;`;
-      req.headers.query = deleteQuery;
+      // await fs.unlinkSync(file.path);
+      const selectQuery = `SELECT * from data.files where uuid = ?`;
+      req.headers.query = selectQuery;
       req.headers.queryValues = [file.id];
       await sqlExecute(req, res, next);
+      const values = Object.values(req.headers.queryStatus[0]);
+      const moveToDeletedQuery = `INSERT INTO data.deleted 
+      (   username,device,directory,uuid,
+        origin,filename,last_modified,
+        hashvalue,enc_hashvalue,versions,
+        size,salt,iv,deletion_date
+        ) 
+        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+      req.headers.query = moveToDeletedQuery;
+      const deletion_date = new Date();
+      const isoString = deletion_date
+        .toISOString()
+        .substring(0, 19)
+        .replace("T", " ");
+      console.log([...values, isoString]);
+      req.headers.queryValues = [...values, isoString];
+      await sqlExecute(req, res, next);
+      const deleteQuery = `DELETE FROM
+      data.files
+      WHERE uuid = ?;`;
+      req.headers.query = deleteQuery;
+      req.headers.queryValues = [file.id];
     } catch (err) {
       failed.push({ ...file, error: err.message });
       console.log(err.message);
