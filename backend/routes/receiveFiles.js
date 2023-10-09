@@ -48,11 +48,9 @@ async function insertPath(
       ? "/"
       : pathComponents.slice(0, index + 1).join("/");
   if (path !== "/" && pathComponents[index].length > 0) {
-    const sql = `INSERT INTO directories 
-    (uuid,username,device,folder,path) 
-    VALUES (?, ?, ?, ?, ?) 
-    ON DUPLICATE KEY 
-    UPDATE id = LAST_INSERT_ID(id)`;
+    const sql = `INSERT IGNORE INTO directories 
+    (uuid,username,device,folder,path,created_at) 
+    VALUES (?, ?, ?, ?, ?,NOW());`;
     req.headers.query = sql;
     req.headers.queryValues = [
       uuidv4(),

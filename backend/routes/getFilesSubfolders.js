@@ -54,7 +54,7 @@ const getFolders = async (req, res, next) => {
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
   const foldersQuery = `SELECT 
-                        id,uuid,folder,path 
+                        uuid,folder,path,created_at 
                         FROM data.directories 
                         WHERE username = ?
                         AND

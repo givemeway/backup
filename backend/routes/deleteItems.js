@@ -30,27 +30,23 @@ const deleteFiles = (req, res, next) => {
       req.headers.queryValues = [file.id];
       await sqlExecute(req, res, next);
       const values = Object.values(req.headers.queryStatus[0]);
-      const moveToDeletedQuery = `INSERT INTO data.deleted 
-      (   username,device,directory,uuid,
-        origin,filename,last_modified,
-        hashvalue,enc_hashvalue,versions,
-        size,salt,iv,deletion_date
-        ) 
-        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+      const moveToDeletedQuery = `INSERT INTO data.deleted_files 
+                                  ( username,device,directory,uuid,
+                                    origin,filename,last_modified,
+                                    hashvalue,enc_hashvalue,versions,
+                                    size,salt,iv,deletion_date
+                                  ) 
+                                  values(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())`;
       req.headers.query = moveToDeletedQuery;
-      const deletion_date = new Date();
-      const isoString = deletion_date
-        .toISOString()
-        .substring(0, 19)
-        .replace("T", " ");
-      console.log([...values, isoString]);
-      req.headers.queryValues = [...values, isoString];
+      console.log([...values]);
+      req.headers.queryValues = [...values];
       await sqlExecute(req, res, next);
       const deleteQuery = `DELETE FROM
-      data.files
-      WHERE uuid = ?;`;
+                          data.files
+                          WHERE uuid = ?;`;
       req.headers.query = deleteQuery;
       req.headers.queryValues = [file.id];
+      await sqlExecute(req, res, next);
     } catch (err) {
       failed.push({ ...file, error: err.message });
       console.log(err.message);
@@ -65,7 +61,7 @@ const deleteFolders = (req, res, next) => {
   const failed = [];
   req.folders.forEach(async (folder) => {
     try {
-      await fs.rmSync(folder.folderPath, { recursive: true });
+      // await fs.rmSync(folder.folderPath, { recursive: true });
       if (folder.dir === "/") {
         const filesInOtherDirectories = `DELETE 
                                         FROM  
@@ -74,8 +70,31 @@ const deleteFolders = (req, res, next) => {
                                         username = ?
                                         AND
                                         device = ?`;
-        req.headers.query = filesInOtherDirectories;
-        req.headers.queryValues = [folder.username, folder.device];
+        const query = `START TRANSACTION;
+                      INSERT INTO data.deleted_files 
+                      (username,device,directory,uuid,
+                        origin,filename,last_modified,
+                        hashvalue,enc_hashvalue,versions,
+                        size,salt,iv,deletion_date)
+                      SELECT 
+                      username,device,directory,uuid,
+                      origin,filename,last_modified,
+                      hashvalue,enc_hashvalue,versions,
+                      size,salt,iv,NOW() 
+                      FROM data.files 
+                      WHERE username = ? AND device = ?;
+                      
+                      DELETE FROM data.files
+                      WHERE username = ? AND device = ?;
+                      COMMIT;`;
+        req.headers.query = query;
+        // req.headers.queryValues = [folder.username, folder.device];
+        req.headers.queryValues = [
+          folder.username,
+          folder.device,
+          folder.username,
+          folder.device,
+        ];
         await sqlExecute(req, res, next);
       } else {
         const deleteSubFolderQuery = `DELETE FROM
@@ -85,12 +104,49 @@ const deleteFolders = (req, res, next) => {
                                     AND directory 
                                     REGEXP ?`;
         const regexp = `^${folder.dir}(/[^/]+)*$`;
-        req.headers.query = deleteSubFolderQuery;
-        req.headers.queryValues = [folder.username, folder.device, regexp];
+        const filesDeleteQuery = `START TRANSACTION;
+                                  INSERT INTO data.deleted_files 
+                                  ( 
+                                    username,device,directory,uuid,
+                                    origin,filename,last_modified,
+                                    hashvalue,enc_hashvalue,versions,
+                                    size,salt,iv,deletion_date
+                                  )
+                                  SELECT 
+                                  username,device,directory,uuid,
+                                  origin,filename,last_modified,
+                                  hashvalue,enc_hashvalue,versions,
+                                  size,salt,iv,NOW() 
+                                  FROM data.files 
+                                  WHERE username = ? AND device = ?;
+                                  
+                                  DELETE FROM data.files
+                                  WHERE username = ? AND device = ?;
+                                  COMMIT;`;
+        req.headers.query = filesDeleteQuery;
+        // req.headers.queryValues = [folder.username, folder.device, regexp];
+        req.headers.queryValues = [
+          folder.username,
+          folder.device,
+          regexp,
+          folder.username,
+          folder.device,
+          regexp,
+        ];
       }
-
+      await sqlExecute(req, res, next);
       let regex;
       regex = `^${folder.path}(/[^/]+)*$`;
+      const foldersDeleteQuery = `START TRANSACTION;
+                                    INSERT INTO data.deleted_folders 
+                                    (uuid,username,device,folder,path,created_at,deleted)
+                                    SELECT uuid,username,device,folder,path,created_at,NOW() 
+                                    FROM data.directories 
+                                    WHERE username = ? AND device = ? AND path REGEXP ?;
+                                    
+                                    DELETE FROM data.directories
+                                    WHERE username = ? AND device = ? AND path REGEXP ?;
+                                    COMMIT;`;
       const foldersQuery = `DELETE
                             FROM data.directories 
                             WHERE 
@@ -99,8 +155,16 @@ const deleteFolders = (req, res, next) => {
                             device = ?
                             AND
                             path REGEXP ?`;
-      req.headers.query = foldersQuery;
-      req.headers.queryValues = [folder.username, folder.device, regex];
+      req.headers.query = foldersDeleteQuery;
+      // req.headers.queryValues = [folder.username, folder.device, regex];
+      req.headers.queryValues = [
+        folder.username,
+        folder.device,
+        regex,
+        folder.username,
+        folder.device,
+        regex,
+      ];
       await sqlExecute(req, res, next);
     } catch (err) {
       console.log(err);

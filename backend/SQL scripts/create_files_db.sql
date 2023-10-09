@@ -26,12 +26,12 @@ CREATE INDEX directory_index ON files(directory);
 ALTER TABLE data.files ADD FULLTEXT(filename); 
 
 CREATE TABLE `directories`(
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
     `uuid` VARCHAR(36) NOT NULL,
     `username` VARCHAR(70) NOT NULL,
     `device` VARCHAR(70) NOT NULL,
     `folder` VARCHAR(255) NOT NULL,
     `path` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME NOT NULL,
      UNIQUE(`username`,`device`,`folder`,`path`),
      FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
@@ -49,7 +49,7 @@ CREATE TABLE `versions` (
     UNIQUE(`original_uuid`,`uuid`)
 );
 
-CREATE TABLE `deleted` (
+CREATE TABLE `deleted_files` (
     `username` VARCHAR(70) NOT NULL,
     `device` VARCHAR(70) NOT NULL,
     `directory` VARCHAR(255) NOT NULL,
@@ -66,6 +66,18 @@ CREATE TABLE `deleted` (
     `deletion_date` DATETIME NOT NULL,
     UNIQUE(`username`,`device`,`directory`,`filename`,`uuid`),
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
+);
+
+CREATE TABLE `deleted_folders`(
+    `uuid` VARCHAR(36) NOT NULL,
+    `username` VARCHAR(70) NOT NULL,
+    `device` VARCHAR(70) NOT NULL,
+    `folder` VARCHAR(255) NOT NULL,
+    `path` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    `deleted` DATETIME NOT NULL,
+     UNIQUE(`username`,`device`,`folder`,`path`),
+     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
 
 CREATE INDEX versions_device_index ON versions(original_uuid);

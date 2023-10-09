@@ -44,7 +44,7 @@ const getFolders = (folderdata, username, nav, type) => {
     regex = `^${path}(/[^/]+)$`;
   }
   const folderQuery = `SELECT 
-                        id,uuid,folder,path 
+                        uuid,folder,path 
                         FROM data.directories 
                         WHERE username = ?
                         AND
