@@ -39,16 +39,6 @@ CREATE TABLE `directories`(
 CREATE INDEX path_index ON directories(path);
 ALTER TABLE data.directories ADD FULLTEXT(folder); 
 
-CREATE TABLE `versions` (
-    `original_uuid` VARCHAR(36) NOT NULL,
-    `uuid` VARCHAR(36) NOT NULL,
-    `hashvalue` VARCHAR(64) NOT NULL,
-    `size` BIGINT UNSIGNED NOT NULL,
-    `salt` VARCHAR(64) NOT NULL,
-    `iv` VARCHAR(64) NOT NULL,
-    UNIQUE(`original_uuid`,`uuid`)
-);
-
 CREATE TABLE `deleted_files` (
     `username` VARCHAR(70) NOT NULL,
     `device` VARCHAR(70) NOT NULL,
@@ -80,4 +70,3 @@ CREATE TABLE `deleted_folders`(
      FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
 
-CREATE INDEX versions_device_index ON versions(original_uuid);
