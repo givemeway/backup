@@ -8,7 +8,7 @@ CREATE TABLE `files`(
     `username` VARCHAR(70) NOT NULL,
     `device` VARCHAR(70) NOT NULL,
     `directory` VARCHAR(255) NOT NULL,
-    `uuid` VARCHAR(36) PRIMARY KEY,
+    `uuid` VARCHAR(36) NOT NULL,
     `origin` VARCHAR(36) NOT NULL,
     `filename` VARCHAR(255) NOT NULL,
     `last_modified` DATETIME NOT NULL,
