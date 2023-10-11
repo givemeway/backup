@@ -54,51 +54,27 @@ router.use((req, res, next) => {
 const insertFileInDB = async (con, device, username, filename, dir, to) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const query = `SELECT origin,versions from data.files where filename = ? AND directory = ? AND device = ? AND username =?`;
+      const query = `INSERT INTO data.files 
+                        SELECT username,?,?,uuid,origin,filename,last_modified,
+                        hashvalue,enc_hashvalue,versions,size,salt,iv 
+                        FROM data.files 
+                        WHERE filename = ? AND directory = ? AND device = ? AND username = ?;`;
       let val = [];
       if (to === "/") {
-        val = [filename, "/", "/", username];
+        val = ["/", "/", filename, dir, device, username];
       } else {
         const to_device = to.split("/")[0];
         const to_dirParts = to.split("/").slice(1).join("/");
         const to_dir = to_dirParts === "" ? "/" : to_dirParts;
-        val = [filename, to_dir, to_device, username];
+        val = [to_device, to_dir, filename, dir, device, username];
       }
       console.log(val);
-      const result = await sqlExecute(con, query, val);
-      if (result.length === 0) {
-        // TODO insert without any changes
-        const query = `INSERT INTO data.files 
-                        SELECT * from data.files 
-                        WHERE filename = ? AND directory = ? AND device = ? AND username = ? 
-                        ON duplicate KEY 
-                        UPDATE directory = ?, device = ?`;
-        if (to === "/") {
-          val = [filename, dir, device, username, "/", "/"];
-        } else {
-          const to_device = to.split("/")[0];
-          const to_dirParts = to.split("/").slice(1).join("/");
-          const to_dir = to_dirParts === "" ? "/" : to_dirParts;
-          val = [filename, dir, device, username, to_dir, to_device];
-        }
-        console.log(val);
-        console.log(to);
-        await sqlExecute(con, query, val);
-      } else {
-        // TODO merge both and their version
-        reject({
-          success: false,
-          msg: "duplicate",
-          filename: filename,
-          dir: dir,
-          device: device,
-        });
-      }
+      await sqlExecute(con, query, val);
       resolve();
     } catch (err) {
       reject({
         success: false,
-        msg: err,
+        msg: err.sqlMessage,
         filename: filename,
         dir: dir,
         device: device,
@@ -126,8 +102,12 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
 
     const updateDB = async (dst_dir, src_dir) => {
       try {
-        const filesInDirRootQuery = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND username= ?`;
-        const values = [dst_dir, to_device, src_dir, from_device, username];
+        const filesInDirRootQuery = `INSERT INTO data.files 
+                                      SELECT username,?,?,uuid,origin,filename,last_modified,
+                                      hashvalue,enc_hashvalue,versions,size,salt,iv 
+                                      FROM data.files 
+                                      WHERE directory = ? AND device = ? AND username = ?;`;
+        const values = [to_device, dst_dir, src_dir, from_device, username];
         await sqlExecute(con, filesInDirRootQuery, values);
         const foldersInDirRoot = await getFolders(
           con,
@@ -147,7 +127,10 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
           } else {
             dstPath = to_dir_ori + folder.path.split(from)[1];
           }
-          const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ? `;
+          const query = `INSERT INTO data.directories 
+                          SELECT uuid,username,?,folder,?,NOW() 
+                          FROM data.directories 
+                          WHERE username = ? AND device = ? AND path = ?`;
           const pth = `/${to_device}/${dstPath}`;
           const val = [to_device, pth, username, from_device, folder.path];
           await sqlExecute(con, query, val);
@@ -160,7 +143,10 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
 
     updateDB(to_dir_ori, from_dir)
       .then(async () => {
-        const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ?`;
+        const query = `INSERT INTO data.directories 
+                        SELECT uuid,username,?,folder,?,NOW() 
+                        FROM data.directories 
+                        WHERE username = ? AND device = ? AND path = ?`;
         if (to === "/") {
           const pth = `/${to_device}`;
           const val = [to_device, pth, username, from_device, "/" + from];
@@ -201,16 +187,16 @@ const organizeItems = async (req, res, next) => {
     }
   }
 
-  //   for (const folder of folders ? folders : []) {
-  //     try {
-  //       const folderPath = folder.path.split("/").slice(1).join("/");
-  //       const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
-  //       console.log("processing....");
-  //       await organizeItemsInDB(con, username, folderPath, dst, failed);
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   }
+  for (const folder of folders ? folders : []) {
+    try {
+      const folderPath = folder.path.split("/").slice(1).join("/");
+      const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
+      console.log("processing....");
+      await organizeItemsInDB(con, username, folderPath, dst, failed);
+    } catch (err) {
+      console.error(err);
+    }
+  }
   console.log("returned the value...........");
   res.status(200).json({
     success: true,
