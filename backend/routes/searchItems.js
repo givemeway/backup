@@ -22,7 +22,7 @@ const findFiles = async (req, res, next) => {
 const findFolders = async (req, res, next) => {
   const param = req.query.search;
   req.headers.data.files = [...req.headers.queryStatus];
-  const folderSearchQuery = `SELECT id,folder,path
+  const folderSearchQuery = `SELECT folder,path
                             FROM data.directories
                             WHERE
                             MATCH(folder)
