@@ -35,7 +35,7 @@ const getFolders = async (con, currentDir, username, devicename) => {
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
   const foldersQuery = `SELECT 
-                        id,folder,path,device 
+                        folder,path,device 
                         FROM data.directories 
                         WHERE username = ?
                         AND

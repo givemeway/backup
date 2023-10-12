@@ -16,7 +16,8 @@ const sqlExecute = (con, query, values) => {
       const [rows, fields] = await con.execute(query, values);
       resolve(rows);
     } catch (error) {
-      console.log(error);
+      console.log("here is the error");
+      console.error(error);
       reject(error);
     }
   });
@@ -35,7 +36,7 @@ const getFolders = async (con, currentDir, username, devicename) => {
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
   const foldersQuery = `SELECT 
-                        id,folder,path,device 
+                        folder,path,device 
                         FROM data.directories 
                         WHERE username = ?
                         AND
@@ -109,12 +110,20 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
                                       WHERE directory = ? AND device = ? AND username = ?;`;
         const values = [to_device, dst_dir, src_dir, from_device, username];
         await sqlExecute(con, filesInDirRootQuery, values);
+      } catch (err) {
+        console.log("hit this error = inside this place");
+        failed.push(err);
+      }
+      try {
+        console.log("inside this block");
+        console.log(src_dir, from_device);
         const foldersInDirRoot = await getFolders(
           con,
           src_dir,
           username,
           from_device
         );
+        console.log(foldersInDirRoot, "---------[]");
         if (foldersInDirRoot.length === 0) {
           return;
         }
@@ -127,23 +136,26 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
           } else {
             dstPath = to_dir_ori + folder.path.split(from)[1];
           }
-          const query = `INSERT INTO data.directories 
+          const query = `INSERT IGNORE INTO data.directories 
                           SELECT uuid,username,?,folder,?,NOW() 
                           FROM data.directories 
-                          WHERE username = ? AND device = ? AND path = ?`;
+                          WHERE username = ? AND device = ? AND path = ?
+                          ON DUPLICATE KEY 
+                          `;
           const pth = `/${to_device}/${dstPath}`;
           const val = [to_device, pth, username, from_device, folder.path];
+          console.log(val);
           await sqlExecute(con, query, val);
           await updateDB(dstPath, dir);
         }
       } catch (err) {
-        failed.push(src_dir);
+        failed.push(err);
       }
     };
 
     updateDB(to_dir_ori, from_dir)
       .then(async () => {
-        const query = `INSERT INTO data.directories 
+        const query = `INSERT IGNORE INTO data.directories 
                         SELECT uuid,username,?,folder,?,NOW() 
                         FROM data.directories 
                         WHERE username = ? AND device = ? AND path = ?`;

@@ -128,7 +128,9 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
 
 const renameItems = async (req, res, next) => {
   const username = req.user.Username;
+  console.log(req.body);
   const { type, to, uuid } = req.body;
+
   let failed = [];
   if (type === FILE) {
     const query = `UPDATE data.files SET filename = ? WHERE uuid = ?`;
