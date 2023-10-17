@@ -133,7 +133,7 @@ const renameItems = async (req, res, next) => {
 
   let failed = [];
   if (type === FILE) {
-    const query = `UPDATE data.files SET filename = ? WHERE uuid = ?`;
+    const query = `UPDATE data.files SET filename = ? WHERE origin = ?`;
     const con = req.headers.connection;
     await sqlExecute(con, query, [to, uuid]);
   } else if (type === FOLDER) {
