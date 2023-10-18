@@ -16,32 +16,59 @@ const sqlExecute = (con, query, values) => {
       const [rows, fields] = await con.execute(query, values);
       resolve(rows);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       reject(error);
     }
   });
 };
 
+// const getFolders = async (con, currentDir, username, devicename) => {
+//   const [start, end] = [0, 1000000];
+//   let regex_2 = ``;
+//   let path = ``;
+//   if (devicename === "/") {
+//     regex_2 = `^\\.?(/[^/]+)$`;
+//   } else if (currentDir === "/") {
+//     regex_2 = `^\\.?/${devicename}(/[^/]+)$`;
+//   } else {
+//     path = `/${devicename}/${currentDir}`;
+//     regex_2 = `^\\.?${path}(/[^/]+)$`;
+//   }
+//   const foldersQuery = `SELECT
+//                         folder,path,device
+//                         FROM data.directories
+//                         WHERE username = ?
+//                         AND
+//                         path REGEXP ? limit ${start},${end};`;
+//   const rows = await sqlExecute(con, foldersQuery, [username, regex_2]);
+//   return rows;
+// };
 const getFolders = async (con, currentDir, username, devicename) => {
-  const [start, end] = [0, 1000000];
-  let regex_2 = ``;
-  let path = ``;
-  if (devicename === "/") {
-    regex_2 = `^\\.?(/[^/]+)$`;
-  } else if (currentDir === "/") {
-    regex_2 = `^\\.?/${devicename}(/[^/]+)$`;
-  } else {
-    path = `/${devicename}/${currentDir}`;
-    regex_2 = `^\\.?${path}(/[^/]+)$`;
-  }
-  const foldersQuery = `SELECT 
-                        folder,path,device 
-                        FROM data.directories 
-                        WHERE username = ?
-                        AND
-                        path REGEXP ? limit ${start},${end};`;
-  const rows = await sqlExecute(con, foldersQuery, [username, regex_2]);
-  return rows;
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [start, end] = [0, 1000000];
+      let regex_2 = ``;
+      let path = ``;
+      if (devicename === "/") {
+        regex_2 = `^\\.?(/[^/]+)$`;
+      } else if (currentDir === "/") {
+        regex_2 = `^\\.?/${devicename}(/[^/]+)$`;
+      } else {
+        path = `/${devicename}/${currentDir}`;
+        regex_2 = `^\\.?${path}(/[^/]+)$`;
+      }
+      const foldersQuery = `SELECT 
+                            folder,path,device 
+                            FROM data.directories 
+                            WHERE username = ?
+                            AND
+                            path REGEXP ? limit ${start},${end};`;
+      const rows = await sqlExecute(con, foldersQuery, [username, regex_2]);
+      resolve(rows);
+    } catch (err) {
+      reject(err);
+    }
+  });
 };
 
 router.use((req, res, next) => {
@@ -105,36 +132,61 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
     const to_dir_ori = to_dirParts === "" ? "/" : to_dirParts;
 
     const updateDB = async (dst_dir, src_dir) => {
+      let foldersInDirRoot = [];
+      let rows = [];
       try {
-        const filesInDirRootQuery = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND username= ?`;
-        const values = [dst_dir, to_device, src_dir, from_device, username];
-        await sqlExecute(con, filesInDirRootQuery, values);
-        const foldersInDirRoot = await getFolders(
-          con,
-          src_dir,
-          username,
-          from_device
-        );
-        if (foldersInDirRoot.length === 0) {
+        const checkFolder = `SELECT 1 from data.files WHERE directory = ? AND device = ? AND username = ?;`;
+        const checkValues = [dst_dir, to_device, username];
+        rows = await sqlExecute(con, checkFolder, checkValues);
+      } catch (err) {
+        failed.push(err.message);
+        return;
+      } finally {
+        if (rows.length > 0) {
+          failed.push({
+            succes: false,
+            msg: "Folder / Device exist",
+            dir: dst_dir,
+            device: to_device,
+          });
           return;
-        }
-        for (const folder of foldersInDirRoot) {
-          const dirParts = folder.path.split("/").slice(2).join("/");
-          const dir = dirParts === "" ? "/" : dirParts;
-          let dstPath;
-          if (to_dir_ori === "/") {
-            dstPath = folder.path.split(from)[1].split("/").slice(1).join("/");
-          } else {
-            dstPath = to_dir_ori + folder.path.split(from)[1];
+        } else {
+          const filesInDirRootQuery = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND username= ?`;
+          const values = [dst_dir, to_device, src_dir, from_device, username];
+          try {
+            await sqlExecute(con, filesInDirRootQuery, values);
+            foldersInDirRoot = await getFolders(
+              con,
+              src_dir,
+              username,
+              from_device
+            );
+          } catch (err) {
+            failed.push(err);
           }
-          const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ? `;
-          const pth = `/${to_device}/${dstPath}`;
-          const val = [to_device, pth, username, from_device, folder.path];
+        }
+      }
+      if (foldersInDirRoot.length === 0) {
+        return;
+      }
+      for (const folder of foldersInDirRoot) {
+        const dirParts = folder.path.split("/").slice(2).join("/");
+        const dir = dirParts === "" ? "/" : dirParts;
+        let dstPath;
+        if (to_dir_ori === "/") {
+          dstPath = folder.path.split(from)[1].split("/").slice(1).join("/");
+        } else {
+          dstPath = to_dir_ori + folder.path.split(from)[1];
+        }
+        const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ? `;
+        const pth = `/${to_device}/${dstPath}`;
+        const val = [to_device, pth, username, from_device, folder.path];
+        try {
           await sqlExecute(con, query, val);
           await updateDB(dstPath, dir);
+        } catch (err) {
+          failed.push(err.message);
         }
-      } catch (err) {
-        failed.push(src_dir);
       }
     };
 
@@ -154,8 +206,8 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
       })
       .catch((err) => {
         console.error(err);
-        failed.push(err);
-        reject();
+        failed.push(err.message);
+        reject(err.message);
       });
   });
 };

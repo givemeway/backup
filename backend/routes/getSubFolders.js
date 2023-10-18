@@ -14,6 +14,7 @@ const getFolders = async (req, res, next) => {
 
   let regex = ``;
   req.headers.data = {};
+  console.log(path);
   if (path === "/") {
     regex = `^(/[^/]+)$`;
   } else {
@@ -34,6 +35,7 @@ const getFolders = async (req, res, next) => {
     JSON.stringify(req.headers.queryStatus)
   );
   console.log("done1");
+  console.log(req.headers.data);
   res.json(req.headers.data);
 };
 
