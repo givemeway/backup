@@ -44,7 +44,7 @@ const getFolders = (folderdata, username, nav, type) => {
     regex = `^${path}(/[^/]+)$`;
   }
   const folderQuery = `SELECT 
-                        uuid,folder,path 
+                        uuid,folder,path,created_at 
                         FROM data.directories 
                         WHERE username = ?
                         AND
@@ -83,7 +83,7 @@ const browseTransferData = async (req, res, next) => {
     if (data === null) {
       res.status(404).json({ sucess: false, msg: "Shared Expired or deleted" });
     } else {
-      const query = `SELECT folder,path,device,uuid from data.directories where uuid=?`;
+      const query = `SELECT folder,path,device,uuid,created_at from data.directories where uuid=?`;
       const val = [k];
       const con = req.headers.connection;
       const folderdata = await sqlExecute(con, query, val);
@@ -139,7 +139,7 @@ const getFilesFoldersFromShareID = async (req, res, next) => {
     try {
       const shareExists = await Share.findById({ _id: id }).exec();
       if (shareExists) {
-        const query = `SELECT folder,path,device,uuid from data.directories where uuid=?`;
+        const query = `SELECT folder,path,device,uuid,created_at from data.directories where uuid=?`;
         const val = [k];
         const con = req.headers.connection;
         const folderdata = await sqlExecute(con, query, val);
@@ -190,7 +190,7 @@ const getFilesFoldersFromShareID = async (req, res, next) => {
             const fi = await sqlExecute(con, query, val);
             files.push(fi[0]);
           }
-          const folderQuery = `SELECT folder,path,device,uuid from data.directories where uuid=?`;
+          const folderQuery = `SELECT folder,path,device,uuid,created_at from data.directories where uuid=?`;
           let directories = [];
           const db_folders = Object.fromEntries(share.folders);
           for (const [key, value] of Object.entries(db_folders)) {

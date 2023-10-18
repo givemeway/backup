@@ -34,8 +34,7 @@ const getFolders = async (req, res, next) => {
   req.headers.data["folders"] = JSON.parse(
     JSON.stringify(req.headers.queryStatus)
   );
-  console.log("done1");
-  console.log(req.headers.data);
+  console.log("Expanded");
   res.json(req.headers.data);
 };
 
