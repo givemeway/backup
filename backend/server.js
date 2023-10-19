@@ -24,6 +24,7 @@ import { moveItems } from "./routes/MoveItems.js";
 import { copyItems } from "./routes/CopyItems.js";
 import { createShare } from "./routes/createShareLink.js";
 import { renameItem } from "./routes/RenameItem.js";
+import { getTrash } from "./routes/getTrash.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 await dotenv.config();
@@ -84,6 +85,7 @@ try {
   app.use("/app/moveItems", sqlConn(dataDBConnection), moveItems);
   app.use("/app/copyItems", sqlConn(dataDBConnection), copyItems);
   app.use("/app/renameItem", sqlConn(dataDBConnection), renameItem);
+  app.use("/app/trash", sqlConn(dataDBConnection), getTrash);
   app.use(
     "/app/get_download_zip",
     sqlConn(dataDBConnection),
