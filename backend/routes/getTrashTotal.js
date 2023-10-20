@@ -27,26 +27,15 @@ router.use((req, res, next) => {
 
 router.get("/", verifyToken, async (req, res) => {
   const username = req.user.Username;
-  const { begin, page } = req.query;
-  console.log(begin, page);
-  const trashFilesQuery = `SELECT uuid,origin,filename,salt,iv,
-                          directory,versions,last_modified,size,device 
-                          from data.deleted_files 
-                          WHERE username = ? limit ?,?`;
-  const trashFoldersQuery = `SELECT device,path,folder,uuid,created_at 
-                            from data.deleted_folders 
-                            WHERE username = ? limit ?,?`;
+  const trashFileCount = `SELECT count(*) from data.deleted_files where username = ?`;
+  const trashFolderCount = `SELECT count(*) from data.deleted_folders where username = ?`;
   req.data = {};
   const con = req.headers.connection;
-  const files = await sqlExecute(con, trashFilesQuery, [username, begin, page]);
-  const folders = await sqlExecute(con, trashFoldersQuery, [
-    username,
-    begin,
-    page,
-  ]);
-  req.data["files"] = files;
-  req.data["folders"] = folders;
+  const fileCount = await sqlExecute(con, trashFileCount, [username]);
+  const folderCount = await sqlExecute(con, trashFolderCount, [username]);
+  req.data["fileCount"] = Object.values(fileCount[0])[0];
+  req.data["folderCount"] = Object.values(folderCount[0])[0];
   res.status(200).json(req.data);
 });
 
-export { router as getTrash };
+export { router as getTrashTotal };
