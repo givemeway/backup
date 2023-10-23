@@ -12,6 +12,7 @@ const getFiles = async (req, res, next) => {
   const username = req.headers.username;
   const devicename = req.headers.devicename;
   const [start, end] = [0, 10000];
+  const filesCountQuery = `SELECT count(*) from data.files where username = ? and device = ? and directory = ?;`;
   const filesInCurrentDirQuery = `select uuid,origin,filename,salt,iv,directory,versions,last_modified,size,device 
                                   from data.files 
                                   WHERE 
@@ -53,6 +54,7 @@ const getFolders = async (req, res, next) => {
     path = `/${devicename}/${currentDir}`;
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
+  const folderCount = `select count(*) from data.directories where username = ? and path regexp ?`;
   const foldersQuery = `SELECT 
                         uuid,folder,path,created_at 
                         FROM data.directories 

@@ -33,12 +33,12 @@ const deleteFiles = (req, res, next) => {
                                   ( username,device,directory,uuid,
                                     origin,filename,last_modified,
                                     hashvalue,enc_hashvalue,versions,
-                                    size,salt,iv,deletion_date
+                                    size,salt,iv,deletion_date,deletion_type
                                   ) 
-                                  values(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())`;
+                                  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
       req.headers.query = moveToDeletedQuery;
       console.log([...values]);
-      req.headers.queryValues = [...values];
+      req.headers.queryValues = [...values, req.deletionTime, "file"];
       await sqlExecute(req, res, next);
       const deleteQuery = `DELETE FROM
                           data.files
@@ -63,14 +63,19 @@ const deleteFolders = (req, res, next) => {
     try {
       if (folder.dir === "/") {
         const insertIntoTable = `INSERT INTO data.deleted_files 
-                                  SELECT  *,NOW() 
+                                  SELECT  *,?,? 
                                   FROM data.files 
                                   WHERE username = ? AND device = ?;`;
         const deleteFromSourceTable = `DELETE FROM data.files
                                       WHERE username = ? AND device = ?`;
 
         await connection.beginTransaction();
-        connection.query(insertIntoTable, [folder.username, folder.device]);
+        connection.query(insertIntoTable, [
+          req.deletionTime,
+          "folder",
+          folder.username,
+          folder.device,
+        ]);
         connection.query(deleteFromSourceTable, [
           folder.username,
           folder.device,
@@ -79,13 +84,15 @@ const deleteFolders = (req, res, next) => {
       } else {
         const regexp = `^${folder.dir}(/[^/]+)*$`;
         const insertIntoTable = `INSERT INTO data.deleted_files 
-                                SELECT *,NOW() 
+                                SELECT *,?,? 
                                 FROM data.files 
                                 WHERE username = ? AND device = ? AND directory REGEXP ?`;
         const deleteFromSourceTable = `DELETE FROM data.files
                                     WHERE username = ? AND device = ? AND directory REGEXP ?`;
         await connection.beginTransaction();
         connection.query(insertIntoTable, [
+          req.deletionTime,
+          "folder",
           folder.username,
           folder.device,
           regexp,
@@ -99,13 +106,16 @@ const deleteFolders = (req, res, next) => {
       }
       const regex = `^${folder.path}(/[^/]+)*$`;
       const insertIntoTable = `INSERT INTO data.deleted_folders 
-                                SELECT *,NOW() 
+                                SELECT *,?,?,? 
                                 FROM data.directories 
                                 WHERE username = ? AND device = ? AND path REGEXP ?`;
       const deleteFromSourceTable = `DELETE FROM data.directories
                                     WHERE username = ? AND device = ? AND path REGEXP ?`;
       await connection.beginTransaction();
       connection.query(insertIntoTable, [
+        req.deletionTime,
+        folder.path,
+        folder.name,
         folder.username,
         folder.device,
         regex,
@@ -117,7 +127,7 @@ const deleteFolders = (req, res, next) => {
       ]);
       await connection.commit();
     } catch (err) {
-      console.log(err);
+      console.error(err);
       failed.push({ ...folder, error: err });
       await connection.rollback();
     }
@@ -130,7 +140,10 @@ const getDeletedItemsList = (req, res, next) => {
   const username = req.user.Username;
   const folders = JSON.parse(req.body.directories);
   const files = JSON.parse(req.body.fileIds);
-
+  const deletionTime = new Date()
+    .toISOString()
+    .substring(0, 19)
+    .replace("T", " ");
   const filesToDelete = files.map((file) => {
     const params = new URLSearchParams(file.path);
     const device = params.get("device");
@@ -147,6 +160,7 @@ const getDeletedItemsList = (req, res, next) => {
     const folderPath = path.join(root, username, device, dir);
     return {
       id: folder.id,
+      name: folder.folder,
       device,
       username,
       dir,
@@ -157,6 +171,7 @@ const getDeletedItemsList = (req, res, next) => {
   req.files = filesToDelete;
   req.folders = foldersToDelete;
   req.failed = { files: [], folders: [] };
+  req.deletionTime = deletionTime;
   console.log(filesToDelete);
   next();
 };

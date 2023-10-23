@@ -25,6 +25,7 @@ import { copyItems } from "./routes/CopyItems.js";
 import { createShare } from "./routes/createShareLink.js";
 import { renameItem } from "./routes/RenameItem.js";
 import { getTrash } from "./routes/getTrash.js";
+import { restoreItems } from "./routes/RestoreItems.js";
 import { getTrashTotal } from "./routes/getTrashTotal.js";
 
 import mongoose from "mongoose";
@@ -89,6 +90,7 @@ try {
   app.use("/app/renameItem", sqlConn(dataDBConnection), renameItem);
   app.use("/app/trash", sqlConn(dataDBConnection), getTrash);
   app.use("/app/trashTotal", sqlConn(dataDBConnection), getTrashTotal);
+  app.use("/app/restoreItems", sqlConn(dataDBConnection), restoreItems);
   app.use(
     "/app/get_download_zip",
     sqlConn(dataDBConnection),

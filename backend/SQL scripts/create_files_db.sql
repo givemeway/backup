@@ -54,6 +54,7 @@ CREATE TABLE `deleted_files` (
     `salt` VARCHAR(64) NOT NULL,
     `iv` VARCHAR(64) NOT NULL,
     `deletion_date` DATETIME NOT NULL,
+    `deletion_type` VARCHAR(6) NOT NULL,
     UNIQUE(`username`,`device`,`directory`,`filename`,`uuid`),
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
@@ -66,6 +67,8 @@ CREATE TABLE `deleted_folders`(
     `path` VARCHAR(255) NOT NULL,
     `created_at` DATETIME NOT NULL,
     `deleted` DATETIME NOT NULL,
+    `rel_path` VARCHAR(255) NOT NULL,
+    `rel_name` VARCHAR(255) NOT NULL,
      UNIQUE(`username`,`device`,`folder`,`path`),
      FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
