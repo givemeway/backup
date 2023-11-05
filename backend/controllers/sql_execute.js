@@ -3,7 +3,8 @@ await dotenv.config();
 
 const sqlExecute = async (req, res, next) => {
   try {
-    const con = req.headers.connection;
+    // const con = req.headers.connection;
+    const con = req.db;
     const [rows, fields] = await con.execute(req.headers.query, [
       ...req.headers.queryValues,
     ]);

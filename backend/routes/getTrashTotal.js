@@ -2,6 +2,7 @@ import express from "express";
 import { origin } from "../config/config.js";
 import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
+import { pool } from "../server.js";
 const router = express.Router();
 
 const sqlExecute = (con, query, values) => {
@@ -26,16 +27,23 @@ router.use((req, res, next) => {
 });
 
 router.get("/", verifyToken, async (req, res) => {
-  const username = req.user.Username;
-  const trashFileCount = `SELECT count(*) from data.deleted_files where username = ?`;
-  const trashFolderCount = `SELECT count(*) from data.deleted_folders where username = ?`;
-  req.data = {};
-  const con = req.headers.connection;
-  const fileCount = await sqlExecute(con, trashFileCount, [username]);
-  const folderCount = await sqlExecute(con, trashFolderCount, [username]);
-  req.data["fileCount"] = Object.values(fileCount[0])[0];
-  req.data["folderCount"] = Object.values(folderCount[0])[0];
-  res.status(200).json(req.data);
+  try {
+    const username = req.user.Username;
+    const trashFileCount = `SELECT count(*) from deleted_files.files where username = ?`;
+    const trashFolderCount = `SELECT count(*) from deleted_directories.directories where username = ?`;
+    req.data = {};
+    const con = req.db;
+    const folderCon = await pool["deleted_directories"].getConnection();
+    const fileCount = await sqlExecute(con, trashFileCount, [username]);
+    const folderCount = await sqlExecute(folderCon, trashFolderCount, [
+      username,
+    ]);
+    req.data["fileCount"] = Object.values(fileCount[0])[0];
+    req.data["folderCount"] = Object.values(folderCount[0])[0];
+    res.status(200).json(req.data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 export { router as getTrashTotal };

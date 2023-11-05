@@ -5,6 +5,7 @@ await dotenv.config();
 import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
+import { pool } from "../server.js";
 
 const root = process.env.VARIABLE;
 
@@ -59,10 +60,11 @@ const getFolders = async (con, currentDir, username, devicename) => {
       }
       const foldersQuery = `SELECT 
                             folder,path,device 
-                            FROM data.directories 
+                            FROM directories.directories 
                             WHERE username = ?
                             AND
-                            path REGEXP ? limit ${start},${end};`;
+                            path REGEXP ? 
+                            LIMIT ${start},${end};`;
       const rows = await sqlExecute(con, foldersQuery, [username, regex_2]);
       resolve(rows);
     } catch (err) {
@@ -82,12 +84,22 @@ const organizeFileInDB = async (con, device, username, filename, dir, to) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (to === "/") {
-        const query = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND filename = ? AND username= ?`;
+        const query = `UPDATE files.files 
+                      SET directory = ?, device = ? 
+                      WHERE directory = ? 
+                      AND device = ? 
+                      AND filename = ? 
+                      AND username= ?`;
         const val = ["/", "/", dir, device, filename, username];
         await sqlExecute(con, query, val);
         resolve();
       } else {
-        const query = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND filename = ? AND username= ?`;
+        const query = `UPDATE files.files 
+                      SET directory = ?, device = ? 
+                      WHERE directory = ? 
+                      AND device = ? 
+                      AND filename = ? 
+                      AND username= ?`;
         const to_device = to.split("/")[0];
         const to_dirParts = to.split("/").slice(1).join("/");
         const to_dir = to_dirParts === "" ? "/" : to_dirParts;
@@ -101,7 +113,14 @@ const organizeFileInDB = async (con, device, username, filename, dir, to) => {
   });
 };
 
-const organizeItemsInDB = async (con, username, from, to, failed) => {
+const organizeItemsInDB = async (
+  fileCon,
+  folderCon,
+  username,
+  from,
+  to,
+  failed
+) => {
   // 1. Get the files in the Root ( directory chosen to be moved)
   // 2. Update the path of the files
   // 3. Get the folders in the root ( directory chosen to be moved)
@@ -135,9 +154,12 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
       let foldersInDirRoot = [];
       let rows = [];
       try {
-        const checkFolder = `SELECT 1 from data.files WHERE directory = ? AND device = ? AND username = ?;`;
+        const checkFolder = `SELECT 1 from files.files 
+                              WHERE directory = ? 
+                              AND device = ? 
+                              AND username = ?;`;
         const checkValues = [dst_dir, to_device, username];
-        rows = await sqlExecute(con, checkFolder, checkValues);
+        rows = await sqlExecute(fileCon, checkFolder, checkValues);
       } catch (err) {
         failed.push(err.message);
         return;
@@ -151,10 +173,14 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
           });
           return;
         } else {
-          const filesInDirRootQuery = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND username= ?`;
+          const filesInDirRootQuery = `UPDATE files.files 
+                                      SET directory = ?, device = ? 
+                                      WHERE directory = ? 
+                                      AND device = ? 
+                                      AND username= ?`;
           const values = [dst_dir, to_device, src_dir, from_device, username];
           try {
-            await sqlExecute(con, filesInDirRootQuery, values);
+            await sqlExecute(fileCon, filesInDirRootQuery, values);
             foldersInDirRoot = await getFolders(
               con,
               src_dir,
@@ -178,11 +204,15 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
         } else {
           dstPath = to_dir_ori + folder.path.split(from)[1];
         }
-        const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ? `;
+        const query = `UPDATE directories.directories 
+                      SET device =?, path = ?  
+                      WHERE username = ? 
+                      AND device = ? 
+                      AND path = ? `;
         const pth = `/${to_device}/${dstPath}`;
         const val = [to_device, pth, username, from_device, folder.path];
         try {
-          await sqlExecute(con, query, val);
+          await sqlExecute(folderCon, query, val);
           await updateDB(dstPath, dir);
         } catch (err) {
           failed.push(err.message);
@@ -192,15 +222,19 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
 
     updateDB(to_dir_ori, from_dir)
       .then(async () => {
-        const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ?`;
+        const query = `UPDATE directories.directories 
+                      SET device =?, path = ?  
+                      WHERE username = ? 
+                      AND device = ? 
+                      AND path = ?`;
         if (to === "/") {
           const pth = `/${to_device}`;
           const val = [to_device, pth, username, from_device, "/" + from];
-          await sqlExecute(con, query, val);
+          await sqlExecute(folderCon, query, val);
         } else {
           const pth = `/${to}/${srcFolder}`;
           const val = [to_device, pth, username, from_device, "/" + from];
-          await sqlExecute(con, query, val);
+          await sqlExecute(folderCon, query, val);
         }
         resolve();
       })
@@ -216,7 +250,7 @@ const organizeItems = async (req, res, next) => {
   const username = req.user.Username;
   const { files, folders } = req.body;
   const to = req.query.to;
-  const con = req.headers.connection;
+  const con = req.db;
   const failed = [];
   for (const file of files ? files : []) {
     try {
@@ -230,18 +264,31 @@ const organizeItems = async (req, res, next) => {
       failed.push(file);
     }
   }
-
+  const folderCon = await pool["directories"].getConnection();
   for (const folder of folders ? folders : []) {
     try {
       const folderPath = folder.path.split("/").slice(1).join("/");
       const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
       console.log("processing....");
-      await organizeItemsInDB(con, username, folderPath, dst, failed);
+      await organizeItemsInDB(
+        con,
+        folderCon,
+        username,
+        folderPath,
+        dst,
+        failed
+      );
     } catch (err) {
       console.error(err);
     }
   }
   console.log("returned the value...........");
+  if (con) {
+    con.release();
+  }
+  if (folderCon) {
+    folderCon.release();
+  }
   res.status(200).json({
     success: true,
     msg: "moved",

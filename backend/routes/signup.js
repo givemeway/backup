@@ -3,6 +3,7 @@ import csrf from "csurf";
 const router = express.Router();
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { origin } from "../config/config.js";
+import releaseConnection from "../controllers/ReleaseConnection.js";
 
 router.use(csrf({ cookie: true }));
 
@@ -38,16 +39,22 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/", buildSignupQuery, sqlExecute, (req, res) => {
-  if (req.headers.hasOwnProperty("sql_errno")) {
-    if (req.headers.sql_errno === 1062) {
-      res.status(500).json(req.headers.error.message);
+router.post(
+  "/",
+  buildSignupQuery,
+  sqlExecute,
+  releaseConnection,
+  (req, res) => {
+    if (req.headers.hasOwnProperty("sql_errno")) {
+      if (req.headers.sql_errno === 1062) {
+        res.status(500).json(req.headers.error.message);
+      } else {
+        res.status(500).json(req.headers.error);
+      }
     } else {
-      res.status(500).json(req.headers.error);
+      res.status(200).json(`Username ${req.headers.username} created!`);
     }
-  } else {
-    res.status(200).json(`Username ${req.headers.username} created!`);
   }
-});
+);
 
 export { router as signup };

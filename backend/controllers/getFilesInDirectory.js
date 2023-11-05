@@ -3,7 +3,9 @@ const FOLDER = "folder";
 
 const sqlExecute = async (req, res, next) => {
   try {
-    const con = req.headers.connection;
+    // const con = req.headers.connection;
+    const con = req.db;
+
     const [rows] = await con.execute(req.headers.query, [
       ...req.headers.queryValues,
     ]);
@@ -26,7 +28,7 @@ const getFilesInDirectory = async (req, res, next) => {
   if (backupType === FOLDER) {
     if (currentdirectory === "/") {
       const filesInOtherDirectories = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
-                                      FROM  data.files 
+                                      FROM  files 
                                       WHERE 
                                       username = ?
                                       AND
@@ -57,7 +59,7 @@ const getFilesInDirectory = async (req, res, next) => {
     if (currentdirectory === "/") {
       const filesInOtherDirectories = `SELECT 
                                       directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
-                                      FROM data.files 
+                                      FROM files 
                                       WHERE username = ? AND device = ?`;
       req.headers.query = filesInOtherDirectories;
       req.headers.queryValues = [username, devicename];

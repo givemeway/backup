@@ -4,6 +4,7 @@ const router = express.Router();
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { validateUserDetails } from "../controllers/validateUserDetails.js";
 import { origin } from "../config/config.js";
+import releaseConnection from "../controllers/ReleaseConnection.js";
 import dotenv from "dotenv";
 await dotenv.config();
 import csrf from "csurf";
@@ -45,6 +46,12 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/", buildLoginQuery, sqlExecute, validateUserDetails);
+router.post(
+  "/",
+  buildLoginQuery,
+  sqlExecute,
+  validateUserDetails,
+  releaseConnection
+);
 
 export { router as login };

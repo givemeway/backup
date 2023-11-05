@@ -2,27 +2,34 @@ import express from "express";
 import { origin } from "../config/config.js";
 import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
+import { v4 as uuidv4 } from "uuid";
+import { pool } from "../server.js";
+
 const router = express.Router();
 const BATCH = 500;
 
 const groupFoldersByParentQuery = `SELECT rel_path, rel_name, 
                                   count(folder) as folder_count 
-                                  FROM data.deleted_folders 
+                                  FROM deleted_directories.directories 
                                   WHERE username = ? 
                                   GROUP BY rel_name,rel_path`;
 
-const filesQuery = `SELECT filename,deletion_date
-                    FROM data.deleted_files 
+const filesQuery = `SELECT filename,deletion_date,uuid
+                    FROM deleted_files.files 
                     WHERE username = ? AND device = ? AND directory regexp ?
                     ORDER BY directory
                     LIMIT ?,?`;
-const folderRootFilesQuery = `SELECT filename,deletion_date
-                              FROM data.deleted_files 
+const folderRootFilesQuery = `SELECT filename,deletion_date,uuid
+                              FROM deleted_files.files 
                               WHERE username = ? 
                               AND device = ? 
                               AND directory = ?
                               ORDER BY filename
                               LIMIT ?,?;`;
+const deletedFilesQuery = `SELECT filename,deletion_date,device,directory,uuid 
+                              FROM deleted_files.files
+                              WHERE username = ?
+                              AND deletion_type = ?;`;
 
 const sqlExecute = (con, query, values) => {
   return new Promise(async (resolve, reject) => {
@@ -34,6 +41,11 @@ const sqlExecute = (con, query, values) => {
       reject(error);
     }
   });
+};
+
+const func = (total, item) => {
+  const { count } = item;
+  return total + count;
 };
 
 router.use(csurf({ cookie: true }));
@@ -68,7 +80,7 @@ function batchSubFolderFiles(
       }
       for (const { path, folder, device } of subFolders) {
         const directory = path.split("/").slice(2).join("/");
-        const regexp = `${directory}(/[^/]+)*$`;
+        const regexp = `^${directory}(/[^/]+)*$`;
         let begin = 0;
         while (true) {
           const val = [
@@ -89,6 +101,7 @@ function batchSubFolderFiles(
             accumulate.push({
               name: `${files[0].filename}`,
               deleted: files[0].deletion_date,
+              id: uuidv4(),
               count: files.length,
               folder,
               path,
@@ -112,6 +125,7 @@ function batchSubFolderFiles(
               accumulate.push({
                 name: `${files[0].filename}`,
                 deleted: files[0].deletion_date,
+                id: uuidv4(),
                 count: slice,
                 folder,
                 path,
@@ -123,6 +137,7 @@ function batchSubFolderFiles(
               accumulate.push({
                 name: `${files[0].filename}`,
                 deleted: files[0].deletion_date,
+                id: uuidv4(),
                 count: nextSliceEnd,
                 folder,
                 path,
@@ -132,6 +147,7 @@ function batchSubFolderFiles(
               accumulate.push({
                 name: `${files[0].filename}`,
                 deleted: files[0].deletion_date,
+                id: uuidv4(),
                 count: slice,
                 folder,
                 path,
@@ -142,11 +158,15 @@ function batchSubFolderFiles(
             }
             if (idx === 0) {
               item["name"] = rel_name;
+              item["id"] = uuidv4();
               req.trash["folders"].push(item);
             } else {
+              const sumTotal = item["items"].reduce(func, 0);
               item["name"] = `${files[0].filename} and ${
-                total + slice - 1
+                sumTotal - 1
               } more files`;
+              item["count"] = sumTotal;
+              item["id"] = uuidv4();
               req.trash["files"].push(item);
             }
             break;
@@ -161,6 +181,7 @@ function batchSubFolderFiles(
                 const chunk = {
                   name: files[0].filename,
                   deleted: files[0].deletion_date,
+                  id: uuidv4(),
                   count: files.length - total,
                   path,
                   folder,
@@ -171,6 +192,7 @@ function batchSubFolderFiles(
                 item.name = rel_name;
                 item.folder = rel_name;
                 item.items = accumulate;
+                item.id = uuidv4();
                 req.trash["folders"].push(item);
                 accumulate = [];
                 root = true;
@@ -178,13 +200,16 @@ function batchSubFolderFiles(
               } else {
                 item["name"] = folder;
                 item["limit"] = { begin: begin, end: files.length };
+                item["id"] = uuidv4();
                 req.trash["folders"].push(item);
               }
             } else {
               item["name"] = `${files[0].filename} and ${
                 files.length - 1
               } more files`;
-
+              item["limit"] = { begin: begin, end: files.length };
+              item["count"] = files.length;
+              item["id"] = uuidv4();
               req.trash["files"].push(item);
             }
           }
@@ -222,7 +247,6 @@ function batchFolderRootFiles(
       while (true) {
         const val = [username, device, dir, begin.toString(), BATCH.toString()];
         const files = await sqlExecute(con, folderRootFilesQuery, val);
-        console.log(files.length);
         // files = 450
         if (files.length < BATCH && files.length > 0) {
           total += files.length;
@@ -231,6 +255,7 @@ function batchFolderRootFiles(
             name: `${files[0].filename}`,
             deleted: files[0].deletion_date,
             folder: rel_name,
+            id: uuidv4(),
             count: files.length,
             path: rel_path,
             limit: { begin: begin, end: files.length },
@@ -242,15 +267,18 @@ function batchFolderRootFiles(
             deleted: files[0].deletion_date,
             folder: rel_name,
             path: rel_path,
+            count: files.length,
             limit: { begin: begin, end: files.length },
           };
           if (idx == 0) {
             item["name"] = rel_name;
+            item.id = uuidv4();
             req.trash["folders"].push(item);
           } else {
             item["name"] = `${files[0].filename} and ${
               files[0].length - 1
             } more files`;
+            item.id = uuidv4();
             req.trash["files"].push(item);
           }
         }
@@ -267,6 +295,7 @@ function batchFolderRootFiles(
 
 function createBatchTrashItems(
   con,
+  folderCon,
   filesQuery,
   folderRootFilesQuery,
   rel_path,
@@ -278,11 +307,11 @@ function createBatchTrashItems(
   username
 ) {
   return new Promise(async (resolve, reject) => {
-    const subFoldersQuery = `SELECT folder,path,device 
-                            from data.deleted_folders 
+    const subFoldersQuery = `SELECT folder,path,device,uuid 
+                            from deleted_directories.directories 
                             where username = ? AND path regexp ?`;
     try {
-      const subFolders = await sqlExecute(con, subFoldersQuery, [
+      const subFolders = await sqlExecute(folderCon, subFoldersQuery, [
         username,
         subFoldersRegExp,
       ]);
@@ -325,58 +354,15 @@ function createBatchTrashItems(
         };
         if (id == 0) {
           item["name"] = rel_name;
+          item["id"] = uuidv4();
           req.trash["folders"].push(item);
         } else {
           item["name"] = `${consolidate[0].name} and ${
             sumTotal - 1
           } more files`;
+          item["id"] = uuidv4();
           req.trash["files"].push(item);
         }
-      }
-      resolve();
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
-function batchTrashItems(con, query, req, device, username, group, regexp) {
-  return new Promise(async (resolve, reject) => {
-    let idx = 0;
-    let begin = 0;
-    try {
-      while (true) {
-        let val = [];
-        if (regexp)
-          val = [device, username, regexp, begin.toString(), BATCH.toString()];
-        else val = [device, username, begin.toString(), BATCH.toString()];
-        const files = await sqlExecute(con, query, val);
-        let item = {};
-        item.limit = { begin: begin, end: files.length };
-        item.deleted = files[0]["deletion_date"];
-        if (idx !== 0) {
-          item.name = `${files[0]["filename"]} and ${
-            files.length - 1
-          } more files`;
-          let minLength = Number.POSITIVE_INFINITY;
-          let pth = "";
-          files.forEach((file) => {
-            const len = file.directory.split("/").length;
-            if (len < minLength) {
-              minLength = len;
-              pth = file.directory;
-            }
-          });
-          item.path = pth;
-          req.trash["files"].push(item);
-        } else {
-          item.name = group.rel_name;
-          item.path = group.rel_path;
-          req.trash["folders"].push(item);
-        }
-        begin += files.length;
-        if (files.length < BATCH) break;
-        idx += 1;
       }
       resolve();
     } catch (err) {
@@ -386,61 +372,73 @@ function batchTrashItems(con, query, req, device, username, group, regexp) {
 }
 
 router.get("/", verifyToken, async (req, res) => {
-  const username = req.user.Username;
+  try {
+    const username = req.user.Username;
+    req.data = {};
+    let con;
+    let folderCon;
+    con = req.db;
+    folderCon = await pool["deleted_directories"].getConnection();
+    const group_folder = await sqlExecute(
+      folderCon,
+      groupFoldersByParentQuery,
+      [username]
+    );
 
-  req.data = {};
-  const con = req.headers.connection;
+    const val = [username, "file"];
+    const deleted_files = await sqlExecute(con, deletedFilesQuery, val);
 
-  const group_folder = await sqlExecute(con, groupFoldersByParentQuery, [
-    username,
-  ]);
+    req.trash = {};
+    req.trash["files"] = [];
+    req.trash["folders"] = [];
+    req.trash["file"] = deleted_files;
 
-  const deletedFilesQuery = `SELECT filename,deletion_date,device,directory 
-                              FROM data.deleted_files
-                              WHERE username = ?
-                              AND deletion_type = ?;`;
-  const val = [username, "file"];
-
-  const deleted_files = await sqlExecute(con, deletedFilesQuery, val);
-
-  req.trash = {};
-  req.trash["files"] = [];
-  req.trash["folders"] = [];
-  req.trash["file"] = deleted_files;
-  for (const group of group_folder) {
-    const device = group.rel_path.split("/")[1];
-    const dirParts = group.rel_path.split("/").slice(2).join("/");
-    const dir = dirParts === "" ? "/" : dirParts;
-    const subFoldersRegExp = `^${group.rel_path}(/[^/]+)$`;
-    if (dir === "/") {
-      await createBatchTrashItems(
-        con,
-        filesQuery,
-        folderRootFilesQuery,
-        group.rel_path,
-        group.rel_name,
-        subFoldersRegExp,
-        req,
-        device,
-        dir,
-        username
-      );
-    } else {
-      await createBatchTrashItems(
-        con,
-        filesQuery,
-        folderRootFilesQuery,
-        group.rel_path,
-        group.rel_name,
-        subFoldersRegExp,
-        req,
-        device,
-        dir,
-        username
-      );
+    for (const group of group_folder) {
+      const device = group.rel_path.split("/")[1];
+      const dirParts = group.rel_path.split("/").slice(2).join("/");
+      const dir = dirParts === "" ? "/" : dirParts;
+      const subFoldersRegExp = `^${group.rel_path}(/[^/]+)$`;
+      if (dir === "/") {
+        await createBatchTrashItems(
+          con,
+          folderCon,
+          filesQuery,
+          folderRootFilesQuery,
+          group.rel_path,
+          group.rel_name,
+          subFoldersRegExp,
+          req,
+          device,
+          dir,
+          username
+        );
+      } else {
+        await createBatchTrashItems(
+          con,
+          folderCon,
+          filesQuery,
+          folderRootFilesQuery,
+          group.rel_path,
+          group.rel_name,
+          subFoldersRegExp,
+          req,
+          device,
+          dir,
+          username
+        );
+      }
     }
+    if (con) {
+      con.release();
+    }
+    if (folderCon) {
+      folderCon.release();
+    }
+    res.status(200).json(req.trash);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
   }
-  res.status(200).json(req.trash);
 });
 
 export { router as getTrash };

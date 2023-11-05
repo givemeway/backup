@@ -5,6 +5,7 @@ await dotenv.config();
 import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
+import { pool } from "../server.js";
 
 const root = process.env.VARIABLE;
 const FILE = "fi";
@@ -38,7 +39,7 @@ const getFolders = async (con, currentDir, username, devicename) => {
   }
   const foldersQuery = `SELECT 
                         uuid,folder,path,device 
-                        FROM data.directories 
+                        FROM directories.directories 
                         WHERE username = ?
                         AND
                         path REGEXP ? limit ${start},${end};`;
@@ -53,7 +54,14 @@ router.use((req, res, next) => {
   next();
 });
 
-const organizeItemsInDB = async (con, username, from, to, failed) => {
+const organizeItemsInDB = async (
+  con,
+  folderCon,
+  username,
+  from,
+  to,
+  failed
+) => {
   return new Promise((resolve, reject) => {
     const srcFolder =
       from.split("/").length > 1
@@ -72,11 +80,13 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
 
     const updateDB = async (dst_dir, src_dir) => {
       try {
-        const filesInDirRootQuery = `UPDATE data.files SET directory = ?, device = ? WHERE directory = ? AND device = ? AND username= ?`;
+        const filesInDirRootQuery = `UPDATE files.files 
+                                    SET directory = ?, device = ? 
+                                    WHERE directory = ? AND device = ? AND username= ?`;
         const values = [dst_dir, to_device, src_dir, from_device, username];
         await sqlExecute(con, filesInDirRootQuery, values);
         const foldersInDirRoot = await getFolders(
-          con,
+          folderCon,
           src_dir,
           username,
           from_device
@@ -93,10 +103,12 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
           } else {
             dstPath = to_dir_ori + folder.path.split(from)[1];
           }
-          const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ? `;
+          const query = `UPDATE directories.directories 
+                          SET device = ?, path = ?  
+                          WHERE username = ? AND device = ? AND path = ? `;
           const pth = `/${to_device}/${dstPath}`;
           const val = [to_device, pth, username, from_device, folder.path];
-          await sqlExecute(con, query, val);
+          await sqlExecute(folderCon, query, val);
           await updateDB(dstPath, dir);
         }
       } catch (err) {
@@ -106,15 +118,17 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
 
     updateDB(to_dir_ori, from_dir)
       .then(async () => {
-        const query = `UPDATE data.directories SET device =?, path = ?  WHERE username = ? AND device = ? AND path = ?`;
+        const query = `UPDATE directories.directories 
+                        SET device = ?, path = ?  
+                        WHERE username = ? AND device = ? AND path = ?`;
         if (to === "/") {
           const pth = `/${to_device}`;
           const val = [to_device, pth, username, from_device, "/" + from];
-          await sqlExecute(con, query, val);
+          await sqlExecute(folderCon, query, val);
         } else {
           const pth = `/${to}/${srcFolder}`;
           const val = [to_device, pth, username, from_device, "/" + from];
-          await sqlExecute(con, query, val);
+          await sqlExecute(folderCon, query, val);
         }
         resolve();
       })
@@ -128,32 +142,45 @@ const organizeItemsInDB = async (con, username, from, to, failed) => {
 
 const renameItems = async (req, res, next) => {
   const username = req.user.Username;
-  console.log(req.body);
   const { type, to, uuid } = req.body;
-
   let failed = [];
+  const con = req.db;
   if (type === FILE) {
-    const query = `UPDATE data.files SET filename = ? WHERE origin = ?`;
-    const con = req.headers.connection;
+    const query = `UPDATE files.files SET filename = ? WHERE origin = ?`;
     await sqlExecute(con, query, [to, uuid]);
+    if (con) {
+      con.release;
+    }
   } else if (type === FOLDER) {
-    const query = `SELECT device,folder,path FROM data.directories WHERE uuid = ?`;
-    const con = req.headers.connection;
-    const { path } = (await sqlExecute(con, query, [uuid]))[0];
-
     try {
+      const query = `SELECT device,folder,path FROM directories.directories WHERE uuid = ?`;
+      const folderCon = await pool["directories"].getConnection();
+      const { path } = (await sqlExecute(folderCon, query, [uuid]))[0];
       const folderPath = path.split("/").slice(1).join("/");
       const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
-      console.log("processing....");
-      await organizeItemsInDB(con, username, folderPath, dst, failed);
-      const query2 = `UPDATE data.directories SET folder = ?, path = ? WHERE uuid = ?`;
+      await organizeItemsInDB(
+        con,
+        folderCon,
+        username,
+        folderPath,
+        dst,
+        failed
+      );
+      const query2 = `UPDATE directories.directories SET folder = ?,device = ?, path = ? WHERE uuid = ?`;
       const folder = to.split("/").pop();
-      await sqlExecute(con, query2, [folder, to, uuid]);
+      const device = to.split("/")[1];
+
+      await sqlExecute(folderCon, query2, [folder, device, to, uuid]);
+      if (con) {
+        con.release();
+      }
+      if (folderCon) {
+        folderCon.release();
+      }
     } catch (err) {
       console.error(err);
     }
   }
-  console.log("returned the value...........");
   res.status(200).json({
     success: true,
     msg: "renamed",

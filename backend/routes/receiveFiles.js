@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from "uuid";
 import { origin } from "../config/config.js";
 import bodyParser from "body-parser";
 import csrf from "csurf";
+import releaseConnection from "../controllers/ReleaseConnection.js";
+import { getConnection } from "../controllers/getConnection.js";
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
@@ -48,7 +50,7 @@ async function insertPath(
       ? "/"
       : pathComponents.slice(0, index + 1).join("/");
   if (path !== "/" && pathComponents[index].length > 0) {
-    const sql = `INSERT IGNORE INTO directories 
+    const sql = `INSERT IGNORE INTO directories.directories 
     (uuid,username,device,folder,path,created_at) 
     VALUES (?, ?, ?, ?, ?,NOW());`;
     req.headers.query = sql;
@@ -95,6 +97,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
     version = fileStat.version;
     origin = req.headers.uuid;
     uuid = req.headers.uuid_new;
+    filename = `${filename}_${uuid}`;
   } else {
     version = 1;
     origin = req.headers.uuid;
@@ -125,64 +128,6 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
     iv,
   ];
   await sqlExecute(req, res, next);
-  // if (fileStat.modified === true) {
-  //   console.log("modified triggered");
-  //   uuid = req.headers.uuid_new;
-  //   console.log(uuid);
-  //   console.log(origin);
-  //   const insertQuery = `INSERT INTO data.files
-  //                     (username,device,directory,uuid,origin,filename,
-  //                     last_modified,hashvalue,
-  //                     enc_hashvalue,versions,size,salt,iv)
-  //                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-  //                     ON DUPLICATE KEY
-  //                     UPDATE versions = versions + 1;`;
-  //   req.headers.query = insertQuery;
-  //   req.headers.queryValues = [
-  //     username,
-  //     device,
-  //     directory,
-  //     uuid,
-  //     origin,
-  //     filename,
-  //     isoString,
-  //     checksum,
-  //     enc_file_checksum,
-  //     versions,
-  //     size,
-  //     salt,
-  //     iv,
-  //   ];
-  //   console.log(req.headers.queryValues);
-  // filename = hashed_filename;
-  // const insertVersionedFileQuery = `INSERT INTO files
-  //                                 (username,device,directory, enc_directory,filename,
-  //                                   enc_filename,hashed_filename,last_modified,hashvalue,
-  //                                   enc_hashvalue,versions,size,snapshot,salt,iv)
-  //                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-  //                                 ON DUPLICATE KEY
-  //                                 UPDATE versions = versions + 1;`;
-  // const versionsFileQuery = `INSERT INTO data.versions (original_uuid)`;
-  // req.headers.query = insertVersionedFileQuery;
-  // req.headers.queryValues = [
-  //   username,
-  //   device,
-  //   directory,
-  //   enc_directory,
-  //   filename,
-  //   enc_filename,
-  //   hashed_filename,
-  //   isoString,
-  //   checksum,
-  //   enc_file_checksum,
-  //   versions,
-  //   size,
-  //   snapshot,
-  //   salt,
-  //   iv,
-  // ];
-  // await sqlExecute(req, res, next);
-  // }
   next();
 };
 
@@ -196,28 +141,19 @@ router.use((req, res, next) => {
   next();
 });
 
-const testing = (req, res, next) => {
-  console.log(req.headers);
-  console.log(req.body);
-  next();
-};
-
 router.post(
   "/",
   verifyToken,
   createDir,
   uploadFile,
-  // updateUtime,
   buildSQLQueryToUpdateFiles,
+  releaseConnection,
+  getConnection("directories"),
   createFolderIndex,
+  releaseConnection,
   (req, res) => {
     res.status(200).json(`file ${req.headers.filename} received`);
   }
 );
 
 export { router as receiveFiles };
-
-// updateUtime,
-// buildSQLQueryToUpdateFiles,
-// sqlExecute,
-// createFolderIndex,

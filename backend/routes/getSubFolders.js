@@ -3,6 +3,7 @@ import csrf from "csurf";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
+import releaseConnection from "../controllers/ReleaseConnection.js";
 const router = express.Router();
 router.use(csrf({ cookie: true }));
 
@@ -22,7 +23,7 @@ const getFolders = async (req, res, next) => {
   }
   const foldersQuery = `SELECT 
                         uuid,folder,path,created_at 
-                        FROM data.directories 
+                        FROM directories.directories 
                         WHERE username = ?
                         AND
                         path REGEXP ? limit ${start},${end};`;
@@ -48,6 +49,6 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/", verifyToken, getFolders);
+router.post("/", verifyToken, getFolders, releaseConnection);
 
 export { router as subFolders };

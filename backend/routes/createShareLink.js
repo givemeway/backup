@@ -6,6 +6,7 @@ import { origin, serverDomain } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { Transfer, Share } from "../models/mongodb.js";
 import { createConnection } from "../controllers/createConnection.js";
+import releaseConnection from "../controllers/ReleaseConnection.js";
 
 router.use(csrf({ cookie: true }));
 
@@ -151,6 +152,6 @@ const createShareLink = async (req, res) => {
   }
 };
 
-router.post("/", verifyToken, createShareLink);
+router.post("/", verifyToken, createShareLink, releaseConnection);
 
 export { router as createShare };

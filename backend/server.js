@@ -5,9 +5,7 @@ import cookieParser from "cookie-parser";
 import bodyparser from "body-parser";
 import { login } from "./routes/login.js";
 import { receiveFiles } from "./routes/receiveFiles.js";
-import { test } from "./routes/test.js";
 import { signup } from "./routes/signup.js";
-import { fetchFilesInfo } from "./routes/fetchFilesInfo.js";
 import { getFilesSubfolders } from "./routes/getFilesSubfolders.js";
 import { subFolders } from "./routes/getSubFolders.js";
 import { getCurrentDirFiles } from "./routes/getCurrentDirFiles.js";
@@ -25,8 +23,12 @@ import { copyItems } from "./routes/CopyItems.js";
 import { createShare } from "./routes/createShareLink.js";
 import { renameItem } from "./routes/RenameItem.js";
 import { getTrash } from "./routes/getTrash.js";
-import { restoreItems } from "./routes/RestoreItems.js";
+import { getTrashBatch } from "./routes/getTrashBatch.js";
 import { getTrashTotal } from "./routes/getTrashTotal.js";
+import { restoreTrashItems } from "./routes/RestoreItemsFromTrash.js";
+import DBConfig from "./config/DBConfig.js";
+import mysql from "mysql2/promise";
+import { getConnection } from "./controllers/getConnection.js";
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -62,40 +64,51 @@ app.use(cookieParser());
 // import csrf from "csurf";
 // router.use(csrf({ cookie: true }));
 
+const createPoolConnection = async (config) => {
+  return mysql.createPool(config);
+};
+
+const pool = {};
+try {
+  for (const [key, value] of Object.entries(DBConfig)) {
+    pool[key] = await createPoolConnection(value);
+  }
+} catch (err) {
+  console.error(err);
+}
+
 try {
   const dataDBConnection = createConnection("data");
-  const usersDBConnection = createConnection("customers");
-  const cryptoDBConnection = createConnection("cryptoKeys");
-  app.use("/app/login", sqlConn(usersDBConnection), login);
-  app.use("/app/receiveFiles", sqlConn(dataDBConnection), receiveFiles);
-  app.use("/app/test", sqlConn(dataDBConnection), test);
-  app.use("/app/signup", sqlConn(usersDBConnection), signup);
-  app.use("/app/sendFileInfo", sqlConn(dataDBConnection), fetchFilesInfo);
-  app.use("/app/browseFolder", sqlConn(dataDBConnection), getFilesSubfolders);
-  app.use("/app/getSubFolders", sqlConn(dataDBConnection), subFolders);
+
+  app.use("/app/login", getConnection("customers"), login);
+  app.use("/app/receiveFiles", getConnection("files"), receiveFiles);
+  app.use("/app/signup", getConnection("customers"), signup);
+  app.use("/app/browseFolder", getConnection("files"), getFilesSubfolders);
+  app.use("/app/getSubFolders", getConnection("directories"), subFolders);
   app.use(
     "/app/getCurrentDirFiles",
-    sqlConn(dataDBConnection),
+    getConnection("files"),
     getCurrentDirFiles
   );
-  app.use("/app/downloadFile", sqlConn(dataDBConnection), downloadFile);
-  app.use("/app/search", sqlConn(dataDBConnection), searchFiles);
+  app.use("/app/downloadFile", getConnection("files"), downloadFile);
+  app.use("/app/search", getConnection("files"), searchFiles);
   app.use("/app/csrftoken", csrftoken);
-  app.use("/app/delete", sqlConn(dataDBConnection), deleteItems);
-  app.use("/app/downloadItems", sqlConn(dataDBConnection), downloadItems);
-  app.use("/app/createShare", sqlConn(dataDBConnection), createShare);
-  app.use("/app/sh", sqlConn(dataDBConnection), share);
-  app.use("/app/moveItems", sqlConn(dataDBConnection), moveItems);
-  app.use("/app/copyItems", sqlConn(dataDBConnection), copyItems);
-  app.use("/app/renameItem", sqlConn(dataDBConnection), renameItem);
-  app.use("/app/trash", sqlConn(dataDBConnection), getTrash);
-  app.use("/app/trashTotal", sqlConn(dataDBConnection), getTrashTotal);
-  app.use("/app/restoreItems", sqlConn(dataDBConnection), restoreItems);
+  app.use("/app/delete", getConnection("files"), deleteItems);
+  app.use("/app/downloadItems", getConnection("files"), downloadItems);
+  app.use("/app/createShare", getConnection("customers"), createShare);
+  app.use("/app/sh", getConnection("files"), share);
+  app.use("/app/moveItems", getConnection("files"), moveItems);
+  app.use("/app/copyItems", getConnection("files"), copyItems);
+  app.use("/app/renameItem", getConnection("files"), renameItem);
+  app.use("/app/trash", getConnection("deleted_files"), getTrash);
+  app.use("/app/trashBatch", getConnection("deleted_files"), getTrashBatch);
+  app.use("/app/trashTotal", getConnection("deleted_files"), getTrashTotal);
   app.use(
-    "/app/get_download_zip",
+    "/app/restoreTrashItems",
     sqlConn(dataDBConnection),
-    createDownloadURL
+    restoreTrashItems
   );
+  app.use("/app/get_download_zip", createDownloadURL);
 } catch (err) {
   console.log(err);
 }
@@ -132,3 +145,5 @@ https.createServer(options, app).listen(PORT, (err) => {
     console.log(`Listening on localhost:${PORT} over HTTPS`);
   }
 });
+
+export { pool };

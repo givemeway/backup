@@ -2,6 +2,8 @@ import express from "express";
 import { origin } from "../config/config.js";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import csrf from "csurf";
+import releaseConnection from "../controllers/ReleaseConnection.js";
+import { getConnection } from "../controllers/getConnection.js";
 const router = express.Router();
 router.use(csrf({ cookie: true }));
 
@@ -9,7 +11,7 @@ const findFiles = async (req, res, next) => {
   const param = req.query.search;
   req.headers.data = {};
   const fileSearchQuery = `SELECT uuid,filename,directory,size,versions,last_modified,iv,salt,device 
-                    FROM data.files
+                    FROM files
                     WHERE 
                     MATCH(filename)
                     AGAINST(?)
@@ -22,8 +24,8 @@ const findFiles = async (req, res, next) => {
 const findFolders = async (req, res, next) => {
   const param = req.query.search;
   req.headers.data.files = [...req.headers.queryStatus];
-  const folderSearchQuery = `SELECT folder,path
-                            FROM data.directories
+  const folderSearchQuery = `SELECT folder,path,created_at
+                            FROM directories.directories
                             WHERE
                             MATCH(folder)
                             AGAINST(?)
@@ -42,10 +44,20 @@ router.use((req, res, next) => {
   );
   next();
 });
-router.get("/", findFiles, sqlExecute, findFolders, sqlExecute, (req, res) => {
-  req.headers.data.folders = [...req.headers.queryStatus];
-  res.status(200).json(req.headers.data);
-  console.log("search response sent");
-});
+router.get(
+  "/",
+  findFiles,
+  sqlExecute,
+  releaseConnection,
+  getConnection("directories"),
+  findFolders,
+  sqlExecute,
+  releaseConnection,
+  (req, res) => {
+    req.headers.data.folders = [...req.headers.queryStatus];
+    res.status(200).json(req.headers.data);
+    console.log("search response sent");
+  }
+);
 
 export { router as searchFiles };

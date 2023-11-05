@@ -2,27 +2,26 @@ import express from "express";
 const router = express.Router();
 import path from "node:path";
 import csrf from "csurf";
-import fs from "node:fs";
 import dotenv from "dotenv";
 import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
-import { decryptFile } from "../utils/decrypt.js";
 import { Worker } from "node:worker_threads";
 import { Readable } from "node:stream";
 import { DownloadZip } from "../models/mongodb.js";
+import releaseConnection from "../controllers/ReleaseConnection.js";
 await dotenv.config();
 
-import archiver from "archiver";
 router.use(csrf({ cookie: true }));
-const fileQuery = `SELECT filename,directory,device,salt,iv,size FROM data.files where uuid=?`;
+const fileQuery = `SELECT filename,directory,device,salt,iv,size FROM files where uuid=?`;
 const filesInSubDirectories = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
 const filesInCurrentDirectory = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE  username = ? AND device = ? AND directory = ?`;
-const filesInDevice = `SELECT uuid,filename,salt,iv,directory,size FROM  data.files where username = ? AND device = ?`;
+const filesInDevice = `SELECT uuid,filename,salt,iv,directory,size FROM  files where username = ? AND device = ?`;
 const root = process.env.VARIABLE;
 
 const sqlExecute = async (req, res) => {
   try {
-    const con = req.headers.connection;
+    // const con = req.headers.connection;
+    const con = req.db;
     const [rows] = await con.execute(req.headers.query, [
       ...req.headers.queryValues,
     ]);
@@ -146,6 +145,7 @@ router.get(
   verifyToken,
   getFilesFoldersFromDownloadID,
   extractFilesInforFromDB,
+  releaseConnection,
   async (req, res) => {
     const worker = new Worker("../backend/controllers/DownloadWorker.js");
     const channel = new MessageChannel();

@@ -3,6 +3,8 @@ import csrf from "csurf";
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
+import releaseConnection from "../controllers/ReleaseConnection.js";
+import { getConnection } from "../controllers/getConnection.js";
 const router = express.Router();
 router.use(csrf({ cookie: true }));
 
@@ -12,9 +14,8 @@ const getFiles = async (req, res, next) => {
   const username = req.headers.username;
   const devicename = req.headers.devicename;
   const [start, end] = [0, 10000];
-  const filesCountQuery = `SELECT count(*) from data.files where username = ? and device = ? and directory = ?;`;
   const filesInCurrentDirQuery = `select uuid,origin,filename,salt,iv,directory,versions,last_modified,size,device 
-                                  from data.files 
+                                  from files
                                   WHERE 
                                   username = ?
                                   AND 
@@ -54,10 +55,9 @@ const getFolders = async (req, res, next) => {
     path = `/${devicename}/${currentDir}`;
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
-  const folderCount = `select count(*) from data.directories where username = ? and path regexp ?`;
   const foldersQuery = `SELECT 
                         uuid,folder,path,created_at 
-                        FROM data.directories 
+                        FROM directories.directories 
                         WHERE username = ?
                         AND
                         path REGEXP ? limit ${start},${end};`;
@@ -82,8 +82,17 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/", verifyToken, getFiles, getFolders, (req, res) => {
-  console.log("done");
-});
+router.post(
+  "/",
+  verifyToken,
+  getFiles,
+  releaseConnection,
+  getConnection("directories"),
+  getFolders,
+  releaseConnection,
+  (req, res) => {
+    console.log("done");
+  }
+);
 
 export { router as getFilesSubfolders };
