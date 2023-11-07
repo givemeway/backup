@@ -63,21 +63,34 @@ const organizeItemsInDB = async (
   to,
   failed
 ) => {
-  return new Promise((resolve, reject) => {
-    const srcFolder =
-      from.split("/").length > 1
-        ? from.split("/").slice(-1)[0]
-        : from.split("/")[0];
-    let dst = to + "/" + srcFolder;
-    if (to === "/") {
-      dst = srcFolder;
-    }
+  return new Promise(async (resolve, reject) => {
     const from_device = from === "/" ? "/" : from.split("/")[0];
     const from_dirParts = from.split("/").slice(1).join("/");
     const from_dir = from_dirParts === "" ? "/" : from_dirParts;
     const to_device = to.split("/")[0];
     const to_dirParts = to.split("/").slice(1).join("/");
     const to_dir_ori = to_dirParts === "" ? "/" : to_dirParts;
+    const folder = to.split("/").slice(-1)[0];
+
+    const checkDuplicate = `SELECT path FROM directories.directories WHERE username = ? AND path = ? AND device = ? AND folder = ?;`;
+    let checkValues = [];
+    if (to === "/") {
+      checkValues = [username, to, to_device, folder];
+    } else {
+      checkValues = [username, "/" + to, to_device, folder];
+    }
+    try {
+      const rows = await sqlExecute(folderCon, checkDuplicate, checkValues);
+      if (rows.length > 0) {
+        failed.push({ message: "duplicate", val: to });
+        reject();
+        return;
+      }
+    } catch (err) {
+      console.error("err", err);
+      reject(err);
+      return;
+    }
 
     const updateDB = async (dst_dir, src_dir) => {
       try {
@@ -88,7 +101,6 @@ const organizeItemsInDB = async (
                                     SET directory = ?, device = ? 
                                     WHERE directory = ? AND device = ? AND username = ?`;
         const values = [dst_dir, to_device, src_dir, from_device, username];
-        console.log("values=>", values);
         await sqlExecute(con, filesInDirRootQuery, values);
         await sqlExecute(versionCon, filesInDirRootQueryVersions, values);
 
@@ -98,7 +110,6 @@ const organizeItemsInDB = async (
           username,
           from_device
         );
-        console.log("Folders in root=>", foldersInDirRoot);
         if (foldersInDirRoot.length === 0) {
           return;
         }
@@ -116,15 +127,6 @@ const organizeItemsInDB = async (
                           WHERE username = ? AND device = ? AND path = ? `;
           const pth = `/${to_device}/${dstPath}`;
           const val = [to_device, pth, username, from_device, folder.path];
-          console.log("sub-folders=>", val);
-          console.log(
-            "dstPath=>",
-            dstPath,
-            "dir=>",
-            dir,
-            "to_dir_ori=>",
-            to_dir_ori
-          );
           await sqlExecute(folderCon, query, val);
           await updateDB(dstPath, dir);
         }
@@ -136,15 +138,29 @@ const organizeItemsInDB = async (
     updateDB(to_dir_ori, from_dir)
       .then(async () => {
         const query = `UPDATE directories.directories 
-                        SET device = ?, path = ?  
+                        SET device = ?, path = ?, folder = ?  
                         WHERE username = ? AND device = ? AND path = ?`;
         if (to === "/") {
           const pth = `/${to_device}`;
-          const val = [to_device, pth, username, from_device, "/" + from];
+          const val = [
+            to_device,
+            pth,
+            folder,
+            username,
+            from_device,
+            "/" + from,
+          ];
           await sqlExecute(folderCon, query, val);
         } else {
-          const pth = `/${to}/${srcFolder}`;
-          const val = [to_device, pth, username, from_device, "/" + from];
+          const pth = `/${to}`;
+          const val = [
+            to_device,
+            pth,
+            folder,
+            username,
+            from_device,
+            "/" + from,
+          ];
           await sqlExecute(folderCon, query, val);
         }
         resolve();
@@ -160,7 +176,6 @@ const organizeItemsInDB = async (
 const renameItems = async (req, res, next) => {
   const username = req.user.Username;
   const { type, to, uuid, device } = req.body;
-  console.log(type, to, uuid, device);
   try {
     let failed = [];
     const con = req.db;
@@ -198,21 +213,9 @@ const renameItems = async (req, res, next) => {
                         AND username = ? AND device = ? AND path = ?;`;
         const folderCon = await pool["directories"].getConnection();
         const val = [uuid, folder, username, device, oldPath];
-        console.log(val);
         const { path } = (await sqlExecute(folderCon, query, val))[0];
         const folderPath = path.split("/").slice(1).join("/");
         const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
-        console.log(
-          "path->",
-          path,
-          "folderPath->",
-          folderPath,
-          "dst->",
-          dst,
-          "to->",
-          to
-        );
-
         await organizeItemsInDB(
           con,
           versionCon,
@@ -222,26 +225,6 @@ const renameItems = async (req, res, next) => {
           dst,
           failed
         );
-        const query2 = `UPDATE directories.directories 
-                        SET folder = ?,device = ?, path = ? 
-                        WHERE uuid = ? AND folder = ? 
-                        AND device = ? AND path = ? 
-                        AND username = ?`;
-        const to_folder = to.split("/").pop();
-        const to_device = to.split("/")[1];
-        console.log("folder=>", folder, "device=>", to_device);
-        const values = [
-          to_folder,
-          to_device,
-          to,
-          uuid,
-          folder,
-          device,
-          oldPath,
-          username,
-        ];
-        console.log("****final values==>", values);
-        await sqlExecute(folderCon, query2, values);
         if (con) {
           con.release();
         }
@@ -256,8 +239,7 @@ const renameItems = async (req, res, next) => {
       }
     }
     res.status(200).json({
-      success: true,
-      msg: "renamed",
+      failed: failed,
     });
   } catch (err) {
     res.status(500).json(err);

@@ -91,6 +91,7 @@ function batchSubFolderFiles(
             BATCH.toString(),
           ];
           const files = await sqlExecute(con, filesQuery, val);
+          if (files.length === 0) break;
           if (
             files.length > 0 &&
             files.length < BATCH &&
@@ -281,6 +282,8 @@ function batchFolderRootFiles(
             item.id = uuidv4();
             req.trash["files"].push(item);
           }
+        } else if (files.length === 0) {
+          break;
         }
 
         begin += files.length;
