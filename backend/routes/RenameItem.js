@@ -56,6 +56,7 @@ router.use((req, res, next) => {
 
 const organizeItemsInDB = async (
   con,
+  versionCon,
   folderCon,
   username,
   from,
@@ -82,15 +83,22 @@ const organizeItemsInDB = async (
       try {
         const filesInDirRootQuery = `UPDATE files.files 
                                     SET directory = ?, device = ? 
-                                    WHERE directory = ? AND device = ? AND username= ?`;
+                                    WHERE directory = ? AND device = ? AND username = ?`;
+        const filesInDirRootQueryVersions = `UPDATE versions.file_versions
+                                    SET directory = ?, device = ? 
+                                    WHERE directory = ? AND device = ? AND username = ?`;
         const values = [dst_dir, to_device, src_dir, from_device, username];
+        console.log("values=>", values);
         await sqlExecute(con, filesInDirRootQuery, values);
+        await sqlExecute(versionCon, filesInDirRootQueryVersions, values);
+
         const foldersInDirRoot = await getFolders(
           folderCon,
           src_dir,
           username,
           from_device
         );
+        console.log("Folders in root=>", foldersInDirRoot);
         if (foldersInDirRoot.length === 0) {
           return;
         }
@@ -108,6 +116,15 @@ const organizeItemsInDB = async (
                           WHERE username = ? AND device = ? AND path = ? `;
           const pth = `/${to_device}/${dstPath}`;
           const val = [to_device, pth, username, from_device, folder.path];
+          console.log("sub-folders=>", val);
+          console.log(
+            "dstPath=>",
+            dstPath,
+            "dir=>",
+            dir,
+            "to_dir_ori=>",
+            to_dir_ori
+          );
           await sqlExecute(folderCon, query, val);
           await updateDB(dstPath, dir);
         }
@@ -142,49 +159,109 @@ const organizeItemsInDB = async (
 
 const renameItems = async (req, res, next) => {
   const username = req.user.Username;
-  const { type, to, uuid } = req.body;
-  let failed = [];
-  const con = req.db;
-  if (type === FILE) {
-    const query = `UPDATE files.files SET filename = ? WHERE origin = ?`;
-    await sqlExecute(con, query, [to, uuid]);
-    if (con) {
-      con.release;
-    }
-  } else if (type === FOLDER) {
-    try {
-      const query = `SELECT device,folder,path FROM directories.directories WHERE uuid = ?`;
-      const folderCon = await pool["directories"].getConnection();
-      const { path } = (await sqlExecute(folderCon, query, [uuid]))[0];
-      const folderPath = path.split("/").slice(1).join("/");
-      const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
-      await organizeItemsInDB(
-        con,
-        folderCon,
-        username,
-        folderPath,
-        dst,
-        failed
-      );
-      const query2 = `UPDATE directories.directories SET folder = ?,device = ?, path = ? WHERE uuid = ?`;
-      const folder = to.split("/").pop();
-      const device = to.split("/")[1];
+  const { type, to, uuid, device } = req.body;
+  console.log(type, to, uuid, device);
+  try {
+    let failed = [];
+    const con = req.db;
+    const versionCon = await pool["versions"].getConnection();
+    if (type === FILE) {
+      const { dir, filename } = req.body;
 
-      await sqlExecute(folderCon, query2, [folder, device, to, uuid]);
+      const query = `UPDATE files.files SET filename = ? 
+      WHERE origin = ? AND username = ? AND device = ? AND directory = ? AND filename = ?`;
+      const queryVersion = `UPDATE versions.file_versions SET filename = ? 
+      WHERE origin = ? AND username = ? AND device = ? AND directory = ? AND filename = ?`;
+
+      await sqlExecute(con, query, [to, uuid, username, device, dir, filename]);
+      await sqlExecute(versionCon, queryVersion, [
+        to,
+        uuid,
+        username,
+        device,
+        dir,
+        filename,
+      ]);
+
       if (con) {
         con.release();
       }
-      if (folderCon) {
-        folderCon.release();
+      if (versionCon) {
+        versionCon.release();
       }
-    } catch (err) {
-      console.error(err);
+    } else if (type === FOLDER) {
+      try {
+        const { folder, oldPath } = req.body;
+        const query = `SELECT device,folder,path 
+                        FROM directories.directories 
+                        WHERE uuid = ? AND folder = ? 
+                        AND username = ? AND device = ? AND path = ?;`;
+        const folderCon = await pool["directories"].getConnection();
+        const val = [uuid, folder, username, device, oldPath];
+        console.log(val);
+        const { path } = (await sqlExecute(folderCon, query, val))[0];
+        const folderPath = path.split("/").slice(1).join("/");
+        const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
+        console.log(
+          "path->",
+          path,
+          "folderPath->",
+          folderPath,
+          "dst->",
+          dst,
+          "to->",
+          to
+        );
+
+        await organizeItemsInDB(
+          con,
+          versionCon,
+          folderCon,
+          username,
+          folderPath,
+          dst,
+          failed
+        );
+        const query2 = `UPDATE directories.directories 
+                        SET folder = ?,device = ?, path = ? 
+                        WHERE uuid = ? AND folder = ? 
+                        AND device = ? AND path = ? 
+                        AND username = ?`;
+        const to_folder = to.split("/").pop();
+        const to_device = to.split("/")[1];
+        console.log("folder=>", folder, "device=>", to_device);
+        const values = [
+          to_folder,
+          to_device,
+          to,
+          uuid,
+          folder,
+          device,
+          oldPath,
+          username,
+        ];
+        console.log("****final values==>", values);
+        await sqlExecute(folderCon, query2, values);
+        if (con) {
+          con.release();
+        }
+        if (folderCon) {
+          folderCon.release();
+        }
+        if (versionCon) {
+          versionCon.release();
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
+    res.status(200).json({
+      success: true,
+      msg: "renamed",
+    });
+  } catch (err) {
+    res.status(500).json(err);
   }
-  res.status(200).json({
-    success: true,
-    msg: "renamed",
-  });
 };
 
 router.post("*", verifyToken, renameItems);

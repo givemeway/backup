@@ -106,8 +106,11 @@ SET character_set_client = utf8mb4;
 
 CREATE TABLE `file_versions` (
     `username` VARCHAR(70) NOT NULL,
+    `device` VARCHAR(70) NOT NULL,
+    `directory` VARCHAR(255) NOT NULL,
     `uuid` VARCHAR(36) NOT NULL,
     `origin` VARCHAR(36) NOT NULL,
+    `filename` VARCHAR(291) NOT NULL,
     `last_modified` DATETIME NOT NULL,
     `hashvalue` CHAR(64) NOT NULL,
     `enc_hashvalue` CHAR(64) NOT NULL,
@@ -115,7 +118,7 @@ CREATE TABLE `file_versions` (
     `size` BIGINT UNSIGNED NOT NULL,
     `salt` VARCHAR(64) NOT NULL,
     `iv` VARCHAR(64) NOT NULL,
-    UNIQUE(`username`,`uuid`,`origin`),
+    UNIQUE(`username`,`device`,`directory`,`filename`,`uuid`),
     FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
 );
 

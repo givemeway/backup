@@ -29,31 +29,42 @@ const getFilesInDirectory = async (req, res, next) => {
     if (currentdirectory === "/") {
       const filesInOtherDirectories = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
                                       FROM  files 
-                                      WHERE 
-                                      username = ?
-                                      AND
-                                      device = ?`;
-      req.headers.query = filesInOtherDirectories;
-      req.headers.queryValues = [username, devicename];
+                                      WHERE username = ? AND  device = ?`;
+      const filesInOtherDirectoriesUnion = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
+                                            FROM  files 
+                                            WHERE username = ? AND  device = ?
+                                            UNION ALL
+                                            SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
+                                            FROM  versions.file_versions 
+                                            WHERE username = ? AND  device = ?;`;
+      req.headers.query = filesInOtherDirectoriesUnion;
+      req.headers.queryValues = [username, devicename, username, devicename];
       await sqlExecute(req, res, next);
       req.headers.data.push(...req.headers.queryStatus);
     } else {
-      const regex_other_files = `^${currentdirectory}(/[^/]+)+$`;
+      const regex_other_files = `^${currentdirectory}(/[^/]+)*$`;
       const filesInOtherDirectories = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
                                        FROM files 
                                        WHERE username = ? AND device = ? AND directory REGEXP ?`;
-      req.headers.query = filesInOtherDirectories;
+      const filesInOtherDirectoriesUnion = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                            FROM files 
+                                            WHERE username = ? AND device = ? AND directory REGEXP ?
+                                            UNION ALL
+                                            SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                            FROM versions.file_versions  
+                                            WHERE username = ? AND device = ? AND directory REGEXP ?;`;
+      req.headers.query = filesInOtherDirectoriesUnion;
       req.headers.queryValues = [username, devicename, regex_other_files];
       await sqlExecute(req, res, next);
       req.headers.data.push(...req.headers.queryStatus);
-      const filesInCurrentDirectory = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
-                                       FROM files 
-                                       WHERE  username = ? AND device = ? AND directory = ?`;
+      // const filesInCurrentDirectory = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
+      //                                  FROM files
+      //                                  WHERE  username = ? AND device = ? AND directory = ?`;
 
-      req.headers.query = filesInCurrentDirectory;
-      req.headers.queryValues = [username, devicename, currentdirectory];
-      await sqlExecute(req, res, next);
-      req.headers.data.push(...req.headers.queryStatus);
+      // req.headers.query = filesInCurrentDirectory;
+      // req.headers.queryValues = [username, devicename, currentdirectory];
+      // await sqlExecute(req, res, next);
+      // req.headers.data.push(...req.headers.queryStatus);
     }
   } else {
     if (currentdirectory === "/") {
@@ -61,16 +72,39 @@ const getFilesInDirectory = async (req, res, next) => {
                                       directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
                                       FROM files 
                                       WHERE username = ? AND device = ?`;
-      req.headers.query = filesInOtherDirectories;
-      req.headers.queryValues = [username, devicename];
+      const filesInOtherDirectoriesUnion = `SELECT  directory,filename,hashvalue,last_modified,
+                                                  salt,iv,device,uuid,origin,versions
+                                            FROM files 
+                                            WHERE username = ? AND device = ?
+                                            UNION ALL
+                                            SELECT  directory,filename,hashvalue,last_modified,
+                                                  salt,iv,device,uuid,origin,versions
+                                            FROM versions.file_versions 
+                                            WHERE username = ? AND device = ?;`;
+      req.headers.query = filesInOtherDirectoriesUnion;
+      req.headers.queryValues = [username, devicename, username, devicename];
       await sqlExecute(req, res, next);
       req.headers.data.push(...req.headers.queryStatus);
     } else {
       const filesInFolderRoot = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
                                 FROM files 
                                 WHERE  username = ? AND device = ? AND directory = ?`;
-      req.headers.query = filesInFolderRoot;
-      req.headers.queryValues = [username, devicename, currentdirectory];
+      const filesInFolderRootUnion = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                      FROM files 
+                                      WHERE  username = ? AND device = ? AND directory = ?
+                                      UNION ALL
+                                      SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                      FROM versions.file_versions  
+                                      WHERE  username = ? AND device = ? AND directory = ?;`;
+      req.headers.query = filesInFolderRootUnion;
+      req.headers.queryValues = [
+        username,
+        devicename,
+        currentdirectory,
+        username,
+        devicename,
+        currentdirectory,
+      ];
       await sqlExecute(req, res, next);
       req.headers.data.push(...req.headers.queryStatus);
     }

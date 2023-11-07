@@ -58,13 +58,26 @@ router.use((req, res, next) => {
   next();
 });
 
-const insertFileInDB = async (con, device, username, filename, dir, to) => {
+const insertFileInDB = async (
+  con,
+  versionCon,
+  device,
+  username,
+  filename,
+  dir,
+  to
+) => {
   return new Promise(async (resolve, reject) => {
     try {
       const query = `INSERT INTO files.files 
                         SELECT username,?,?,uuid,origin,filename,last_modified,
                         hashvalue,enc_hashvalue,versions,size,salt,iv 
                         FROM files.files 
+                        WHERE filename = ? AND directory = ? AND device = ? AND username = ?;`;
+      const queryVersion = `INSERT INTO versions.file_versions
+                        SELECT username,?,?,uuid,origin,filename,last_modified,
+                        hashvalue,enc_hashvalue,versions,size,salt,iv 
+                        FROM versions.file_versions
                         WHERE filename = ? AND directory = ? AND device = ? AND username = ?;`;
       let val = [];
       if (to === "/") {
@@ -77,6 +90,8 @@ const insertFileInDB = async (con, device, username, filename, dir, to) => {
       }
 
       await sqlExecute(con, query, val);
+      await sqlExecute(versionCon, queryVersion, val);
+
       resolve();
     } catch (err) {
       reject({
@@ -92,6 +107,7 @@ const insertFileInDB = async (con, device, username, filename, dir, to) => {
 
 const organizeItemsInDB = async (
   con,
+  versionCon,
   folderCon,
   username,
   from,
@@ -122,8 +138,14 @@ const organizeItemsInDB = async (
                                       hashvalue,enc_hashvalue,versions,size,salt,iv 
                                       FROM files.files 
                                       WHERE directory = ? AND device = ? AND username = ?;`;
+        const filesInDirRootQueryVersion = `INSERT INTO versions.file_versions 
+                                      SELECT username,?,?,uuid,origin,filename,last_modified,
+                                      hashvalue,enc_hashvalue,versions,size,salt,iv 
+                                      FROM versions.file_versions 
+                                      WHERE directory = ? AND device = ? AND username = ?;`;
         const values = [to_device, dst_dir, src_dir, from_device, username];
         await sqlExecute(con, filesInDirRootQuery, values);
+        await sqlExecute(versionCon, filesInDirRootQueryVersion, values);
       } catch (err) {
         failed.push(err.message);
       }
@@ -192,60 +214,77 @@ const organizeItemsInDB = async (
 };
 
 const organizeItems = async (req, res, next) => {
-  const username = req.user.Username;
-  const { files, folders } = req.body;
-  const to = req.query.to;
-  const con = req.db;
-  const failed = [];
-  console.log(to);
-  console.log(files, folders);
-  for (const file of files ? files : []) {
-    try {
-      const params = new URLSearchParams(file.path);
-      const device = params.get("device");
-      const filename = params.get("file");
-      const dir = params.get("dir");
-      const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
-      await insertFileInDB(con, device, username, filename, dir, dst);
-    } catch (err) {
-      failed.push(err);
+  try {
+    const username = req.user.Username;
+    const { files, folders } = req.body;
+    const to = req.query.to;
+    const con = req.db;
+    const versionCon = await pool["versions"].getConnection();
+    const failed = [];
+    console.log(to);
+    console.log(files, folders);
+    for (const file of files ? files : []) {
+      try {
+        const params = new URLSearchParams(file.path);
+        const device = params.get("device");
+        const filename = params.get("file");
+        const dir = params.get("dir");
+        const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
+        await insertFileInDB(
+          con,
+          versionCon,
+          device,
+          username,
+          filename,
+          dir,
+          dst
+        );
+      } catch (err) {
+        failed.push(err);
+      }
     }
-  }
-  const folderCon = await pool["directories"].getConnection();
-  for (const folder of folders ? folders : []) {
-    try {
-      const folderPath = folder.path.split("/").slice(1).join("/");
-      const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
-      console.log("processing....");
-      await organizeItemsInDB(
-        con,
-        folderCon,
-        username,
-        folderPath,
-        dst,
-        failed
-      );
-    } catch (err) {
-      console.error(err);
+    const folderCon = await pool["directories"].getConnection();
+    for (const folder of folders ? folders : []) {
+      try {
+        const folderPath = folder.path.split("/").slice(1).join("/");
+        const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
+        console.log("processing....");
+        await organizeItemsInDB(
+          con,
+          versionCon,
+          folderCon,
+          username,
+          folderPath,
+          dst,
+          failed
+        );
+      } catch (err) {
+        console.error(err);
+      }
     }
+    console.log("returned the value...........");
+    if (con) {
+      con.release();
+    }
+    if (folderCon) {
+      folderCon.release();
+    }
+    if (versionCon) {
+      versionCon.release();
+    }
+    res.status(200).json({
+      success: true,
+      msg: "moved",
+      copied: files?.length
+        ? files.length
+        : 0 + folders?.length
+        ? folders.length
+        : 0 + failed.length,
+      failed: failed,
+    });
+  } catch (err) {
+    res.status(500).json(err);
   }
-  console.log("returned the value...........");
-  if (con) {
-    con.release();
-  }
-  if (folderCon) {
-    folderCon.release();
-  }
-  res.status(200).json({
-    success: true,
-    msg: "moved",
-    copied: files?.length
-      ? files.length
-      : 0 + folders?.length
-      ? folders.length
-      : 0 + failed.length,
-    failed: failed,
-  });
 };
 
 router.post("*", verifyToken, organizeItems);

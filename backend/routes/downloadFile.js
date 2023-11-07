@@ -9,6 +9,7 @@ import path from "node:path";
 import fs from "node:fs";
 import csrf from "csurf";
 import releaseConnection from "../controllers/ReleaseConnection.js";
+import { pool } from "../server.js";
 
 const root = process.env.VARIABLE;
 
@@ -31,24 +32,22 @@ router.get(
   async (req, res) => {
     try {
       const username = req.user.Username;
-      const device = req.query.device;
-      const dir = req.query.dir;
-      let filename = req.query.file;
-      const uuid = req.query.uuid;
-      const tempName = filename.split("_" + uuid);
-      if (tempName.length > 1) {
-        filename = tempName[0];
-      }
-      // const filePath = path.join(root, username, device, dir, filename);
+      const { file, uuid, db, dir, device } = req.query;
       const filePath = path.join(root, username, uuid);
-      // const query = `SELECT salt,iv from data.files where USERNAME = ? AND device = ? AND directory = ? AND filename = ?`;
-      const query = `SELECT salt,iv,size from files where uuid = ?`;
-
-      const con = req.db;
-      // const values = [username, device, dir, filename];
+      let query;
+      let con;
       const values = [uuid];
+      if (db === "versions") {
+        con = await pool["versions"].getConnection();
+        query = `SELECT salt,iv,size from versions.file_versions where uuid = ?`;
+      } else {
+        con = req.db;
+        query = `SELECT salt,iv,size from files.files where uuid = ?`;
+      }
       const [rows, fields] = await con.execute(query, values);
-      // const fileStat = fs.statSync(filePath);
+      if (db === "versions") {
+        con.release();
+      }
       const readStream = fs.createReadStream(filePath, {
         highWaterMark: 1024 * 1024 * 1,
       });
@@ -62,10 +61,11 @@ router.get(
       res.set("Content-Length", rows[0]["size"]);
       res.set("salt", rows[0]["salt"]);
       res.set("iv", rows[0]["iv"]);
-      res.set("Content-Disposition", `attachment; filename="${filename}"`);
+      res.set("Content-Disposition", `attachment; filename="${file}"`);
       decryptStream.pipe(res);
       // readStream.pipe(res);
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },
