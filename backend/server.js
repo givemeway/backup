@@ -40,6 +40,7 @@ const app = express();
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import { share } from "./routes/share.js";
+import { moveItemsV2 } from "./routes/MoveItemsV2.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -98,6 +99,7 @@ try {
   app.use("/app/createShare", getConnection("customers"), createShare);
   app.use("/app/sh", getConnection("files"), share);
   app.use("/app/moveItems", getConnection("files"), moveItems);
+  app.use("/app/v2/moveItems", getConnection("files"), moveItemsV2);
   app.use("/app/copyItems", getConnection("files"), copyItems);
   app.use("/app/renameItem", getConnection("files"), renameItem);
   app.use("/app/trash", getConnection("deleted_files"), getTrash);

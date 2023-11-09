@@ -133,12 +133,12 @@ const organizeItemsInDB = async (
     const updateDB = async (dst_dir, src_dir) => {
       let foldersInDirRoot = [];
       try {
-        const filesInDirRootQuery = `INSERT INTO files.files 
+        const filesInDirRootQuery = `INSERT IGNORE INTO files.files 
                                       SELECT username,?,?,uuid,origin,filename,last_modified,
                                       hashvalue,enc_hashvalue,versions,size,salt,iv 
                                       FROM files.files 
                                       WHERE directory = ? AND device = ? AND username = ?;`;
-        const filesInDirRootQueryVersion = `INSERT INTO versions.file_versions 
+        const filesInDirRootQueryVersion = `INSERT IGNORE INTO versions.file_versions 
                                       SELECT username,?,?,uuid,origin,filename,last_modified,
                                       hashvalue,enc_hashvalue,versions,size,salt,iv 
                                       FROM versions.file_versions 

@@ -72,7 +72,8 @@ const organizeItemsInDB = async (
     const to_dir_ori = to_dirParts === "" ? "/" : to_dirParts;
     const folder = to.split("/").slice(-1)[0];
 
-    const checkDuplicate = `SELECT path FROM directories.directories WHERE username = ? AND path = ? AND device = ? AND folder = ?;`;
+    const checkDuplicate = `SELECT path FROM directories.directories 
+                            WHERE username = ? AND path = ? AND device = ? AND folder = ?;`;
     let checkValues = [];
     if (to === "/") {
       checkValues = [username, to, to_device, folder];
