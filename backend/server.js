@@ -58,8 +58,8 @@ const __dirname = dirname(__filename);
 
 mongoose.Promise = global.Promise;
 
-app.use(bodyparser.json());
-app.use(bodyparser.urlencoded({ extended: true }));
+app.use(bodyparser.json({ limit: "50mb" }));
+app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
 // import csrf from "csurf";

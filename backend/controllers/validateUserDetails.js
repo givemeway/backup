@@ -22,7 +22,6 @@ const validateUserDetails = (req, res, next) => {
           process.env.JWT_SECRET,
           { expiresIn: 86400 }
         );
-        console.log(token);
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", token, {

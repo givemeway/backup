@@ -61,9 +61,14 @@ const getFolders = async (req, res, next) => {
   if (devicename === "/") {
     regex_2 = `^\\.?(/[^/]+)$`;
   } else if (currentDir === "/") {
-    regex_2 = `^\\.?/${devicename}(/[^/]+)$`;
+    let device = devicename;
+    device = device.replace(/\(/g, "\\(");
+    device = device.replace(/\)/g, "\\)");
+    regex_2 = `^\\.?/${device}(/[^/]+)$`;
   } else {
     path = `/${devicename}/${currentDir}`;
+    path = path.replace(/\(/g, "\\(");
+    path = path.replace(/\)/g, "\\)");
     regex_2 = `^\\.?${path}(/[^/]+)$`;
   }
   const foldersQuery = `SELECT 

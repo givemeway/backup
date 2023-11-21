@@ -79,7 +79,9 @@ function batchSubFolderFiles(
         parentNotCreated = true;
       }
       for (const { path, folder, device } of subFolders) {
-        const directory = path.split("/").slice(2).join("/");
+        let directory = path.split("/").slice(2).join("/");
+        directory = directory.replace(/\(/g, "\\(");
+        directory = directory.replace(/\)/g, "\\)");
         const regexp = `^${directory}(/[^/]+)*$`;
         let begin = 0;
         while (true) {
@@ -112,7 +114,7 @@ function batchSubFolderFiles(
           } else if (
             files.length > 0 &&
             files.length < BATCH &&
-            total + files.length > BATCH
+            total + files.length >= BATCH
           ) {
             const slice = BATCH - total;
             let item = {
@@ -256,6 +258,7 @@ function batchFolderRootFiles(
             name: `${files[0].filename}`,
             deleted: files[0].deletion_date,
             folder: rel_name,
+            root: true,
             id: uuidv4(),
             count: files.length,
             path: rel_path,
@@ -267,17 +270,19 @@ function batchFolderRootFiles(
           let item = {
             deleted: files[0].deletion_date,
             folder: rel_name,
+            root: true,
             path: rel_path,
             count: files.length,
             limit: { begin: begin, end: files.length },
           };
           if (idx == 0) {
             item["name"] = rel_name;
+            item["root"] = true;
             item.id = uuidv4();
             req.trash["folders"].push(item);
           } else {
             item["name"] = `${files[0].filename} and ${
-              files[0].length - 1
+              files.length - 1
             } more files`;
             item.id = uuidv4();
             req.trash["files"].push(item);
@@ -318,7 +323,6 @@ function createBatchTrashItems(
         username,
         subFoldersRegExp,
       ]);
-
       let accumulate = [];
       let { total, idx } = await batchFolderRootFiles(
         con,
@@ -400,7 +404,9 @@ router.get("/", verifyToken, async (req, res) => {
       const device = group.rel_path.split("/")[1];
       const dirParts = group.rel_path.split("/").slice(2).join("/");
       const dir = dirParts === "" ? "/" : dirParts;
-      const subFoldersRegExp = `^${group.rel_path}(/[^/]+)$`;
+      let rel_path = group.rel_path.replace(/\(/g, "\\(");
+      rel_path = rel_path.replace(/\)/g, "\\)");
+      const subFoldersRegExp = `^${rel_path}(/[^/]+)$`;
       if (dir === "/") {
         await createBatchTrashItems(
           con,

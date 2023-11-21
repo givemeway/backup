@@ -25,6 +25,7 @@ CREATE INDEX device_index ON files(device);
 CREATE INDEX directory_index ON files(directory);
 ALTER TABLE files ADD FULLTEXT(filename); 
 
+
 DROP DATABASE IF EXISTS `directories`;
 CREATE DATABASE `directories`;
 USE `directories`;
@@ -44,6 +45,7 @@ CREATE TABLE `directories`(
 
 CREATE INDEX path_index ON directories(path);
 ALTER TABLE directories ADD FULLTEXT(folder); 
+
 
 DROP DATABASE IF EXISTS `deleted_files`;
 CREATE DATABASE `deleted_files`;
@@ -74,6 +76,29 @@ CREATE TABLE `files` (
 CREATE INDEX device_index ON files(device);
 CREATE INDEX directory_index ON files(directory);
 ALTER TABLE files ADD FULLTEXT(filename); 
+
+CREATE TABLE `file_versions` (
+    `username` VARCHAR(70) NOT NULL,
+    `device` VARCHAR(70) NOT NULL,
+    `directory` VARCHAR(255) NOT NULL,
+    `uuid` VARCHAR(36) NOT NULL,
+    `origin` VARCHAR(36) NOT NULL,
+    `filename` VARCHAR(291) NOT NULL,
+    `last_modified` DATETIME NOT NULL,
+    `hashvalue` CHAR(64) NOT NULL,
+    `enc_hashvalue` CHAR(64) NOT NULL,
+    `versions` INTEGER NOT NULL,
+    `size` BIGINT UNSIGNED NOT NULL,
+    `salt` VARCHAR(64) NOT NULL,
+    `iv` VARCHAR(64) NOT NULL,
+    `deletion_date` DATETIME NOT NULL,
+    `deletion_type` VARCHAR(6) NOT NULL,
+    UNIQUE(`username`,`device`,`directory`,`filename`,`uuid`),
+    FOREIGN KEY (`username`) REFERENCES customers.users(`username`)
+);
+
+CREATE INDEX device_index ON file_versions(device);
+CREATE INDEX directory_index ON file_versions(directory);
 
 DROP DATABASE IF EXISTS `deleted_directories`;
 CREATE DATABASE `deleted_directories`;

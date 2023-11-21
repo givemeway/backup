@@ -58,6 +58,47 @@ const createFolderIndex = async (req, res, next) => {
   next();
 };
 
+const insertPaths = async (req, res, next) => {
+  let folderCon;
+  try {
+    const username = req.headers.username;
+    const device = req.headers.devicename;
+    const dir = req.headers.dir;
+
+    if (device === "/") {
+      return;
+    }
+    let path;
+    if (dir !== "/") {
+      path = "/" + device + "/" + dir;
+    } else {
+      path = "/" + device;
+    }
+    const pathParts = path.split("/");
+    const paths = pathParts
+      .map((part, idx) => [part, pathParts.slice(0, idx + 1).join("/")])
+      .slice(1);
+    const sql = `INSERT IGNORE INTO directories.directories 
+    (uuid,username,device,folder,path,created_at) 
+    VALUES (?, ?, ?, ?, ?,NOW());`;
+    folderCon = await pool["directories"].getConnection();
+    folderCon.beginTransaction();
+    for (const pth of paths) {
+      const val = [uuidv4(), username, device, pth[0], pth[1]];
+      await folderCon.query(sql, val);
+    }
+    folderCon.commit();
+    if (folderCon) {
+      folderCon.release();
+    }
+    next();
+  } catch (err) {
+    console.error(err);
+    await folderCon.rollback();
+    res.status(500).json(err);
+  }
+};
+
 async function insertPath(
   req,
   res,
@@ -134,22 +175,6 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const size = `${fileStat.size}`;
   const salt = fileStat.salt;
   const iv = fileStat.iv;
-
-  // const versionValue = [
-  //   username,
-  //   device,
-  //   directory,
-  //   uuid,
-  //   origin,
-  //   filename,
-  //   isoString,
-  //   checksum,
-  //   enc_file_checksum,
-  //   version,
-  //   size,
-  //   salt,
-  //   iv,
-  // ];
   let fileValue = [
     username,
     device,
@@ -268,9 +293,10 @@ router.post(
   createDir,
   uploadFile,
   buildSQLQueryToUpdateFiles,
-  getConnection("directories"),
-  createFolderIndex,
-  releaseConnection,
+  // getConnection("directories"),
+  insertPaths,
+  // createFolderIndex,
+  // releaseConnection,
   (req, res) => {
     res.status(200).json(`file ${req.headers.filename} received`);
   }
