@@ -16,7 +16,7 @@ router.use((req, res, next) => {
 });
 
 router.post("/", verifyToken, async (req, res) => {
-  const { items } = req.body;
+  const items = JSON.parse(req.body.items);
   const username = req.user.Username;
   const subFolderRegexp = "^(/[^/]+)$";
   let folderCon;

@@ -10,10 +10,7 @@ import { getFilesSubfolders } from "./routes/getFilesSubfolders.js";
 import { subFolders } from "./routes/getSubFolders.js";
 import { getCurrentDirFiles } from "./routes/getCurrentDirFiles.js";
 import { downloadFile } from "./routes/downloadFile.js";
-import { createConnection } from "./controllers/createConnection.js";
-import { sqlConn } from "./controllers/sql_conn.js";
 import { createDownloadURL } from "./routes/createDownloadURL.js";
-import mongoConn from "./controllers/mongo_conn.js";
 import { searchFiles } from "./routes/searchItems.js";
 import { csrftoken } from "./routes/getCSRFToken.js";
 import { deleteItems } from "./routes/deleteItems.js";
@@ -26,9 +23,11 @@ import { getTrash } from "./routes/getTrash.js";
 import { getTrashBatch } from "./routes/getTrashBatch.js";
 import { getTrashTotal } from "./routes/getTrashTotal.js";
 import { restoreTrashItems } from "./routes/RestoreItemsFromTrash.js";
+import { getSharedLinks } from "./routes/getSharedItems.js";
 import DBConfig from "./config/DBConfig.js";
 import mysql from "mysql2/promise";
 import { getConnection } from "./controllers/getConnection.js";
+import { validateUsername } from "./routes/ValidateUserName.js";
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -79,8 +78,6 @@ try {
 }
 
 try {
-  const dataDBConnection = createConnection("data");
-
   app.use("/app/login", getConnection("customers"), login);
   app.use("/app/receiveFiles", getConnection("files"), receiveFiles);
   app.use("/app/signup", getConnection("customers"), signup);
@@ -105,12 +102,10 @@ try {
   app.use("/app/trash", getConnection("deleted_files"), getTrash);
   app.use("/app/trashBatch", getConnection("deleted_files"), getTrashBatch);
   app.use("/app/trashTotal", getConnection("deleted_files"), getTrashTotal);
-  app.use(
-    "/app/restoreTrashItems",
-    sqlConn(dataDBConnection),
-    restoreTrashItems
-  );
+  app.use("/app/restoreTrashItems", restoreTrashItems);
   app.use("/app/get_download_zip", createDownloadURL);
+  app.use("/app/getSharedLinks", getSharedLinks);
+  app.use("/app/validateusername", validateUsername);
 } catch (err) {
   console.log(err);
 }
