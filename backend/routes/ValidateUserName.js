@@ -30,6 +30,7 @@ router.get("/", async (req, res) => {
       res.status(200).json({ exist: false, username });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ exist: undefined, err });
   }
 });

@@ -31,10 +31,8 @@ const buildSignupQuery = async (req, res, next) => {
   // const password = req.headers.password;
   // const phone = req.headers.phone;
   try {
-    const [username, firstname, lastname, email, password, phone] = JSON.parse(
-      req.body
-    );
-
+    const { username, firstname, lastname, email, password, phone } = req.body;
+    req.username = username;
     const enc = await generateEncKey();
     req.headers.query = query;
     req.headers.queryValues = [
@@ -48,6 +46,7 @@ const buildSignupQuery = async (req, res, next) => {
     ];
     next();
   } catch (err) {
+    console.log(err);
     res.status(500).json(err);
   }
 };
@@ -70,12 +69,17 @@ router.post(
   (req, res) => {
     if (req.headers.hasOwnProperty("sql_errno")) {
       if (req.headers.sql_errno === 1062) {
-        res.status(500).json(req.headers.error.message);
+        res
+          .status(409)
+          .json({ success: false, msg: `Username ${req.username} exists!` });
       } else {
-        res.status(500).json(req.headers.error);
+        res.status(500).json({ success: false, msg: req.headers.error });
       }
     } else {
-      res.status(200).json(`Username ${req.headers.username} created!`);
+      res.status(200).json({
+        success: true,
+        msg: `Username ${req.username} created!`,
+      });
     }
   }
 );
