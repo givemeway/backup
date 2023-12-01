@@ -9,10 +9,16 @@ const validateUserDetails = (req, res, next) => {
       res.status(401).json("Username Or Password Incorrect1");
     } else if (req.headers.queryStatus.length == 1) {
       const hashedPassword = req.headers.queryStatus[0].password;
+      const fullname =
+        req.headers.queryStatus[0].first_name +
+        " " +
+        req.headers.queryStatus[0].last_name;
+      const enc = req.headers.queryStatus[0].enc;
       const hash = crypto.createHash("sha512");
       const data = hash.update(req.headers.password);
       const gen_hash = data.digest("hex");
-
+      req.headers.jwt_payload.fullname = fullname;
+      req.headers.jwt_payload.enc = enc;
       if (
         req.headers.queryStatus[0].username === req.headers.username &&
         hashedPassword === gen_hash
@@ -22,7 +28,6 @@ const validateUserDetails = (req, res, next) => {
           process.env.JWT_SECRET,
           { expiresIn: 86400 }
         );
-        console.log(token);
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", token, {

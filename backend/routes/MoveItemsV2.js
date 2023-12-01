@@ -14,15 +14,38 @@ const insertRootFilesInDirQuery = `INSERT IGNORE INTO files.files
                                     hashvalue,enc_hashvalue,versions,size,salt,iv 
                                     FROM files.files 
                                     WHERE directory = ? AND device = ? AND username = ?;`;
+const insertRootFileInDirQuery = `INSERT INTO files.files 
+                                    SELECT username,?,?,uuid,origin,filename,last_modified,
+                                    hashvalue,enc_hashvalue,versions,size,salt,iv 
+                                    FROM files.files 
+                                    WHERE directory = ? AND device = ? AND username = ? AND filename = ?;`;
+const filesInRootQuery = `SELECT * 
+                          FROM files.files 
+                          WHERE directory = ? 
+                          AND device = ? 
+                          AND username = ?; `;
 const insertRootFilesInDirQueryVersion = `INSERT IGNORE INTO versions.file_versions 
                                             SELECT username,?,?,uuid,origin,filename,last_modified,
                                             hashvalue,enc_hashvalue,versions,size,salt,iv 
                                             FROM versions.file_versions 
                                             WHERE directory = ? AND device = ? AND username = ?;`;
+const insertRootFileInDirQueryVersion = `INSERT  INTO versions.file_versions 
+                                            SELECT username,?,?,uuid,origin,filename,last_modified,
+                                            hashvalue,enc_hashvalue,versions,size,salt,iv 
+                                            FROM versions.file_versions 
+                                            WHERE directory = ? AND device = ? AND username = ? AND filename = ?;`;
+const filesInRootQueryVersion = `SELECT *
+                                  FROM versions.file_versions 
+                                  WHERE directory = ? 
+                                  AND device = ? 
+                                  AND username = ?; `;
 const deleteFilesInRootDir = `DELETE FROM files.files WHERE directory = ? AND device = ? AND username = ?`;
 const deleteFilesInRootDirVersion = `DELETE FROM versions.file_versions WHERE directory = ? AND device = ? AND username = ?`;
 
-const fileQuery = `INSERT IGNORE INTO files.files 
+const deleteFileInRootDir = `DELETE FROM files.files WHERE directory = ? AND device = ? AND username = ? AND filename = ?`;
+const deleteFileInRootDirVersion = `DELETE FROM versions.file_versions WHERE directory = ? AND device = ? AND username = ? AND filename = ?`;
+
+const fileQuery = `INSERT  INTO files.files 
                     SELECT username,?,?,uuid,origin,filename,last_modified,
                     hashvalue,enc_hashvalue,versions,size,salt,iv 
                     FROM files.files 
@@ -31,7 +54,7 @@ const fileQuery = `INSERT IGNORE INTO files.files
                     AND filename = ?
                     AND username = ?;`;
 
-const fileQueryVersion = `INSERT IGNORE INTO versions.file_versions 
+const fileQueryVersion = `INSERT  INTO versions.file_versions 
                             SELECT username,?,?,uuid,origin,filename,last_modified,
                             hashvalue,enc_hashvalue,versions,size,salt,iv 
                             FROM files.files 
@@ -42,7 +65,7 @@ const fileQueryVersion = `INSERT IGNORE INTO versions.file_versions
 const fileDeleteQueryVersion = `DELETE FROM versions.file_versions WHERE username = ? AND directory = ? AND device = ? AND filename = ?`;
 const fileDeleteQuery = `DELETE FROM files.files WHERE username = ? AND directory = ? AND device = ? AND filename = ?`;
 
-const folderQuery = `INSERT IGNORE INTO directories.directories
+const folderInsertQuery = `INSERT  INTO directories.directories
                     SELECT  uuid,username,?,folder,?,created_at
                     FROM directories.directories
                     WHERE username = ?
@@ -68,7 +91,7 @@ const sqlExecute = (con, query, values) => {
       const [rows, fields] = await con.execute(query, values);
       resolve(rows);
     } catch (error) {
-      console.error(error);
+      console.error(error.code);
       reject(error);
     }
   });
@@ -187,22 +210,41 @@ const organizeItemsInDB = async (
 
     const updateDB = async (dst_dir, src_dir) => {
       let foldersInDirRoot = [];
-
-      const values = [to_device, dst_dir, src_dir, from_device, username];
-      const values2 = [src_dir, from_device, username];
       try {
-        await fileCon.beginTransaction();
-        await versionCon.beginTransaction();
-        await fileCon.query(insertRootFilesInDirQuery, values);
-        await versionCon.query(insertRootFilesInDirQueryVersion, values);
-        await fileCon.query(deleteFilesInRootDir, values2);
-        await versionCon.query(deleteFilesInRootDirVersion, values2);
-        fileCon.commit();
-        versionCon.commit();
+        const filesValue = [src_dir, from_device, username];
+        const [rows, fields] = await fileCon.execute(
+          filesInRootQuery,
+          filesValue
+        );
+
+        for (const row of rows) {
+          try {
+            const insertVal = [
+              to_device,
+              dst_dir,
+              src_dir,
+              from_device,
+              username,
+              row.filename,
+            ];
+            const delVal = [src_dir, from_device, username, row.filename];
+
+            await fileCon.beginTransaction();
+            await fileCon.query(insertRootFileInDirQuery, insertVal);
+            await versionCon.query(insertRootFileInDirQueryVersion, insertVal);
+            fileCon.query(deleteFileInRootDir, delVal);
+            versionCon.query(deleteFileInRootDirVersion, delVal);
+            fileCon.commit();
+            versionCon.commit();
+          } catch (err) {
+            console.error(err.code);
+            fileCon.rollback();
+            versionCon.rollback();
+          }
+        }
       } catch (err) {
-        console.error(err);
-        fileCon.rollback();
-        versionCon.rollback();
+        console.error(err.code);
+        return;
       }
       try {
         foldersInDirRoot = await getFolders(
@@ -212,8 +254,9 @@ const organizeItemsInDB = async (
           from_device
         );
       } catch (err) {
-        console.error(err);
+        console.error(err.code);
         failed.push(err);
+        return;
       }
 
       if (foldersInDirRoot.length === 0) {
@@ -233,12 +276,12 @@ const organizeItemsInDB = async (
         const val2 = [username, from_device, folder.path];
         try {
           await folderCon.beginTransaction();
-          await folderCon.query(folderQuery, val);
+          await folderCon.query(folderInsertQuery, val);
           await folderCon.query(folderDeleteQuery, val2);
           folderCon.commit();
           await updateDB(dstPath, dir);
         } catch (err) {
-          console.error(err);
+          console.error(err.code, "<=>", folder.path);
           folderCon.rollback();
           failed.push(err.message);
         }
@@ -253,12 +296,11 @@ const organizeItemsInDB = async (
           const val = [to_device, pth, username, from_device, "/" + from];
           try {
             await folderCon.beginTransaction();
-            await folderCon.query(folderQuery, val);
+            await folderCon.query(folderInsertQuery, val);
             await folderCon.query(folderDeleteQuery, val2);
             folderCon.commit();
           } catch (err) {
-            console.error(err);
-
+            console.error(err.code);
             folderCon.rollback();
             failed.push(err.message);
           }
@@ -267,12 +309,11 @@ const organizeItemsInDB = async (
           const val = [to_device, pth, username, from_device, "/" + from];
           try {
             await folderCon.beginTransaction();
-            await folderCon.query(folderQuery, val);
+            await folderCon.query(folderInsertQuery, val);
             await folderCon.query(folderDeleteQuery, val2);
             folderCon.commit();
           } catch (err) {
-            console.error(err);
-
+            console.error(err.code);
             folderCon.rollback();
             failed.push(err.message);
           }
@@ -280,7 +321,7 @@ const organizeItemsInDB = async (
         resolve();
       })
       .catch((err) => {
-        console.error(err);
+        console.error(err.code);
         failed.push(err.message);
         reject(err.message);
       });

@@ -37,7 +37,9 @@ router.post("*", verifyToken, async (req, res) => {
     if (item === bulk) {
       const dirParts = path.split("/").slice(2).join("/");
       const device = path.split("/")[1];
-      const dir = dirParts === "" ? "/" : dirParts;
+      let dir = dirParts === "" ? "/" : dirParts;
+      dir = dir.replace(/\)/g, "\\)");
+      dir = dir.replace(/\(/g, "\\(");
       const regexp = `^${dir}(/[^/]+)*$`;
       query = `SELECT filename,deletion_date,device,directory,uuid
                     FROM deleted_files.files

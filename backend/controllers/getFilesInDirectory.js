@@ -10,7 +10,6 @@ const sqlExecute = (req, res, next) => {
       const [rows] = await con.execute(req.headers.query, [
         ...req.headers.queryValues,
       ]);
-      console.log(rows);
       // req.headers.queryStatus = rows;
       // req.headers.query_success = true;
       resolve(rows);
@@ -30,7 +29,6 @@ const getFilesInDirectory = async (req, res, next) => {
     const devicename = req.headers.devicename;
     const backupType = req.headers.backuptype;
     req.headers.data = [];
-    console.log(currentdirectory, username, devicename, backupType);
     if (backupType === FOLDER) {
       if (currentdirectory === "/") {
         const filesInOtherDirectoriesUnion = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
@@ -102,7 +100,6 @@ const getFilesInDirectory = async (req, res, next) => {
         req.headers.data.push(...rows);
       }
     }
-    console.log(req.headers.data);
     next();
   } catch (err) {
     res.status(500).json(err);

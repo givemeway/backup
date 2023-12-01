@@ -4,29 +4,52 @@ const router = express.Router();
 import { sqlExecute } from "../controllers/sql_execute.js";
 import { origin } from "../config/config.js";
 import releaseConnection from "../controllers/ReleaseConnection.js";
+import { randomFill } from "node:crypto";
+import { Buffer } from "node:buffer";
+
+const query = `INSERT INTO users 
+                  (username,email,password,first_name,last_name,phone,enc)
+                  VALUES (?,?, SHA2(?,512),?,?,?,?);`;
+
+const generateEncKey = () => {
+  return new Promise((resolve, reject) => {
+    const buffer = Buffer.alloc(32);
+    randomFill(buffer, (err, buf) => {
+      if (err) reject(err);
+      resolve(buf.toString("hex"));
+    });
+  });
+};
 
 router.use(csrf({ cookie: true }));
 
-const buildSignupQuery = (req, res, next) => {
-  const username = req.headers.username;
-  const firstname = req.headers.firstname;
-  const lastname = req.headers.lastname;
-  const email = req.headers.email;
-  const password = req.headers.password;
-  const phone = req.headers.phone;
-  const query = `INSERT INTO users 
-                (username,email,password,first_name,last_name,phone,enc)
-                VALUES (?,?, SHA2(?,512),?,?,?,NULL);`;
-  req.headers.query = query;
-  req.headers.queryValues = [
-    username,
-    email,
-    password,
-    firstname,
-    lastname,
-    phone,
-  ];
-  next();
+const buildSignupQuery = async (req, res, next) => {
+  // const username = req.headers.username;
+  // const firstname = req.headers.firstname;
+  // const lastname = req.headers.lastname;
+  // const email = req.headers.email;
+  // const password = req.headers.password;
+  // const phone = req.headers.phone;
+  try {
+    const [username, firstname, lastname, email, password, phone] = JSON.parse(
+      req.body
+    );
+
+    const enc = await generateEncKey();
+    req.headers.query = query;
+    req.headers.queryValues = [
+      username,
+      email,
+      password,
+      firstname,
+      lastname,
+      phone,
+      enc,
+    ];
+    next();
+  } catch (err) {
+    res.status(500).json(err);
+  }
 };
 
 router.use((req, res, next) => {

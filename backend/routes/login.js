@@ -28,7 +28,7 @@ const buildLoginQuery = (req, res, next) => {
     columns = `username, password`;
   }
   const query = `SELECT ${columns} FROM users WHERE ${values}`;
-  const query2 = `SELECT username, password FROM users WHERE username = ? AND password  = SHA2(?,512)`;
+  const query2 = `SELECT username, password,first_name,last_name,enc FROM users WHERE username = ? AND password  = SHA2(?,512)`;
   req.headers.query = query2;
   req.headers.queryValues = [username, password];
   req.headers.username = username;
