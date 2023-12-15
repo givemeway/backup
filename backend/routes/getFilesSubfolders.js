@@ -11,7 +11,8 @@ router.use(csrf({ cookie: true }));
 const getFiles = async (req, res, next) => {
   const currentDir = req.headers.currentdirectory;
   const order = req.headers.sortorder;
-  const username = req.headers.username;
+  // const username = req.headers.username;
+  const username = req.user.Username;
   const devicename = req.headers.devicename;
   const [start, end] = [0, 10000];
   const filesInCurrentDirQuery = `SELECT * FROM (
@@ -48,7 +49,9 @@ const getFiles = async (req, res, next) => {
 const getFolders = async (req, res, next) => {
   const currentDir = req.headers.currentdirectory;
   const order = req.headers.sortorder;
-  const username = req.headers.username;
+  // const username = req.headers.username;
+  const username = req.user.Username;
+
   const devicename = req.headers.devicename;
   const [start, end] = [0, 1000000];
   let regex = `^\\.?${currentDir}(/[^/]+)$`;

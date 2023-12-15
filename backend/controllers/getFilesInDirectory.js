@@ -25,7 +25,8 @@ const sqlExecute = (req, res, next) => {
 const getFilesInDirectory = async (req, res, next) => {
   try {
     const currentdirectory = req.headers.currentdirectory;
-    const username = req.headers.username;
+    const username = req.user.Username;
+    // const username = req.headers.username;
     const devicename = req.headers.devicename;
     const backupType = req.headers.backuptype;
     req.headers.data = [];

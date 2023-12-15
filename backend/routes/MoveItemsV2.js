@@ -127,7 +127,7 @@ const getFolders = async (con, currentDir, username, devicename) => {
 };
 
 const organizeFileInDB = async (
-  con,
+  fileCon,
   versionCon,
   device,
   username,
@@ -144,10 +144,14 @@ const organizeFileInDB = async (
           await fileCon.beginTransaction();
           await versionCon.beginTransaction();
           await fileCon.query(fileQuery, val);
-          await versionCon.query(fileQueryVersion, val);
-          await fileCon.query(fileDeleteQuery, val2);
-          await versionCon.query(fileDeleteQueryVersion, val2);
           fileCon.commit();
+          await versionCon.query(fileQueryVersion, val);
+          versionCon.commit();
+          await fileCon.beginTransaction();
+          await versionCon.beginTransaction();
+          await fileCon.query(fileDeleteQuery, val2);
+          fileCon.commit();
+          await versionCon.query(fileDeleteQueryVersion, val2);
           versionCon.commit();
           resolve();
         } catch (err) {
@@ -165,13 +169,18 @@ const organizeFileInDB = async (
           await fileCon.beginTransaction();
           await versionCon.beginTransaction();
           await fileCon.query(fileQuery, val);
-          await versionCon.query(fileQueryVersion, val);
-          await fileCon.query(fileDeleteQuery, val2);
-          await versionCon.query(fileDeleteQueryVersion, val2);
           fileCon.commit();
+          await versionCon.query(fileQueryVersion, val);
+          versionCon.commit();
+          await fileCon.beginTransaction();
+          await versionCon.beginTransaction();
+          await fileCon.query(fileDeleteQuery, val2);
+          fileCon.commit();
+          await versionCon.query(fileDeleteQueryVersion, val2);
           versionCon.commit();
           resolve();
         } catch (err) {
+          console.log(err);
           fileCon.rollback();
           versionCon.rollback();
           reject();
@@ -353,6 +362,7 @@ const organizeItems = async (req, res, next) => {
           dst
         );
       } catch (err) {
+        console.log(err);
         failed.push(file);
       }
     }
@@ -362,6 +372,27 @@ const organizeItems = async (req, res, next) => {
         const folderPath = folder.path.split("/").slice(1).join("/");
         const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
         console.log("processing v2....");
+
+        // const folderPath = folder.path.split("/").slice(2).join("/");
+
+        // console.log("processing v2....");
+        // if (folderPath !== "") {
+        //   const regex = `^${folderPath}(/[^/]+)*$`;
+        //   await con.execute(`CALL moveFolder(?,?,?,?,?)`, [
+        //     to,
+        //     folder.path,
+        //     username,
+        //     folder.device,
+        //     regex,
+        //   ]);
+        // } else {
+        //   await con.execute(`CALL moveRootDevice(?,?,?,?)`, [
+        //     to,
+        //     folder.path,
+        //     username,
+        //     folder.device,
+        //   ]);
+        // }
         await organizeItemsInDB(
           con,
           folderCon,
@@ -375,6 +406,8 @@ const organizeItems = async (req, res, next) => {
         console.error(err);
       }
     }
+    // await con.execute(`CALL DeletePaths(?,?)`, [username, "^(/[^/]+)$"]);
+
     console.log("returned the value v2");
     if (con) {
       con.release();

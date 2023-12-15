@@ -16,7 +16,9 @@ const createDir = async (req, res, next) => {
   const dir = req.headers.dir;
   const fileName = req.headers.filename;
   const deviceName = req.headers.devicename;
-  const userName = req.headers.username;
+  // const userName = req.headers.username;
+  const userName = req.user.Username;
+
   req.headers.uuid = uuidv4();
   const fileAbsPath = path.join(
     `${root}/${userName}`,

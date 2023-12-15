@@ -61,7 +61,9 @@ const createFolderIndex = async (req, res, next) => {
 const insertPaths = async (req, res, next) => {
   let folderCon;
   try {
-    const username = req.headers.username;
+    // const username = req.headers.username;
+    const username = req.user.Username;
+
     const device = req.headers.devicename;
     const dir = req.headers.dir;
 
@@ -145,7 +147,9 @@ async function insertPath(
 }
 
 const buildSQLQueryToUpdateFiles = async (req, res, next) => {
-  const username = req.headers.username;
+  // const username = req.headers.username;
+  const username = req.user.Username;
+
   let filename = req.headers.filename;
   const device = req.headers.devicename;
   const enc_file_checksum = req.headers.enc_file_checksum;

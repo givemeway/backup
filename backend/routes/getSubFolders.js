@@ -10,7 +10,9 @@ router.use(csrf({ cookie: true }));
 const getFolders = async (req, res, next) => {
   const path = req.headers.path;
   const order = req.headers.sortorder;
-  const username = req.headers.username;
+  // const username = req.headers.username;
+  const username = req.user.Username;
+
   const [start, end] = [0, 1000000];
 
   let regex = ``;

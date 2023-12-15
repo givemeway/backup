@@ -28,6 +28,7 @@ import DBConfig from "./config/DBConfig.js";
 import mysql from "mysql2/promise";
 import { getConnection } from "./controllers/getConnection.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
+import { S3Client } from "@aws-sdk/client-s3";
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";

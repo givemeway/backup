@@ -1,7 +1,361 @@
 USE `files`;
 
 DELIMITER //
-CREATE PROCEDURE InsertPaths(IN inputPath VARCHAR(255), IN username VARCHAR(255), IN device VARCHAR(255))
+CREATE PROCEDURE DeletePaths(IN user VARCHAR(70),REGEX VARCHAR(300))
+BEGIN
+  DECLARE deviceName VARCHAR(255);
+  DECLARE pth VARCHAR(255);
+  DECLARE done INT DEFAULT 0;
+  DECLARE fileCount INT;
+  DECLARE cur CURSOR FOR SELECT device,path FROM directories.directories WHERE username = user AND path REGEXP REGEX;
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+  BEGIN
+    OPEN cur;
+    folder_loop: LOOP
+      START TRANSACTION;
+      FETCH cur INTO deviceName,pth;
+      IF done = 1 THEN
+        LEAVE folder_loop;
+      END IF;
+      SET @dir = SUBSTRING(pth,LOCATE('/', pth, 2) + 1,LENGTH(pth));
+      SET @sanitizedDir_1 = REPLACE(@dir,"(","\\(");
+      SET @sanitizedDir = REPLACE(@sanitizedDir_1,"(","\\(");
+      SET @sanitizedPath_1 = REPLACE(pth,"(","\\(");
+      SET @sanitizedPath = REPLACE(@sanitizedPath_1,")","\\)");
+      SET @pathsRegex = CONCAT("^",@sanitizedPath,"(/[^/]+)*$");
+      IF @dir = pth THEN
+        SET fileCount = (SELECT COUNT(*) FROM files.files WHERE username = user AND device = deviceName);
+      ELSE
+        
+        SET @dirFilesRegex = CONCAT("^",@sanitizedDir,"(/[^/]+)*$");
+        SET fileCount = (SELECT COUNT(*) FROM files.files WHERE username = user AND device = deviceName AND directory REGEXP @dirFilesRegex);
+      END IF;
+      IF fileCount = 0 THEN
+        DELETE FROM directories.directories WHERE username = user AND path REGEXP @pathsRegex;
+        COMMIT;
+      ELSE 
+        SET @subFolderRegex = CONCAT("^",@sanitizedPath,"(/[^/]+)$");
+        CALL DeletePaths(user,@subFolderRegex);
+      END IF;
+    END LOOP;  
+  END;
+
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE moveRootDevice(IN dst VARCHAR(255),IN src VARCHAR(255),IN username_in VARCHAR(70),IN from_device VARCHAR(255))
+BEGIN
+  DECLARE device_dst VARCHAR(255);
+  DECLARE device_src VARCHAR(255);
+  DECLARE src_rel_path VARCHAR(255);
+  DECLARE dst_rel_path VARCHAR(255);
+  DECLARE dir_src VARCHAR(255);
+  DECLARE dir_dst VARCHAR(255);
+  DECLARE done INT DEFAULT 0;
+  DECLARE user VARCHAR(70);
+  DECLARE dev VARCHAR(70);
+  DECLARE dir VARCHAR(255);
+  DECLARE uuid VARCHAR(36);
+  DECLARE origin VARCHAR(36);
+  DECLARE file_name VARCHAR(291);
+  DECLARE last_modified DATETIME;
+  DECLARE hashvalue CHAR(64);
+  DECLARE enc_hashvalue CHAR(64);
+  DECLARE versions INTEGER;
+  DECLARE size BIGINT UNSIGNED;
+  DECLARE salt VARCHAR(64);
+  DECLARE iv VARCHAR(64);
+  DECLARE cur CURSOR FOR SELECT * FROM files.files WHERE username = username_in AND device = from_device;
+  DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+  IF dst = "/" THEN
+    SET device_dst = SUBSTRING_INDEX(src,"/",-1);
+  ELSE
+    SET @device_dst_path = SUBSTRING_INDEX(dst,'/',2);
+    SET device_dst = SUBSTRING(@device_dst_path,2,LENGTH(@device_dst_path));
+  END IF;
+  SET @device_src_path = SUBSTRING_INDEX(src,'/',2);
+  SET device_src = SUBSTRING(@device_src_path,2,LENGTH(@device_src_path));
+  SET @total1 = LENGTH(src) - LENGTH(REPLACE(src,"/",""));
+  SET @srcRelPath =  SUBSTRING_INDEX(src,"/",@total1);
+  SET @total = LENGTH(dst) - LENGTH(REPLACE(dst,"/",""));
+
+  SET dst_rel_path = SUBSTRING_INDEX(dst,"/", -1 * (@total - 1));
+  IF dst_rel_path = "" THEN
+    SET dst_rel_path = "/";
+  END IF;
+  
+  BEGIN
+    OPEN cur;
+    file_loop: LOOP
+      FETCH cur INTO user,dev,dir,uuid,origin,file_name,last_modified,hashvalue,enc_hashvalue,versions,size,salt,iv;
+      IF done = 1 THEN
+        LEAVE file_loop;
+      END IF;
+      -- update the device and directory values
+      IF dir = "/" THEN
+        SET @src_current_path = CONCAT("/",device_src);
+      ELSE
+        SET @src_current_path = CONCAT("/",device_src,"/",dir);
+      END IF;
+      SET @src_folder = SUBSTRING_INDEX(src,"/",-1);
+      -- IF dst = "/" THEN
+      --   set @data = SUBSTRING_INDEX(@src_current_path,src, -1);
+      --   SET src_rel_path = SUBSTRING(@data,2,LENGTH(@data));
+      -- ELSE
+      -- END IF;
+      SET src_rel_path = CONCAT(@src_folder,  SUBSTRING_INDEX(@src_current_path,src, -1));
+      IF src_rel_path = "" THEN
+        SET src_rel_path = "/";
+      END IF;
+      IF dst = "/" THEN
+        set @relPath = SUBSTRING_INDEX(@src_current_path,src, -1);
+        SET @dst_dir = SUBSTRING(@relPath,2,LENGTH(@relPath));
+        IF @dst_dir = "" THEN
+          SET @dst_dir = "/";
+        END IF;
+      ELSE
+        IF src_rel_path = "/" THEN
+          SET @dst_dir = dst_rel_path;
+        ELSE 
+          IF dst_rel_path != "/" THEN
+            SET @dst_dir = CONCAT(dst_rel_path,"/",src_rel_path);
+          ELSE
+            SET @dst_dir = src_rel_path;
+          END IF;
+        END IF;
+      END IF;
+      START TRANSACTION;
+      INSERT IGNORE INTO files.files
+      VALUES (user,device_dst,@dst_dir,uuid,origin,file_name,last_modified,
+              hashvalue,enc_hashvalue,versions,size,salt,iv);
+      COMMIT;
+      SET @ROWCOUNT = ROW_COUNT();
+      IF @ROWCOUNT = 1 THEN
+          CALL InsertPathsInDirectoryTable(src_rel_path,dst,@srcRelPath,username_in,from_device,device_dst);
+          START TRANSACTION;
+          DELETE FROM files.files 
+          WHERE username = username_in AND filename = file_name AND directory = dir and device = dev;
+          COMMIT;
+      END IF;
+      START TRANSACTION;
+      INSERT IGNORE INTO versions.file_versions 
+      SELECT username,device,directory,uuid,origin,filename,last_modified,
+             hashvalue,enc_hashvalue,versions,size,salt,iv 
+      FROM versions.file_versions
+      WHERE directory = @dst_dir AND device = device_dst AND username = username_in AND filename = file_name;
+      COMMIT;
+      SET @ROWCOUNT = ROW_COUNT();
+      IF @ROWCOUNT = 1 THEN 
+        START TRANSACTION;
+        DELETE FROM versions.file_versions
+        WHERE username = username_in AND filename = file_name AND directory = dir and device = dev;
+        COMMIT;
+      END IF;
+    END LOOP;
+    CLOSE cur;
+    CALL DeletePaths(username_in,CONCAT("^",src,"(/?([^/]+))?$"));
+  END;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE moveFolder(IN dst VARCHAR(255),IN src VARCHAR(255),IN username_in VARCHAR(70),IN from_device VARCHAR(255),IN regex VARCHAR(300))
+BEGIN
+  DECLARE device_dst VARCHAR(255);
+  DECLARE device_src VARCHAR(255);
+  DECLARE src_rel_path VARCHAR(255);
+  DECLARE dst_rel_path VARCHAR(255);
+  DECLARE dir_src VARCHAR(255);
+  DECLARE dir_dst VARCHAR(255);
+  DECLARE done INT DEFAULT 0;
+  DECLARE user VARCHAR(70);
+  DECLARE dev VARCHAR(70);
+  DECLARE dir VARCHAR(255);
+  DECLARE uuid VARCHAR(36);
+  DECLARE origin VARCHAR(36);
+  DECLARE file_name VARCHAR(291);
+  DECLARE last_modified DATETIME;
+  DECLARE hashvalue CHAR(64);
+  DECLARE enc_hashvalue CHAR(64);
+  DECLARE versions INTEGER;
+  DECLARE size BIGINT UNSIGNED;
+  DECLARE salt VARCHAR(64);
+  DECLARE iv VARCHAR(64);
+  DECLARE cur CURSOR FOR SELECT * FROM files.files WHERE username = username_in AND device = from_device AND directory REGEXP regex;
+  DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+  IF dst = "/" THEN
+    SET device_dst = SUBSTRING_INDEX(src,"/",-1);
+  ELSE
+    SET @device_dst_path = SUBSTRING_INDEX(dst,'/',2);
+    SET device_dst = SUBSTRING(@device_dst_path,2,LENGTH(@device_dst_path));
+  END IF;
+  SET @device_src_path = SUBSTRING_INDEX(src,'/',2);
+  SET device_src = SUBSTRING(@device_src_path,2,LENGTH(@device_src_path));
+  SET @total1 = LENGTH(src) - LENGTH(REPLACE(src,"/",""));
+  SET @srcRelPath =  SUBSTRING_INDEX(src,"/",@total1);
+  SET @total = LENGTH(dst) - LENGTH(REPLACE(dst,"/",""));
+
+  SET dst_rel_path = SUBSTRING_INDEX(dst,"/", -1 * (@total - 1));
+  IF dst_rel_path = "" THEN
+    SET dst_rel_path = "/";
+  END IF;
+  
+  BEGIN
+    OPEN cur;
+    file_loop: LOOP
+      FETCH cur INTO user,dev,dir,uuid,origin,file_name,last_modified,hashvalue,enc_hashvalue,versions,size,salt,iv;
+      IF done = 1 THEN
+        LEAVE file_loop;
+      END IF;
+      -- update the device and directory values
+      IF dir = "/" THEN
+        SET @src_current_path = CONCAT("/",device_src);
+      ELSE
+        SET @src_current_path = CONCAT("/",device_src,"/",dir);
+      END IF;
+      SET @src_folder = SUBSTRING_INDEX(src,"/",-1);
+      -- IF dst = "/" THEN
+      --   set @data = SUBSTRING_INDEX(@src_current_path,src, -1);
+      --   SET src_rel_path = SUBSTRING(@data,2,LENGTH(@data));
+      -- ELSE
+      -- END IF;
+      SET src_rel_path = CONCAT(@src_folder,  SUBSTRING_INDEX(@src_current_path,src, -1));
+      IF src_rel_path = "" THEN
+        SET src_rel_path = "/";
+      END IF;
+      IF dst = "/" THEN
+        set @relPath = SUBSTRING_INDEX(@src_current_path,src, -1);
+        SET @dst_dir = SUBSTRING(@relPath,2,LENGTH(@relPath));
+        IF @dst_dir = "" THEN
+          SET @dst_dir = "/";
+        END IF;
+      ELSE
+        IF src_rel_path = "/" THEN
+          SET @dst_dir = dst_rel_path;
+        ELSE 
+          IF dst_rel_path != "/" THEN
+            SET @dst_dir = CONCAT(dst_rel_path,"/",src_rel_path);
+          ELSE
+            SET @dst_dir = src_rel_path;
+          END IF;
+        END IF;
+      END IF;
+      START TRANSACTION;
+      INSERT IGNORE INTO files.files
+      VALUES (user,device_dst,@dst_dir,uuid,origin,file_name,last_modified,
+              hashvalue,enc_hashvalue,versions,size,salt,iv);
+      COMMIT;
+      SET @ROWCOUNT = ROW_COUNT();
+      IF @ROWCOUNT = 1 THEN
+          CALL InsertPathsInDirectoryTable(src_rel_path,dst,@srcRelPath,username_in,from_device,device_dst);
+          START TRANSACTION;
+          DELETE FROM files.files 
+          WHERE username = username_in AND filename = file_name AND directory = dir and device = dev;
+          COMMIT;
+      END IF;
+      START TRANSACTION;
+      INSERT IGNORE INTO versions.file_versions 
+      SELECT username,device,directory,uuid,origin,filename,last_modified,
+             hashvalue,enc_hashvalue,versions,size,salt,iv 
+      FROM versions.file_versions
+      WHERE directory = @dst_dir AND device = device_dst AND username = username_in AND filename = file_name;
+      COMMIT;
+      SET @ROWCOUNT = ROW_COUNT();
+      IF @ROWCOUNT = 1 THEN
+        START TRANSACTION;
+        DELETE FROM versions.file_versions
+        WHERE username = username_in AND filename = file_name AND directory = dir and device = dev;
+        COMMIT;
+      END IF;
+    END LOOP;
+    CLOSE cur;
+    CALL DeletePaths(username_in,CONCAT("^",src,"(/?([^/]+))?$"));
+  END;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE InsertPathsInDirectoryTable(IN relative_directory VARCHAR(255),
+                                             IN dstPath VARCHAR(255),
+                                             IN srcPath VARCHAR(255),
+                                             IN username_in VARCHAR(255), 
+                                             IN device_src VARCHAR(255),
+                                             IN device_dst VARCHAR(255))
+BEGIN
+  DECLARE pathParts VARCHAR(255);
+  DECLARE dir VARCHAR(255);
+  DECLARE pos INT DEFAULT 1;
+  DECLARE total INT;
+  DECLARE rows_count INT;
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+
+  START TRANSACTION;
+
+  SET total = LENGTH(relative_directory) - LENGTH(REPLACE(relative_directory, '/', '')) + 1;
+  IF relative_directory = "/" THEN
+    SET total = total - 1;
+  END IF;
+  -- numpy/core 
+  
+  -- /LAPTOP/C/Users/Sandeep/Desktop/numpy - core,data,etc subfolders
+  -- /DESKTOP/C/Users/Deetya/Documents/numpy - core,data,etc subfolders
+
+  -- dstPath - /DESKTOP/C/Users/Deetya/Documents/numpy
+  -- srcPath - /LAPTOP/C/Users/Sandeep/Desktop/numpy
+
+  WHILE pos <= total DO
+    SET pathParts = SUBSTRING_INDEX(relative_directory,"/",pos);
+    -- numpy ==> numpy/core 
+    IF pathParts = "" THEN
+      SET @current_src_path = srcPath; -- /LAPTOP/C/Users/Sandeep/Desktop
+      IF dstPath = "/" THEN
+        SET @current_dst_path = CONCAT("/",device_dst);
+      ELSE
+        SET @current_dst_path = dstPath; -- /DESKTOP/C/Users/Deetya/Documents
+      END IF;
+    ELSE 
+      SET @current_src_path = CONCAT(srcPath,"/",pathParts);
+      IF dstPath = "/" THEN
+        SET @current_dst_path = CONCAT("/",pathParts);
+      ELSE
+        SET @current_dst_path = CONCAT(dstPath,"/",pathParts);
+      END IF;
+    END IF;
+
+    INSERT IGNORE INTO directories.directories
+    SELECT uuid, username, device_dst, folder, @current_dst_path, created_at
+    FROM directories.directories
+    WHERE username = username_in AND device = device_src AND path = @current_src_path;
+    SET pos = pos + 1;
+  END WHILE;
+
+  COMMIT;
+
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE InsertPaths(IN inputPath VARCHAR(255), IN username_in VARCHAR(255), IN device_in VARCHAR(255))
 BEGIN
   DECLARE pathParts VARCHAR(255);
   DECLARE dir VARCHAR(255);
@@ -25,7 +379,7 @@ BEGIN
     SET pathParts = SUBSTRING_INDEX(inputPath,"/",pos);
 
     INSERT IGNORE INTO directories.directories
-    SELECT uuid, username, device, folder, path, created_at
+    SELECT uuid, username_in, device_in, folder, pathParts, created_at
     FROM deleted_directories.directories
     WHERE username = username AND device = device AND path = pathParts;
 

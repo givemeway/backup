@@ -23,6 +23,8 @@
   },
   "homepage": "https://github.com/givemeway/backup#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.474.0",
+    "@aws-sdk/lib-storage": "^3.474.0",
     "adm-zip": "^0.5.10",
     "archiver": "^5.3.1",
     "body-parser": "^1.20.2",

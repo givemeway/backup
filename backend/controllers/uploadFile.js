@@ -14,7 +14,9 @@ const multerInstance = multer({
     destination: (req, file, cb) => {
       const device = req.headers.devicename;
       const filePath = req.headers.dir;
-      const userName = req.headers.username;
+      // const userName = req.headers.username;
+      const userName = req.user.Username;
+
       return cb(null, path.join(`${root}/${userName}`, "/"));
 
       // return cb(null, path.join(`${root}/${userName}`, device, filePath));
