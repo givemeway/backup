@@ -87,6 +87,8 @@ const extractFilesInforFromDB = async (req, res, next) => {
   req.headers.username = username;
   const folders = req.body.directories;
   const files = req.body.files;
+  console.log(folders);
+  console.log(files);
   req.files = [];
   let totalSize = 0;
   for (let i = 0; i < folders.length; i++) {
@@ -104,6 +106,7 @@ const extractFilesInforFromDB = async (req, res, next) => {
       const filePath = path.join(root, username, uuid);
       const actualPath = path.join(device, directory);
       const fileData = {
+        key: `${username}/${uuid}`,
         filename,
         salt,
         iv,
@@ -155,6 +158,7 @@ router.get(
     worker.postMessage({ files: req.files, port: channel.port1 }, [
       channel.port1,
     ]);
+
     channel.port2.on("message", ({ mode, chunk }) => {
       if (mode === "chunk") {
         readable.push(chunk);
@@ -162,6 +166,8 @@ router.get(
         readable.push(null);
       }
     });
+    console.log("worker end");
+
     res.set("Content-Disposition", `attachment; filename="QDrive.zip"`);
     readable.pipe(res);
     channel.port2.on("error", (err) => {
