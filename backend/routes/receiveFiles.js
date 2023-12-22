@@ -294,7 +294,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
 router.post(
   "/",
   verifyToken,
-  createDir,
+  // createDir,
   uploadFile,
   buildSQLQueryToUpdateFiles,
   // getConnection("directories"),
