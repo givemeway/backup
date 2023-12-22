@@ -10,8 +10,13 @@ import fs from "node:fs";
 import csrf from "csurf";
 import releaseConnection from "../controllers/ReleaseConnection.js";
 import { pool } from "../server.js";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "../server.js";
 
 const root = process.env.VARIABLE;
+const BUCKET = process.env.BUCKET;
+
+const expiration = 3600; // in seconds
 
 router.use(csrf({ cookie: true }));
 
@@ -34,6 +39,7 @@ router.get(
       const username = req.user.Username;
       const { file, uuid, db, dir, device } = req.query;
       const filePath = path.join(root, username, uuid);
+
       let query;
       let con;
       const values = [uuid];
@@ -48,11 +54,19 @@ router.get(
       if (db === "versions") {
         con.release();
       }
-      const readStream = fs.createReadStream(filePath, {
-        highWaterMark: 1024 * 1024 * 1,
+      const Key = `${username}/${uuid}`;
+      const command = new GetObjectCommand({
+        Bucket: BUCKET,
+        Key,
       });
+      const data = await s3Client.send(command);
+
+      // const readStream = fs.createReadStream(filePath, {
+      //   highWaterMark: 1024 * 1024 * 1,
+      // });
+
       const decryptStream = decryptFile(
-        readStream,
+        data.Body,
         rows[0]["salt"],
         rows[0]["iv"],
         "sandy86kumar"
@@ -65,7 +79,6 @@ router.get(
       decryptStream.pipe(res);
       // readStream.pipe(res);
     } catch (err) {
-      console.log(err);
       res.status(500).json(err);
     }
   },

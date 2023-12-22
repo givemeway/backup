@@ -3,25 +3,46 @@ import archiver from "archiver";
 import fs from "node:fs";
 import dotenv from "dotenv";
 import { decryptFile } from "../utils/decrypt.js";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 await dotenv.config();
 import { parentPort } from "node:worker_threads";
 import async from "async";
 
+const BUCKET = process.env.BUCKET;
+
+let s3Client;
+try {
+  s3Client = new S3Client({
+    region: process.env.REGION,
+    credentials: {
+      secretAccessKey: process.env.SECRETKEY,
+      accessKeyId: process.env.ACCESSKEY,
+    },
+  });
+} catch (err) {
+  console.log(err);
+}
+
 const addFilesToArchive = (file, archive) => {
-  return new Promise((resolve, reject) => {
-    const inputFile = fs.createReadStream(file.path);
+  return new Promise(async (resolve, reject) => {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: file.key,
+    });
+    const data = await s3Client.send(command);
+    // const inputFile = fs.createReadStream(file.path);
     const fileStream = decryptFile(
-      inputFile,
+      data.Body,
       file.salt,
       file.iv,
       "sandy86kumar"
     );
-    inputFile.on("error", (err) => {
-      console.error(err);
-      reject(err);
-    });
+    // inputFile.on("error", (err) => {
+    //   console.error(err);
+    //   reject(err);
+    // });
     fileStream.on("end", () => {
-      inputFile.destroy();
+      // inputFile.destroy();
       resolve();
     });
 
