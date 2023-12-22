@@ -23,12 +23,14 @@ import { getTrash } from "./routes/getTrash.js";
 import { getTrashBatch } from "./routes/getTrashBatch.js";
 import { getTrashTotal } from "./routes/getTrashTotal.js";
 import { restoreTrashItems } from "./routes/RestoreItemsFromTrash.js";
+import { emptyTrash } from "./routes/EmptyTrash.js";
 import { getSharedLinks } from "./routes/getSharedItems.js";
 import DBConfig from "./config/DBConfig.js";
 import mysql from "mysql2/promise";
 import { getConnection } from "./controllers/getConnection.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { Server } from "socket.io";
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -77,6 +79,18 @@ try {
 } catch (err) {
   console.error(err);
 }
+let s3Client;
+try {
+  s3Client = new S3Client({
+    region: process.env.REGION,
+    credentials: {
+      secretAccessKey: process.env.SECRETKEY,
+      accessKeyId: process.env.ACCESSKEY,
+    },
+  });
+} catch (err) {
+  console.log(err);
+}
 
 try {
   app.use("/app/login", getConnection("customers"), login);
@@ -107,6 +121,7 @@ try {
   app.use("/app/get_download_zip", createDownloadURL);
   app.use("/app/getSharedLinks", getSharedLinks);
   app.use("/app/validateusername", validateUsername);
+  app.use("/app/emptyTrash", emptyTrash);
 } catch (err) {
   console.log(err);
 }
@@ -136,7 +151,9 @@ const options = {
   cert: fs.readFileSync("./cert.pem"),
 };
 
-https.createServer(options, app).listen(PORT, (err) => {
+const server = https.createServer(options, app);
+
+server.listen(PORT, (err) => {
   if (err) {
     throw Error(err);
   } else {
@@ -144,4 +161,6 @@ https.createServer(options, app).listen(PORT, (err) => {
   }
 });
 
-export { pool };
+const io = new Server(server);
+
+export { pool, s3Client, io };
