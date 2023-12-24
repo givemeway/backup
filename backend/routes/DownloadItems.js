@@ -9,6 +9,7 @@ import { Worker } from "node:worker_threads";
 import { Readable } from "node:stream";
 import { DownloadZip } from "../models/mongodb.js";
 import releaseConnection from "../controllers/ReleaseConnection.js";
+import { pool } from "../server.js";
 await dotenv.config();
 
 router.use(csrf({ cookie: true }));
@@ -16,6 +17,8 @@ const fileQuery = `SELECT filename,directory,device,salt,iv,size FROM files wher
 const filesInSubDirectories = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
 const filesInCurrentDirectory = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE  username = ? AND device = ? AND directory = ?`;
 const filesInDevice = `SELECT uuid,filename,salt,iv,directory,size FROM  files where username = ? AND device = ?`;
+const encQuery = `SELECT enc FROM customers.users WHERE username = ?`;
+
 const root = process.env.VARIABLE;
 
 const sqlExecute = async (req, res) => {
@@ -121,16 +124,18 @@ const extractFilesInforFromDB = async (req, res, next) => {
   }
 
   for (let i = 0; i < files.length; i++) {
+    const uuid = files[i].id;
     req.headers.query = fileQuery;
-    req.headers.queryValues = [files[i].id];
+    req.headers.queryValues = [uuid];
     await sqlExecute(req, res);
     const { salt, iv, device, filename, directory, size } =
       req.headers.queryStatus[0];
     totalSize += size;
     // const filePath = path.join(root, username, device, directory, filename);
-    const filePath = path.join(root, username, files[i].id);
+    const filePath = path.join(root, username, uuid);
 
     req.files.push({
+      key: `${username}/${uuid}`,
       filename,
       salt,
       iv,
@@ -150,32 +155,44 @@ router.get(
   extractFilesInforFromDB,
   releaseConnection,
   async (req, res) => {
-    const worker = new Worker("../backend/controllers/DownloadWorker.js");
-    const channel = new MessageChannel();
-    const readable = new Readable({
-      read() {},
-    });
-    worker.postMessage({ files: req.files, port: channel.port1 }, [
-      channel.port1,
-    ]);
+    try {
+      const username = req.user.Username;
+      const userCon = await pool["customers"].getConnection();
+      const [key] = await userCon.execute(encQuery, [username]);
+      const worker = new Worker("../backend/controllers/DownloadWorker.js");
+      const channel = new MessageChannel();
+      const readable = new Readable({
+        read() {},
+      });
+      worker.postMessage(
+        { files: req.files, enc: key[0].enc, port: channel.port1 },
+        [channel.port1]
+      );
 
-    channel.port2.on("message", ({ mode, chunk }) => {
-      if (mode === "chunk") {
-        readable.push(chunk);
-      } else {
-        readable.push(null);
+      channel.port2.on("message", ({ mode, chunk }) => {
+        if (mode === "chunk") {
+          readable.push(chunk);
+        } else {
+          readable.push(null);
+        }
+      });
+      console.log("worker end");
+
+      res.set("Content-Disposition", `attachment; filename="QDrive.zip"`);
+      readable.pipe(res);
+      channel.port2.on("error", (err) => {
+        console.error(err);
+      });
+      worker.on("error", (err) => {
+        console.error(err);
+      });
+      if (userCon) {
+        userCon.release();
       }
-    });
-    console.log("worker end");
-
-    res.set("Content-Disposition", `attachment; filename="QDrive.zip"`);
-    readable.pipe(res);
-    channel.port2.on("error", (err) => {
+    } catch (err) {
       console.error(err);
-    });
-    worker.on("error", (err) => {
-      console.error(err);
-    });
+      res.status(500).json(err);
+    }
   }
 );
 

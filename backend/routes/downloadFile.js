@@ -18,6 +18,8 @@ const BUCKET = process.env.BUCKET;
 
 const expiration = 3600; // in seconds
 
+const encQuery = `SELECT enc FROM customers.users WHERE username = ?`;
+
 router.use(csrf({ cookie: true }));
 
 router.use((req, res, next) => {
@@ -39,10 +41,12 @@ router.get(
       const username = req.user.Username;
       const { file, uuid, db, dir, device } = req.query;
       const filePath = path.join(root, username, uuid);
+      const userCon = await pool["customers"].getConnection();
 
       let query;
       let con;
       const values = [uuid];
+      console.log(uuid);
       if (db === "versions") {
         con = await pool["versions"].getConnection();
         query = `SELECT salt,iv,size from versions.file_versions where uuid = ?`;
@@ -51,6 +55,7 @@ router.get(
         query = `SELECT salt,iv,size from files.files where uuid = ?`;
       }
       const [rows, fields] = await con.execute(query, values);
+
       if (db === "versions") {
         con.release();
       }
@@ -64,13 +69,16 @@ router.get(
       // const readStream = fs.createReadStream(filePath, {
       //   highWaterMark: 1024 * 1024 * 1,
       // });
-
-      const decryptStream = decryptFile(
+      const [key] = await userCon.execute(encQuery, [username]);
+      const decryptStream = await decryptFile(
         data.Body,
         rows[0]["salt"],
         rows[0]["iv"],
-        "sandy86kumar"
+        key[0].enc
       );
+      if (userCon) {
+        userCon.release();
+      }
       // res.set("Content-Length", fileStat.size);
       res.set("Content-Length", rows[0]["size"]);
       res.set("salt", rows[0]["salt"]);

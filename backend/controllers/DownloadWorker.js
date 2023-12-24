@@ -23,37 +23,41 @@ try {
   console.log(err);
 }
 
-const addFilesToArchive = (file, archive) => {
+const addFilesToArchive = (file, enc, archive) => {
   return new Promise(async (resolve, reject) => {
-    const command = new GetObjectCommand({
-      Bucket: BUCKET,
-      Key: file.key,
-    });
-    const data = await s3Client.send(command);
-    // const inputFile = fs.createReadStream(file.path);
-    const fileStream = decryptFile(
-      data.Body,
-      file.salt,
-      file.iv,
-      "sandy86kumar"
-    );
-    // inputFile.on("error", (err) => {
-    //   console.error(err);
-    //   reject(err);
-    // });
-    fileStream.on("end", () => {
-      // inputFile.destroy();
-      resolve();
-    });
+    try {
+      const command = new GetObjectCommand({
+        Bucket: BUCKET,
+        Key: file.key,
+      });
+      const data = await s3Client.send(command);
+      // const inputFile = fs.createReadStream(file.path);
 
-    archive.append(fileStream, {
-      name: file.filename,
-      prefix: file.relativePath,
-    });
+      const fileStream = await decryptFile(data.Body, file.salt, file.iv, enc);
+      // inputFile.on("error", (err) => {
+      //   console.error(err);
+      //   reject(err);
+      // });
+      fileStream.on("end", () => {
+        // inputFile.destroy();
+        resolve();
+      });
+
+      fileStream.on("error", (err) => {
+        reject(err);
+      });
+
+      archive.append(fileStream, {
+        name: file.filename,
+        prefix: file.relativePath,
+      });
+    } catch (err) {
+      reject(err);
+    }
   });
 };
 
-const archiveDirectoriesAndFiles = async (files, port) => {
+const archiveDirectoriesAndFiles = async (files, enc, port) => {
   const archive = archiver("zip", {
     zlib: { level: 9 },
     statConcurrency: 8,
@@ -84,7 +88,7 @@ const archiveDirectoriesAndFiles = async (files, port) => {
   try {
     await async.eachLimit(files, 10, async (file) => {
       try {
-        await addFilesToArchive(file, archive);
+        await addFilesToArchive(file, enc, archive);
       } catch (err) {
         console.error(`Error Adding file ${file.filename}`);
       }
@@ -95,6 +99,6 @@ const archiveDirectoriesAndFiles = async (files, port) => {
   archive.finalize();
 };
 
-parentPort.on("message", ({ files, port }) => {
-  archiveDirectoriesAndFiles(files, port);
+parentPort.on("message", ({ files, enc, port }) => {
+  archiveDirectoriesAndFiles(files, enc, port);
 });
