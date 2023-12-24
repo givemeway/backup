@@ -19,8 +19,6 @@ const insertRootFileInDirQuery = `INSERT INTO files.files
                                     hashvalue,enc_hashvalue,versions,size,salt,iv 
                                     FROM files.files 
                                     WHERE directory = ? AND device = ? AND username = ? AND filename = ?;`;
-const updateRootFileInDirQuery = `UPDATE IGNORE files.files SET device = ?, directory = ? 
-                                  WHERE directory = ? AND device = ? AND username = ? AND filename = ?;`;
 const filesInRootQuery = `SELECT * 
                           FROM files.files 
                           WHERE directory = ? 
@@ -36,9 +34,6 @@ const insertRootFileInDirQueryVersion = `INSERT  INTO versions.file_versions
                                             hashvalue,enc_hashvalue,versions,size,salt,iv 
                                             FROM versions.file_versions 
                                             WHERE directory = ? AND device = ? AND username = ? AND filename = ?;`;
-const updateRootFileInDirQueryVersion = `UPDATE IGNORE versions.file_versions 
-                                          SET device = ?, directory = ? 
-                                          WHERE directory = ? AND device = ? AND username = ? AND filename = ?;`;
 const filesInRootQueryVersion = `SELECT *
                                   FROM versions.file_versions 
                                   WHERE directory = ? 
@@ -58,23 +53,11 @@ const fileQuery = `INSERT  INTO files.files
                     AND device = ?
                     AND filename = ?
                     AND username = ?;`;
-const fileUpdateQuery = `UPDATE IGNORE files.files 
-                    SET device = ?, directory = ? 
-                    WHERE directory = ?
-                    AND device = ?
-                    AND filename = ?
-                    AND username = ?;`;
 
 const fileQueryVersion = `INSERT  INTO versions.file_versions 
                             SELECT username,?,?,uuid,origin,filename,last_modified,
                             hashvalue,enc_hashvalue,versions,size,salt,iv 
                             FROM files.files 
-                            WHERE directory = ?
-                            AND device = ?
-                            AND filename = ?
-                            AND username = ?;`;
-const fileUpdateVersion = `UPDATE IGNORE versions.file_versions 
-                            SET device = ?, directory = ? 
                             WHERE directory = ?
                             AND device = ?
                             AND filename = ?
@@ -88,11 +71,6 @@ const folderInsertQuery = `INSERT  INTO directories.directories
                     WHERE username = ?
                     AND device = ?
                     AND path = ?;`;
-const folderUpdateQuery = `UPDATE IGNORE directories.directories
-                          SET  device = ?, path = ?
-                          WHERE username = ?
-                          AND device = ?
-                          AND path = ?;`;
 const folderDeleteQuery = `DELETE from directories.directories 
                             WHERE username = ? 
                             AND device = ? 
@@ -165,16 +143,16 @@ const organizeFileInDB = async (
         try {
           await fileCon.beginTransaction();
           await versionCon.beginTransaction();
-          await fileCon.query(fileUpdateQuery, val);
+          await fileCon.query(fileQuery, val);
           fileCon.commit();
-          await versionCon.query(fileUpdateVersion, val);
+          await versionCon.query(fileQueryVersion, val);
           versionCon.commit();
-          // await fileCon.beginTransaction();
-          // await versionCon.beginTransaction();
-          // await fileCon.query(fileDeleteQuery, val2);
-          // fileCon.commit();
-          // await versionCon.query(fileDeleteQueryVersion, val2);
-          // versionCon.commit();
+          await fileCon.beginTransaction();
+          await versionCon.beginTransaction();
+          await fileCon.query(fileDeleteQuery, val2);
+          fileCon.commit();
+          await versionCon.query(fileDeleteQueryVersion, val2);
+          versionCon.commit();
           resolve();
         } catch (err) {
           fileCon.rollback();
@@ -190,16 +168,16 @@ const organizeFileInDB = async (
         try {
           await fileCon.beginTransaction();
           await versionCon.beginTransaction();
-          await fileCon.query(fileUpdateQuery, val);
+          await fileCon.query(fileQuery, val);
           fileCon.commit();
-          await versionCon.query(fileUpdateVersion, val);
+          await versionCon.query(fileQueryVersion, val);
           versionCon.commit();
-          // await fileCon.beginTransaction();
-          // await versionCon.beginTransaction();
-          // await fileCon.query(fileDeleteQuery, val2);
-          // fileCon.commit();
-          // await versionCon.query(fileDeleteQueryVersion, val2);
-          // versionCon.commit();
+          await fileCon.beginTransaction();
+          await versionCon.beginTransaction();
+          await fileCon.query(fileDeleteQuery, val2);
+          fileCon.commit();
+          await versionCon.query(fileDeleteQueryVersion, val2);
+          versionCon.commit();
           resolve();
         } catch (err) {
           console.log(err);
@@ -261,11 +239,10 @@ const organizeItemsInDB = async (
             const delVal = [src_dir, from_device, username, row.filename];
 
             await fileCon.beginTransaction();
-            await versionCon.beginTransaction();
-            await fileCon.query(updateRootFileInDirQuery, insertVal);
-            await versionCon.query(updateRootFileInDirQueryVersion, insertVal);
-            // fileCon.query(deleteFileInRootDir, delVal);
-            // versionCon.query(deleteFileInRootDirVersion, delVal);
+            await fileCon.query(insertRootFileInDirQuery, insertVal);
+            await versionCon.query(insertRootFileInDirQueryVersion, insertVal);
+            fileCon.query(deleteFileInRootDir, delVal);
+            versionCon.query(deleteFileInRootDirVersion, delVal);
             fileCon.commit();
             versionCon.commit();
           } catch (err) {
@@ -308,8 +285,8 @@ const organizeItemsInDB = async (
         const val2 = [username, from_device, folder.path];
         try {
           await folderCon.beginTransaction();
-          await folderCon.query(folderUpdateQuery, val);
-          // await folderCon.query(folderDeleteQuery, val2);
+          await folderCon.query(folderInsertQuery, val);
+          await folderCon.query(folderDeleteQuery, val2);
           folderCon.commit();
           await updateDB(dstPath, dir);
         } catch (err) {
@@ -328,8 +305,8 @@ const organizeItemsInDB = async (
           const val = [to_device, pth, username, from_device, "/" + from];
           try {
             await folderCon.beginTransaction();
-            await folderCon.query(folderUpdateQuery, val);
-            // await folderCon.query(folderDeleteQuery, val2);
+            await folderCon.query(folderInsertQuery, val);
+            await folderCon.query(folderDeleteQuery, val2);
             folderCon.commit();
           } catch (err) {
             console.error(err.code);
@@ -341,8 +318,8 @@ const organizeItemsInDB = async (
           const val = [to_device, pth, username, from_device, "/" + from];
           try {
             await folderCon.beginTransaction();
-            await folderCon.query(folderUpdateQuery, val);
-            // await folderCon.query(folderDeleteQuery, val2);
+            await folderCon.query(folderInsertQuery, val);
+            await folderCon.query(folderDeleteQuery, val2);
             folderCon.commit();
           } catch (err) {
             console.error(err.code);
@@ -429,7 +406,7 @@ const organizeItems = async (req, res, next) => {
         console.error(err);
       }
     }
-    await con.execute(`CALL DeletePaths(?,?)`, [username, "^(/[^/]+)$"]);
+    // await con.execute(`CALL DeletePaths(?,?)`, [username, "^(/[^/]+)$"]);
 
     console.log("returned the value v2");
     if (con) {

@@ -1,27 +1,13 @@
 import fs from "node:fs";
 import { hexToBuffer } from "./utils.js";
-import { pbkdf2Sync, createDecipheriv, scrypt } from "node:crypto";
+import { pbkdf2Sync, createDecipheriv } from "node:crypto";
 const decryptFile = (input, salt, iv, password) => {
-  return new Promise(async (resolve, reject) => {
-    const saltBuffer = hexToBuffer(salt);
-    const ivBuffer = hexToBuffer(iv);
-    const algorithm = "aes-256-cbc";
-    // const key = pbkdf2Sync(password, saltBuffer, 100000, 32, "sha256");
-    try {
-      const key = await new Promise((resolve, reject) => {
-        scrypt(password, saltBuffer, 32, (err, key) => {
-          if (err) reject(err);
-          else {
-            resolve(key);
-          }
-        });
-      });
-      const dicpher = createDecipheriv(algorithm, key, ivBuffer);
-      resolve(input.pipe(dicpher));
-    } catch (err) {
-      reject(err);
-    }
-  });
+  const saltBuffer = hexToBuffer(salt);
+  const ivBuffer = hexToBuffer(iv);
+  const algorithm = "aes-256-cbc";
+  const key = pbkdf2Sync(password, saltBuffer, 100000, 32, "sha256");
+  const dicpher = createDecipheriv(algorithm, key, ivBuffer);
+  return input.pipe(dicpher);
 };
 
 export { decryptFile };
