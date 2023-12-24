@@ -177,8 +177,11 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
     uuid = req.headers.uuid;
   }
   const size = `${fileStat.size}`;
-  const salt = fileStat.salt;
-  const iv = fileStat.iv;
+  const salt = req.salt;
+  const iv = req.iv;
+  console.log(salt, iv);
+  // const salt = fileStat.salt;
+  // const iv = fileStat.iv;
   let fileValue = [
     username,
     device,
