@@ -9,12 +9,13 @@ import Busboy from "busboy";
 import fs from "node:fs";
 import { Upload } from "@aws-sdk/lib-storage";
 import { pool, s3Client } from "../server.js";
-import { PassThrough, Readable, Transform } from "stream";
+import { PassThrough } from "stream";
 import { v4 as uuidv4 } from "uuid";
 import { io } from "../server.js";
-import { randomFill } from "crypto";
+import { randomFill, createHash } from "crypto";
 import { encryptFile } from "../utils/encrypt.js";
 import { hexToBuffer } from "../utils/utils.js";
+
 const root = process.env.VARIABLE;
 const BUCKET = process.env.BUCKET;
 
@@ -71,55 +72,6 @@ const multerInstance = multer({
   }),
 });
 
-const fileWriteStreamHandler = async (file) => {
-  const [Key, password, salt, iv] = file.newFilename.split(";");
-  const cipher = await encryptFile(
-    password,
-    hexToBuffer(salt),
-    hexToBuffer(iv),
-    "aes-256-cbc"
-  );
-  const read = new PassThrough();
-  const upload = new Upload({
-    client: s3Client,
-    params: {
-      Bucket: BUCKET,
-      Key,
-      Body: read.pipe(cipher),
-    },
-    partSize: 5 * 1024 * 1024,
-    queueSize: 10,
-  });
-
-  upload.on("httpUploadProgress", (progress) => {
-    console.log("progress==>", progress);
-  });
-  upload.on("error", (error) => {
-    console.log(error);
-    reject(error);
-  });
-  upload.on("uploaded", (details) => {
-    const progress = parseInt((details.loaded / size) * 100);
-    io.emit("uploadProgress", {
-      processed: progress,
-      total: size,
-      uploaded: details.loaded,
-    });
-  });
-  upload
-    .done()
-    .then((response) => {
-      io.emit("done", { done: "success", data: response });
-    })
-    .catch((err) => {
-      console.log(err);
-      io.emit("error", { done: "failure", data: err });
-    });
-  return read;
-};
-
-// https://www.freecodecamp.org/news/how-to-upload-files-to-aws-s3-with-node/
-
 const parseFile = async (req) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -129,20 +81,30 @@ const parseFile = async (req) => {
         req.iv,
         "aes-256-cbc"
       );
+      const hash = createHash("sha256");
+      let encryptedHash;
       const options = {
         maxFileSize: 2000 * 1024 * 1024,
         fileWriteStreamHandler: (file) => {
           console.log("called!");
           const read = new PassThrough();
+          const write = new PassThrough();
+          read.pipe(cipher).pipe(write);
           const upload = new Upload({
             client: s3Client,
             params: {
               Bucket: BUCKET,
               Key: req.key,
-              Body: read.pipe(cipher),
+              Body: write,
             },
             partSize: 5 * 1024 * 1024,
             queueSize: 10,
+          });
+
+          write.on("data", (data) => hash.update(data));
+          write.on("end", () => {
+            encryptedHash = hash.digest("hex");
+            console.log(encryptedHash);
           });
 
           upload.on("httpUploadProgress", (progress) => {
@@ -153,7 +115,8 @@ const parseFile = async (req) => {
             reject(error);
           });
           upload.on("uploaded", (details) => {
-            const progress = parseInt((details.loaded / details.total) * 100);
+            const progress = parseInt((details.loaded / req.size) * 100);
+
             io.emit("uploadProgress", {
               processed: progress,
               total: details.total,
@@ -164,6 +127,7 @@ const parseFile = async (req) => {
             .done()
             .then((response) => {
               io.emit("done", { done: "success", data: response });
+              resolve(encryptedHash);
             })
             .catch((err) => {
               console.log(err);
@@ -179,8 +143,6 @@ const parseFile = async (req) => {
           console.log(err);
           reject(err);
           return;
-        } else {
-          resolve();
         }
       });
     } catch (err) {
@@ -210,11 +172,12 @@ const uploadFile = async (req, res, next) => {
     req.salt = salt;
     req.iv = iv;
     req.key = key;
+    req.size = size;
     const encQuery = `SELECT enc FROM customers.users WHERE username = ?`;
     const userCon = await pool["customers"].getConnection();
     const [rows, fields] = await userCon.execute(encQuery, [userName]);
     req.password = rows[0].enc;
-    await parseFile(req);
+    req.enc_hash = await parseFile(req);
     req.salt = arrayBufferToHex(salt);
     req.iv = arrayBufferToHex(iv);
     console.timeEnd("upload");

@@ -152,7 +152,9 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
 
   let filename = req.headers.filename;
   const device = req.headers.devicename;
-  const enc_file_checksum = req.headers.enc_file_checksum;
+  const enc_file_checksum = req.enc_hash;
+
+  // const enc_file_checksum = req.headers.enc_file_checksum;
   const directory = req.headers.dir;
   const fileStat = JSON.parse(req.headers.filestat);
   const last_modified = new Date(fileStat.mtime);
