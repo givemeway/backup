@@ -43,6 +43,7 @@ import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import { share } from "./routes/share.js";
 import { moveItemsV2 } from "./routes/MoveItemsV2.js";
+import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -122,6 +123,7 @@ try {
   app.use("/app/getSharedLinks", getSharedLinks);
   app.use("/app/validateusername", validateUsername);
   app.use("/app/emptyTrash", emptyTrash);
+  app.use("/app/deleteTrashItems", deleteTrashItems);
 } catch (err) {
   console.log(err);
 }

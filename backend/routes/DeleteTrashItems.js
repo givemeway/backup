@@ -3,15 +3,69 @@ const router = express.Router();
 import dotenv from "dotenv";
 dotenv.config();
 import csurf from "csurf";
-import { origin } from "../config/config";
+import { origin } from "../config/config.js";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "../server";
+import { s3Client, pool } from "../server.js";
+import { verifyToken } from "../auth/auth.js";
 
 const BUCKET = process.env.BUCKET;
+const SINGLEFILE = "singleFile";
+const deleteFileInTrashQuery = `DELETE FROM deleted_files.files WHERE username = ? AND uuid = ?`;
+const getFilesInTrashQuery = `SELECT uuid FROM deleted_files.files 
+                              WHERE username = ? AND device = ? AND directory REGEXP ? 
+                              ORDER BY directory
+                              LIMIT ?,?;`;
 
-const deleteQuery = `DELETE FROM deleted_files.files 
-                    
-                    `;
+const deleteS3Object = (username, uuid) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const Key = `${username}/${uuid}`;
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: BUCKET,
+        Key,
+      });
+      await s3Client.send(deleteCommand);
+      resolve();
+    } catch (err) {
+      console.error(err);
+      reject(err);
+    }
+  });
+};
+
+const deleteDBItem = (con, username, uuid) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await con.beginTransaction();
+      const values = [username, uuid];
+      await con.query(deleteFileInTrashQuery, values);
+      await con.commit();
+      resolve();
+    } catch (err) {
+      console.error(err);
+      reject(err);
+    }
+  });
+};
+
+const getDeletedItems = (con, username, path, begin, end) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const dirParts = path.split("/").slice(2).join("/");
+      const device = path.split("/")[1];
+      let dir = dirParts === "" ? "/" : dirParts;
+      dir = dir.replace(/\(/g, "\\(");
+      dir = dir.replace(/\)/g, "\\)");
+      const regexp = `^${dir}(/[^/]+)*$`;
+      const values = [username, device, regexp, begin, end];
+      const [rows, fields] = await con.query(getFilesInTrashQuery, values);
+      resolve(rows);
+    } catch (err) {
+      console.error(err);
+      reject(err);
+    }
+  });
+};
 
 router.use(csurf({ cookie: true }));
 
@@ -22,8 +76,10 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/", async (req, res) => {
-  const items = JSON.parse(req.body.items);
+router.post("/", verifyToken, async (req, res) => {
+  // const items = JSON.parse(req.body.items);
+  const items = req.body.items;
+
   const username = req.user.Username;
   const subFolderRegexp = "^(/[^/]+)$";
 
@@ -38,45 +94,75 @@ router.post("/", async (req, res) => {
             try {
               const { path, limit } = el;
               const { begin, end } = limit;
-              const dirParts = path.split("/").slice(2).join("/");
-              const device = path.split("/")[1];
-              let dir = dirParts === "" ? "/" : dirParts;
-              dir = dir.replace(/\(/g, "\\(");
-              dir = dir.replace(/\)/g, "\\)");
-              const regexp = `^${dir}(/[^/]+)*$`;
+
+              const rows = await getDeletedItems(
+                deletedFilesCon,
+                username,
+                path,
+                begin,
+                end
+              );
+              for (const row of rows) {
+                try {
+                  await deleteS3Object(username, row.uuid);
+                  await deleteDBItem(deletedFilesCon, username, row.uuid);
+                } catch (err) {
+                  console.error(err);
+                }
+              }
             } catch (err) {
               console.error(err);
+              break;
             }
           }
         } else {
           try {
             const { path, begin, end } = item;
-            const dirParts = path.split("/").slice(2).join("/");
-            const device = path.split("/")[1];
-            let dir = dirParts === "" ? "/" : dirParts;
-            dir = dir.replace(/\(/g, "\\(");
-            dir = dir.replace(/\)/g, "\\)");
-            const regexp = `^${dir}(/[^/]+)*$`;
+            const rows = await getDeletedItems(
+              deletedFilesCon,
+              username,
+              path,
+              begin,
+              end
+            );
+
+            for (const row of rows) {
+              try {
+                await deleteS3Object(username, row.uuid);
+                await deleteDBItem(deletedFilesCon, username, row.uuid);
+              } catch (err) {
+                console.error(err);
+              }
+            }
           } catch (err) {
             console.error(err);
+            break;
           }
         }
       } else {
-        const Key = `${username}/${item.id}`;
-        const deleteCommand = new DeleteObjectCommand({ Bucket: BUCKET, Key });
         try {
-          await s3Client.send(deleteCommand);
-          await deletedFilesCon.excute(
-            `DELETE FROM deleted_files.files WHERE uuid = ?`,
-            [item.id]
-          );
-        } catch (err) {}
+          await deleteS3Object(username, item.id);
+          await deleteDBItem(deletedFilesCon, username, item.id);
+        } catch (err) {
+          console.error(err);
+          break;
+        }
       }
     }
+
+    if (deletedFilesCon) {
+      deletedFilesCon.release();
+    }
+    const values = [username, subFolderRegexp];
+    await deletedFoldersCon.execute(`CALL DeletePaths(?,?)`, values);
+    if (deletedFoldersCon) {
+      deletedFoldersCon.release();
+    }
+    res.status(200).json({ success: true, msg: "Deleted Successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json(err);
   }
 });
 
-export { router as DeleteTrashItems };
+export { router as deleteTrashItems };
