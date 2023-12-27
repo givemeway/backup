@@ -51,7 +51,7 @@ const deleteFiles = async (req, res, next) => {
     fileCon = await pool["files"].getConnection();
     fileVersionCon = await pool["versions"].getConnection();
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json(err.message);
     res.end();
     return;
@@ -134,15 +134,15 @@ const insertMissingPaths = (
       const paths = rows
         .map((row, idx) => rows.slice(0, idx + 1).join("/"))
         .slice(1);
-      deletedFolderCon.beginTransaction();
+      await deletedFolderCon.beginTransaction();
       for (const pth of paths) {
         const values = [deletionTime, relPath, relName, username, device, pth];
-        deletedFolderCon.query(query, values);
+        await deletedFolderCon.query(query, values);
       }
-      deletedFolderCon.commit();
+      await deletedFolderCon.commit();
       resolve();
     } catch (err) {
-      deletedFolderCon.rollback();
+      await deletedFolderCon.rollback();
       reject(err);
     }
   });
@@ -309,7 +309,6 @@ const getDeletedItemsList = (req, res, next) => {
   req.folders = foldersToDelete;
   req.failed = { files: [], folders: [] };
   req.deletionTime = deletionTime;
-
   next();
 };
 
