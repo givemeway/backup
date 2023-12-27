@@ -181,7 +181,6 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   const size = `${fileStat.size}`;
   const salt = req.salt;
   const iv = req.iv;
-  console.log(salt, iv);
   // const salt = fileStat.salt;
   // const iv = fileStat.iv;
   let fileValue = [
@@ -241,13 +240,13 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
         versionValue.push(value);
       }
       await versionsCon.beginTransaction();
-      versionsCon.query(insertVersionsQuery, versionValue);
+      await versionsCon.query(insertVersionsQuery, versionValue);
       await versionsCon.commit();
     }
 
     if (data === undefined) {
       await fileCon.beginTransaction();
-      fileCon.query(insertQuery, fileValue);
+      await fileCon.query(insertQuery, fileValue);
       await fileCon.commit();
     } else {
       const {
@@ -277,7 +276,7 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
         ...fileValue2.slice(3),
       ];
       await fileCon.beginTransaction();
-      fileCon.query(insertQuery, fileValue2);
+      await fileCon.query(insertQuery, fileValue2);
       await fileCon.commit();
     }
 
