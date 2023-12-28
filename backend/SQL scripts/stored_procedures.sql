@@ -647,3 +647,53 @@ BEGIN
 
 END//
 DELIMITER ;
+
+USE `deleted_directories`;
+
+DELIMITER //
+CREATE PROCEDURE DeletePaths(IN user VARCHAR(70),REGEX VARCHAR(300))
+BEGIN
+  DECLARE deviceName VARCHAR(255);
+  DECLARE pth VARCHAR(255);
+  DECLARE done INT DEFAULT 0;
+  DECLARE fileCount INT;
+  DECLARE cur CURSOR FOR SELECT device,path FROM deleted_directories.directories WHERE username = user AND path REGEXP REGEX;
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+  BEGIN
+    OPEN cur;
+    folder_loop: LOOP
+      START TRANSACTION;
+      FETCH cur INTO deviceName,pth;
+      IF done = 1 THEN
+        LEAVE folder_loop;
+      END IF;
+      SET @dir = SUBSTRING(pth,LOCATE('/', pth, 2) + 1,LENGTH(pth));
+      SET @sanitizedDir_1 = REPLACE(@dir,"(","\\(");
+      SET @sanitizedDir = REPLACE(@sanitizedDir_1,"(","\\(");
+      SET @sanitizedPath_1 = REPLACE(pth,"(","\\(");
+      SET @sanitizedPath = REPLACE(@sanitizedPath_1,")","\\)");
+      SET @pathsRegex = CONCAT("^",@sanitizedPath,"(/[^/]+)*$");
+      IF @dir = pth THEN
+        SET fileCount = (SELECT COUNT(*) FROM deleted_files.files WHERE username = user AND device = deviceName);
+      ELSE
+        
+        SET @dirFilesRegex = CONCAT("^",@sanitizedDir,"(/[^/]+)*$");
+        SET fileCount = (SELECT COUNT(*) FROM deleted_files.files WHERE username = user AND device = deviceName AND directory REGEXP @dirFilesRegex);
+      END IF;
+      IF fileCount = 0 THEN
+        DELETE FROM deleted_directories.directories WHERE username = user AND path REGEXP @pathsRegex;
+        COMMIT;
+      ELSE 
+        SET @subFolderRegex = CONCAT("^",@sanitizedPath,"(/[^/]+)$");
+        CALL DeletePaths(user,@subFolderRegex);
+      END IF;
+    END LOOP;  
+  END;
+
+END//
+DELIMITER ;

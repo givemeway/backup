@@ -104,7 +104,6 @@ const parseFile = async (req) => {
           write.on("data", (data) => hash.update(data));
           write.on("end", () => {
             encryptedHash = hash.digest("hex");
-            console.log(encryptedHash);
           });
 
           upload.on("httpUploadProgress", (progress) => {
@@ -154,7 +153,6 @@ const parseFile = async (req) => {
 const uploadFile = async (req, res, next) => {
   const salt = await generateRandomBytes(32);
   const iv = await generateRandomBytes(16);
-  console.time("upload");
   io.emit("uploadStart", { start: "begin" });
   const fileStat = JSON.parse(req.headers.filestat);
   req.headers.uuid = uuidv4();
@@ -180,7 +178,6 @@ const uploadFile = async (req, res, next) => {
     req.enc_hash = await parseFile(req);
     req.salt = arrayBufferToHex(salt);
     req.iv = arrayBufferToHex(iv);
-    console.timeEnd("upload");
     if (userCon) {
       userCon.release();
     }

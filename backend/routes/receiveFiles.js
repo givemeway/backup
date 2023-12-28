@@ -44,23 +44,10 @@ const insertVersionsQuery = `INSERT INTO versions.file_versions
                                 enc_hashvalue,versions,size,salt,iv)
                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);`;
 
-const createFolderIndex = async (req, res, next) => {
-  const username = req.headers.username;
-  const device = req.headers.devicename;
-  let dir;
-  if (device !== "/") {
-    dir = "/" + device + "/" + req.headers.dir;
-  } else {
-    dir = "/" + req.headers.dir === "/" ? "" : req.headers.dir;
-  }
-  const pathComponents = dir.split(/\//g);
-  await insertPath(req, res, next, pathComponents, 0, null, username, device);
-  next();
-};
-
 const insertPaths = async (req, res, next) => {
   let folderCon;
   try {
+    console.log("sentrerer34343");
     // const username = req.headers.username;
     const username = req.user.Username;
 
@@ -68,6 +55,7 @@ const insertPaths = async (req, res, next) => {
     const dir = req.headers.dir;
 
     if (device === "/") {
+      next();
       return;
     }
     let path;
@@ -100,51 +88,6 @@ const insertPaths = async (req, res, next) => {
     res.status(500).json(err);
   }
 };
-
-async function insertPath(
-  req,
-  res,
-  next,
-  pathComponents,
-  index,
-  parentId,
-  username,
-  device
-) {
-  if (index >= pathComponents.length) {
-    return;
-  }
-  const path =
-    pathComponents.slice(0, index + 1).join("/") === ""
-      ? "/"
-      : pathComponents.slice(0, index + 1).join("/");
-  if (path !== "/" && pathComponents[index].length > 0) {
-    const sql = `INSERT IGNORE INTO directories.directories 
-    (uuid,username,device,folder,path,created_at) 
-    VALUES (?, ?, ?, ?, ?,NOW());`;
-    req.headers.query = sql;
-    req.headers.queryValues = [
-      uuidv4(),
-      username,
-      device,
-      pathComponents[index],
-      path,
-    ];
-    await sqlExecute(req, res, next);
-    parentId = req.headers.queryStatus.insertId;
-  }
-
-  await insertPath(
-    req,
-    res,
-    next,
-    pathComponents,
-    index + 1,
-    parentId,
-    username,
-    device
-  );
-}
 
 const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   // const username = req.headers.username;
@@ -306,6 +249,7 @@ router.post(
   // createFolderIndex,
   // releaseConnection,
   (req, res) => {
+    console.log("sent!!!");
     res.status(200).json(`file ${req.headers.filename} received`);
   }
 );
