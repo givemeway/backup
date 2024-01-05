@@ -9,6 +9,7 @@ import csrf from "csurf";
 import releaseConnection from "../controllers/ReleaseConnection.js";
 import { getConnection } from "../controllers/getConnection.js";
 import { pool } from "../server.js";
+import { socketIO as io } from "../server.js";
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
@@ -47,7 +48,6 @@ const insertVersionsQuery = `INSERT INTO versions.file_versions
 const insertPaths = async (req, res, next) => {
   let folderCon;
   try {
-    console.log("sentrerer34343");
     // const username = req.headers.username;
     const username = req.user.Username;
 
@@ -250,6 +250,8 @@ router.post(
   // releaseConnection,
   (req, res) => {
     console.log("sent!!!");
+    const payload = { name: req.name, id: req.id };
+    io.to(req.socket_main_id).emit("done", { payload });
     res.status(200).json(`file ${req.headers.filename} received`);
   }
 );

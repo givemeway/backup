@@ -11,7 +11,7 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { pool, s3Client } from "../server.js";
 import { PassThrough } from "stream";
 import { v4 as uuidv4 } from "uuid";
-import { io } from "../server.js";
+import { socketIO as io } from "../server.js";
 import { randomFill, createHash } from "crypto";
 import { encryptFile } from "../utils/encrypt.js";
 import { hexToBuffer } from "../utils/utils.js";
@@ -106,31 +106,42 @@ const parseFile = async (req) => {
             encryptedHash = hash.digest("hex");
           });
 
-          upload.on("httpUploadProgress", (progress) => {
-            console.log("progress==>", progress);
-          });
           upload.on("error", (error) => {
             console.log(error);
             reject(error);
           });
           upload.on("uploaded", (details) => {
             const progress = parseInt((details.loaded / req.size) * 100);
-
-            io.emit("uploadProgress", {
+            const payload = {
               processed: progress,
-              total: details.total,
+              total: req.size,
               uploaded: details.loaded,
-            });
+              id: req.id,
+              name: req.name,
+            };
+            io.to(req.socket_main_id).emit("uploadProgress", { payload });
           });
           upload
             .done()
             .then((response) => {
-              io.emit("done", { done: "success", data: response });
+              const payload = {
+                done: "success",
+                data: response,
+                id: req.id,
+                name: req.name,
+              };
+              io.to(req.socket_main_id).emit("finalizing", { payload });
               resolve(encryptedHash);
             })
             .catch((err) => {
               console.log(err);
-              io.emit("error", { done: "failure", data: err });
+              const payload = {
+                done: "failure",
+                data: err,
+                id: req.id,
+                name: req.name,
+              };
+              io.to(req.socket_main_id).emit("error", { payload });
             });
           return read;
         },
@@ -153,11 +164,14 @@ const parseFile = async (req) => {
 const uploadFile = async (req, res, next) => {
   const salt = await generateRandomBytes(32);
   const iv = await generateRandomBytes(16);
-  io.emit("uploadStart", { start: "begin" });
   const fileStat = JSON.parse(req.headers.filestat);
   req.headers.uuid = uuidv4();
   const size = fileStat.size;
   const userName = req.user.Username;
+  req.socket_main_id = fileStat.socket_main_id;
+  const id = fileStat.id;
+  const name = fileStat.name;
+  // io.to(socketID).emit("uploadStart", { start: "begin", id: id, name });
   let key;
   if (fileStat.modified === true) {
     req.headers.uuid_new = req.headers.uuid;
@@ -171,6 +185,8 @@ const uploadFile = async (req, res, next) => {
     req.iv = iv;
     req.key = key;
     req.size = size;
+    req.id = id;
+    req.name = name;
     const encQuery = `SELECT enc FROM customers.users WHERE username = ?`;
     const userCon = await pool["customers"].getConnection();
     const [rows, fields] = await userCon.execute(encQuery, [userName]);

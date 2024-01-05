@@ -30,6 +30,8 @@ import mysql from "mysql2/promise";
 import { getConnection } from "./controllers/getConnection.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { XhrHttpHandler } from "@aws-sdk/xhr-http-handler";
+
 import { Server } from "socket.io";
 
 import mongoose from "mongoose";
@@ -44,6 +46,7 @@ import path, { dirname } from "path";
 import { share } from "./routes/share.js";
 import { moveItemsV2 } from "./routes/MoveItemsV2.js";
 import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
+import { origin } from "./config/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -80,6 +83,7 @@ try {
 } catch (err) {
   console.error(err);
 }
+// https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript
 let s3Client;
 try {
   s3Client = new S3Client({
@@ -163,6 +167,16 @@ server.listen(PORT, (err) => {
   }
 });
 
-const io = new Server(server);
+const opts = { cors: { origin: origin } };
 
-export { pool, s3Client, io };
+const socketIO = new Server(server, opts);
+
+socketIO.on("connection", (socket) => {
+  console.log("Connected to Client: ", socket.id);
+  socket.emit("connected", { socketID: socket.id });
+  socket.on("disconnect", () => {
+    console.log(`${socket.id} disconnected`);
+  });
+});
+
+export { pool, s3Client, socketIO };
