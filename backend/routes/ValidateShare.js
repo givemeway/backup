@@ -17,8 +17,7 @@ router.use((req, res, next) => {
 });
 
 const validateShare = async (req, res, next) => {
-  console.log("vaidate share hit");
-  const { t, k, id, dl, nav, nav_tracking } = req.query;
+  const { t, k, id } = req.query;
 
   try {
     if (t === "fi" || t === "fo") {
@@ -57,13 +56,37 @@ const validateShare = async (req, res, next) => {
       res.status(200).json({ success: true });
     } else if (t === "t") {
       const share = await Transfer.findById({ _id: id }).exec();
-      const time_diff = share.expires_at - Date.now();
-      if (share && time_diff <= 0) {
-        console.log("Expired");
-        res.status(403).json({ success: false, msg: "Share link Expired" });
-        return;
-      } else {
+      if (!share) {
+        return res
+          .status(404)
+          .json({ success: false, msg: "Share link Doesn't exist or Deleted" });
       }
+      const time_start = Date.now();
+      const time_diff = share.expires_at - time_start;
+      if (time_diff <= 0) {
+        return res
+          .status(403)
+          .json({ success: false, msg: "Share Link Expired" });
+      }
+      const payLoad = {
+        t,
+        k,
+        id,
+        Username: share.owner,
+      };
+      const token = jwt.sign(payLoad, process.env.JWT_SECRET, {
+        expiresIn: time_diff,
+      });
+      const opts = {
+        secure: true,
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        domain: domain,
+        expires: new Date(time_start + time_diff),
+      };
+      res.setHeader("Set-Cookie", cookie.serialize("share", token, opts));
+      res.status(200).json({ success: true });
     }
   } catch (err) {
     console.log(err);

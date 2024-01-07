@@ -9,6 +9,7 @@ const router = express.Router();
 router.use(csrf({ cookie: true }));
 
 const getFiles = async (req, res, next) => {
+  console.log("inside this route get files");
   const currentDir = req.headers.currentdirectory;
   const order = req.headers.sortorder;
   // const username = req.headers.username;
