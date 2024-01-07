@@ -25,12 +25,12 @@ import { getTrashTotal } from "./routes/getTrashTotal.js";
 import { restoreTrashItems } from "./routes/RestoreItemsFromTrash.js";
 import { emptyTrash } from "./routes/EmptyTrash.js";
 import { getSharedLinks } from "./routes/getSharedItems.js";
+import { validateShare } from "./routes/ValidateShare.js";
 import DBConfig from "./config/DBConfig.js";
 import mysql from "mysql2/promise";
 import { getConnection } from "./controllers/getConnection.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { XhrHttpHandler } from "@aws-sdk/xhr-http-handler";
 
 import { Server } from "socket.io";
 
@@ -115,6 +115,7 @@ try {
   app.use("/app/downloadItems", getConnection("files"), downloadItems);
   app.use("/app/createShare", getConnection("customers"), createShare);
   app.use("/app/sh", getConnection("files"), share);
+  app.use("/app/sh/validate", getConnection("files"), validateShare);
   app.use("/app/moveItems", getConnection("files"), moveItems);
   app.use("/app/v2/moveItems", getConnection("files"), moveItemsV2);
   app.use("/app/copyItems", getConnection("files"), copyItems);
