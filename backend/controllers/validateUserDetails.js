@@ -33,7 +33,7 @@ const validateUserDetails = (req, res, next) => {
           cookie.serialize("token", token, {
             secure: true,
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none",
             path: "/",
             domain: domain,
             expires: new Date(Date.now() + 86400000),

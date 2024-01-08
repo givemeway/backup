@@ -29,8 +29,7 @@ import DBConfig from "./config/DBConfig.js";
 import mysql from "mysql2/promise";
 import { getConnection } from "./controllers/getConnection.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { XhrHttpHandler } from "@aws-sdk/xhr-http-handler";
+import { S3Client } from "@aws-sdk/client-s3";
 
 import { Server } from "socket.io";
 

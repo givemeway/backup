@@ -5,8 +5,6 @@ import formidable from "formidable";
 import dotenv from "dotenv";
 await dotenv.config();
 const router = express.Router();
-import Busboy from "busboy";
-import fs from "node:fs";
 import { Upload } from "@aws-sdk/lib-storage";
 import { pool, s3Client } from "../server.js";
 import { PassThrough } from "stream";
@@ -14,7 +12,6 @@ import { v4 as uuidv4 } from "uuid";
 import { socketIO as io } from "../server.js";
 import { randomFill, createHash } from "crypto";
 import { encryptFile } from "../utils/encrypt.js";
-import { hexToBuffer } from "../utils/utils.js";
 
 const root = process.env.VARIABLE;
 const BUCKET = process.env.BUCKET;
