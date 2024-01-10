@@ -12,12 +12,14 @@ import csrf from "csurf";
 router.use(csrf({ cookie: true }));
 
 const buildLoginQuery = (req, res, next) => {
+  console.log("inside the login build logic");
   const encodedString = req.headers.authorization;
   const usernametype = req.headers.usernametype;
   const extractedUsernamePassword = atob(encodedString.split(" ")[1]);
   const username = extractedUsernamePassword.split(":")[0];
   const password = extractedUsernamePassword.split(":")[1];
   const payload = { Username: username };
+  console.log(payload);
   let values = null;
   let columns = null;
   if (usernametype === "email") {
@@ -40,7 +42,10 @@ const buildLoginQuery = (req, res, next) => {
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type,X-CSRF-Token,Authorization,Set-Cookie"
+  );
   res.header("Access-Control-Expose-Headers", "Set-Cookie");
 
   next();

@@ -25,11 +25,13 @@ import { getTrashTotal } from "./routes/getTrashTotal.js";
 import { restoreTrashItems } from "./routes/RestoreItemsFromTrash.js";
 import { emptyTrash } from "./routes/EmptyTrash.js";
 import { getSharedLinks } from "./routes/getSharedItems.js";
+import { validateShare } from "./routes/ValidateShare.js";
 import DBConfig from "./config/DBConfig.js";
 import mysql from "mysql2/promise";
 import { getConnection } from "./controllers/getConnection.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+
 import { Server } from "socket.io";
 
 import mongoose from "mongoose";
@@ -44,6 +46,8 @@ import path, { dirname } from "path";
 import { share } from "./routes/share.js";
 import { moveItemsV2 } from "./routes/MoveItemsV2.js";
 import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
+import { origin } from "./config/config.js";
+import { createFolder } from "./routes/createFolder.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -80,6 +84,7 @@ try {
 } catch (err) {
   console.error(err);
 }
+// https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript
 let s3Client;
 try {
   s3Client = new S3Client({
@@ -111,6 +116,7 @@ try {
   app.use("/app/downloadItems", getConnection("files"), downloadItems);
   app.use("/app/createShare", getConnection("customers"), createShare);
   app.use("/app/sh", getConnection("files"), share);
+  app.use("/app/sh/validate", getConnection("files"), validateShare);
   app.use("/app/moveItems", getConnection("files"), moveItems);
   app.use("/app/v2/moveItems", getConnection("files"), moveItemsV2);
   app.use("/app/copyItems", getConnection("files"), copyItems);
@@ -124,6 +130,7 @@ try {
   app.use("/app/validateusername", validateUsername);
   app.use("/app/emptyTrash", emptyTrash);
   app.use("/app/deleteTrashItems", deleteTrashItems);
+  app.use("/app/createFolder", createFolder);
 } catch (err) {
   console.log(err);
 }
@@ -163,6 +170,16 @@ server.listen(PORT, (err) => {
   }
 });
 
-const io = new Server(server);
+const opts = { cors: { origin: origin } };
 
-export { pool, s3Client, io };
+const socketIO = new Server(server, opts);
+
+socketIO.on("connection", (socket) => {
+  console.log("Connected to Client: ", socket.id);
+  socket.emit("connected", { socketID: socket.id });
+  socket.on("disconnect", () => {
+    console.log(`${socket.id} disconnected`);
+  });
+});
+
+export { pool, s3Client, socketIO };

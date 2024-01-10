@@ -35,6 +35,45 @@ const sqlExecute = async (req, res) => {
   }
 };
 
+const sqlExecute_promise = (con, query, values) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows] = await con.execute(query, values);
+      resolve(rows);
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
+
+const getFilesInDirectory_promise = async (req, res) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const currentdirectory = req.headers.currentdirectory;
+      const username = req.headers.username;
+      const devicename = req.headers.devicename;
+      req.headers.data = [];
+      if (currentdirectory === "/") {
+        const rows = await sqlExecute_promise(req.db, filesInDevice, val);
+        resolve(rows);
+      } else {
+        const regex_other_files = `^${currentdirectory}(/[^/]+)*$`;
+        const val = [username, devicename, regex_other_files];
+        const rows = await sqlExecute_promise(
+          req.db,
+          filesInSubDirectories,
+          val
+        );
+        resolve(rows);
+      }
+    } catch (err) {
+      console.error(err);
+      reject(err);
+    }
+  });
+};
+
 const getFilesInDirectory = async (req, res) => {
   const currentdirectory = req.headers.currentdirectory;
   const username = req.headers.username;
@@ -72,6 +111,16 @@ router.use((req, res, next) => {
 const getFilesFoldersFromDownloadID = async (req, res, next) => {
   try {
     const share = await DownloadZip.findById({ _id: req.query.key }).exec();
+    if (!share)
+      return res
+        .status(404)
+        .json({ success: false, msg: "Download URL Doesn't exist" });
+    const time_now = Date.now();
+    const time_diff = share.expires_at - time_now;
+    if (time_diff <= 0)
+      return res
+        .status(403)
+        .json({ success: false, msg: "Download URL Expired" });
     req.body.files = share.files.map((file) => ({
       id: file.uuid,
     }));
@@ -100,8 +149,9 @@ const extractFilesInforFromDB = async (req, res, next) => {
     const dirParts = folders[i].path.split("/").slice(2).join("/");
     const dir = dirParts === "" ? "/" : dirParts;
     req.headers.currentdirectory = dir;
-    await getFilesInDirectory(req, res);
-    const dirFiles = req.headers.data;
+    // await getFilesInDirectory(req, res);
+    // const dirFiles = req.headers.data;
+    const dirFiles = await getFilesInDirectory_promise(req, res);
     for (let j = 0; j < dirFiles.length; j++) {
       const { filename, salt, iv, directory, uuid, size } = dirFiles[j];
       totalSize += size;

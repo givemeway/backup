@@ -31,8 +31,9 @@ const validateUserDetails = (req, res, next) => {
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", token, {
+            secure: true,
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none",
             path: "/",
             domain: domain,
             expires: new Date(Date.now() + 86400000),
