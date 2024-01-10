@@ -47,6 +47,7 @@ import { share } from "./routes/share.js";
 import { moveItemsV2 } from "./routes/MoveItemsV2.js";
 import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
 import { origin } from "./config/config.js";
+import { createFolder } from "./routes/createFolder.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -129,6 +130,7 @@ try {
   app.use("/app/validateusername", validateUsername);
   app.use("/app/emptyTrash", emptyTrash);
   app.use("/app/deleteTrashItems", deleteTrashItems);
+  app.use("/app/createFolder", createFolder);
 } catch (err) {
   console.log(err);
 }
