@@ -55,6 +55,7 @@ const getFilesInDirectory_promise = async (req, res) => {
       const devicename = req.headers.devicename;
       req.headers.data = [];
       if (currentdirectory === "/") {
+        const val = [req.user.Username, devicename];
         const rows = await sqlExecute_promise(req.db, filesInDevice, val);
         resolve(rows);
       } else {
