@@ -61,7 +61,7 @@ router.post("/", verifyToken, async (req, res, next) => {
     success = false;
     if (err?.errno === ER_DUP_ENTRY) {
       msg = err.message;
-      status = 403;
+      status = 409;
     } else {
       msg = err;
       status = 500;
