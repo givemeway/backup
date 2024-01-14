@@ -29,61 +29,63 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get(
-  "/",
-  verifyToken,
-  async (req, res) => {
-    try {
-      const username = req.user.Username;
-      const { file, uuid, db, dir, device } = req.query;
-      const userCon = await pool["customers"].getConnection();
+router.get("/", verifyToken, async (req, res) => {
+  try {
+    const username = req.user.Username;
+    const { file, uuid, db, dir, device } = req.query;
+    const userCon = await pool["customers"].getConnection();
 
-      let query;
-      let con;
-      const values = [uuid];
-      console.log(uuid);
-      if (db === "versions") {
-        con = await pool["versions"].getConnection();
-        query = `SELECT salt,iv,size from versions.file_versions where uuid = ?`;
-      } else {
-        con = req.db;
-        query = `SELECT salt,iv,size from files.files where uuid = ?`;
-      }
-      const [rows, fields] = await con.execute(query, values);
-
-      if (db === "versions") {
-        con.release();
-      }
-      const Key = `${username}/${uuid}`;
-      const command = new GetObjectCommand({
-        Bucket: BUCKET,
-        Key,
-      });
-      if (rows.length > 0) {
-        const data = await s3Client.send(command);
-        const [key] = await userCon.execute(encQuery, [username]);
-        const decryptStream = await decryptFile(
-          data.Body,
-          rows[0]["salt"],
-          rows[0]["iv"],
-          key[0].enc
-        );
-        res.set("Content-Length", rows[0]["size"]);
-        res.set("salt", rows[0]["salt"]);
-        res.set("iv", rows[0]["iv"]);
-        res.set("Content-Disposition", `attachment; filename="${file}"`);
-        decryptStream.pipe(res);
-      } else {
-        res.status(404).json({ success: false, msg: "File not Found" });
-      }
-      if (userCon) {
-        userCon.release();
-      }
-    } catch (err) {
-      res.status(500).json({ success: false, msg: err });
+    let query;
+    let con;
+    const values = [uuid];
+    console.log(uuid);
+    if (db === "versions") {
+      con = await pool["versions"].getConnection();
+      query = `SELECT salt,iv,size from versions.file_versions where uuid = ?`;
+    } else {
+      con = req.db;
+      query = `SELECT salt,iv,size from files.files where uuid = ?`;
     }
-  },
-  releaseConnection
-);
+    const [rows, fields] = await con.execute(query, values);
+
+    if (db === "versions") {
+      con.release();
+    }
+    const Key = `${username}/${uuid}`;
+    const command = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key,
+    });
+    if (rows.length > 0) {
+      const data = await s3Client.send(command);
+      const [key] = await userCon.execute(encQuery, [username]);
+      const decryptStream = await decryptFile(
+        data.Body,
+        rows[0]["salt"],
+        rows[0]["iv"],
+        key[0].enc
+      );
+
+      res.set("Content-Length", rows[0]["size"]);
+      res.set("salt", rows[0]["salt"]);
+      res.set("iv", rows[0]["iv"]);
+      res.set("Content-Disposition", `attachment; filename="${file}"`);
+      decryptStream.pipe(res);
+      decryptStream.on("end", () => {
+        res.end();
+      });
+    } else {
+      res.status(404).json({ success: false, msg: "File not Found" });
+    }
+    if (userCon) {
+      userCon.release();
+    }
+    if (con) {
+      con.release();
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, msg: err });
+  }
+});
 
 export { router as downloadFile };
