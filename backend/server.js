@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "node:fs";
 import https from "node:https";
+import http from "node:http";
 import cookieParser from "cookie-parser";
 import bodyparser from "body-parser";
 import { login } from "./routes/login.js";
@@ -160,13 +161,14 @@ const options = {
   cert: fs.readFileSync("./cert.pem"),
 };
 
-const server = https.createServer(options, app);
+// const server = https.createServer(options, app);
+const server = http.createServer(app);
 
 server.listen(PORT, (err) => {
   if (err) {
     throw Error(err);
   } else {
-    console.log(`Listening on localhost:${PORT} over HTTPS`);
+    console.log(`Listening on localhost:${PORT} over HTTP`);
   }
 });
 
