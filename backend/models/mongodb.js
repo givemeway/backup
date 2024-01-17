@@ -61,8 +61,26 @@ const downloadZipSchema = new Schema({
   },
 });
 
+const imageSchema = new Schema({
+  username: String,
+  mimetype: String,
+  uuid_original: String,
+  uuid_thumb_32x32: String,
+  uuid_thumb_64x64: String,
+  uuid_thumb_128x128: String,
+  uuid_thumb_256x256: String,
+  uuid_preview_480w: String,
+  uuid_preview_640w: String,
+  uuid_preview_900w: String,
+  uuid_preview_1024w: String,
+  uuid_preview_1280w: String,
+  uuid_preview_1600w: String,
+  uuid_preview_2048w: String,
+});
+
 const Transfer = model("Transfers", transferSchema, "transfers");
 const Share = model("Shares", shareSchema, "shares");
 const DownloadZip = model("Downloads", downloadZipSchema, "downloads");
+const Image = model("Images", imageSchema, "images");
 
-export { Share, Transfer, DownloadZip };
+export { Share, Transfer, DownloadZip, Image };

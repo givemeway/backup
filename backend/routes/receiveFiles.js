@@ -10,6 +10,7 @@ import releaseConnection from "../controllers/ReleaseConnection.js";
 import { getConnection } from "../controllers/getConnection.js";
 import { pool } from "../server.js";
 import { socketIO as io } from "../server.js";
+import { Image } from "../models/mongodb.js";
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs

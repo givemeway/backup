@@ -159,7 +159,7 @@ router.post("/", verifyToken, async (req, res) => {
     res.status(200).json({ success: true, msg: "Deleted Successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json(err);
+    res.status(500).json({ success: false, msg: err });
   }
 });
 

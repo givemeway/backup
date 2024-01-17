@@ -16,6 +16,8 @@ import { encryptFile } from "../utils/encrypt.js";
 const root = process.env.VARIABLE;
 const BUCKET = process.env.BUCKET;
 
+const SIZES = [32, 64, 128, 256, 480, 640, 900];
+
 const arrayBufferToHex = (buffer) => {
   return [...new Uint8Array(buffer)]
     .map((b) => b.toString(16).padStart(2, "0"))
