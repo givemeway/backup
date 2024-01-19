@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 import csrf from "csurf";
 
-import { origin, serverDomain } from "../config/config.js";
+import { frontEndDomain, origin, serverDomain } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { Transfer, Share } from "../models/mongodb.js";
 import { createConnection } from "../controllers/createConnection.js";
@@ -97,12 +97,12 @@ const createShareLink = async (req, res) => {
       );
       if (fi === null) {
         const data = await Share.create(obj);
-        success_msg.url = `${serverDomain}/sh/fi/${data._id.toString()}/${
+        success_msg.url = `${frontEndDomain}/sh/fi/${data._id.toString()}/${
           mapFiles[obj.uuid]
         }?k=${obj.uuid}&dl=0`;
         res.status(200).json(success_msg);
       } else {
-        success_msg.url = `${serverDomain}/sh/fi/${fi._id.toString()}/${
+        success_msg.url = `${frontEndDomain}/sh/fi/${fi._id.toString()}/${
           mapFiles[obj.uuid]
         }?k=${obj.uuid}&dl=0`;
         res.status(200).json(success_msg);
@@ -124,12 +124,12 @@ const createShareLink = async (req, res) => {
       );
       if (fo === null) {
         const data = await Share.create(obj);
-        success_msg.url = `${serverDomain}/sh/fo/${data._id.toString()}/h?k=${
+        success_msg.url = `${frontEndDomain}/sh/fo/${data._id.toString()}/h?k=${
           obj.uuid
         }&dl=0`;
         res.status(200).json(success_msg);
       } else {
-        success_msg.url = `${serverDomain}/sh/fo/${fo._id.toString()}/h?k=${
+        success_msg.url = `${frontEndDomain}/sh/fo/${fo._id.toString()}/h?k=${
           obj.uuid
         }&dl=0`;
         res.status(200).json(success_msg);
@@ -143,7 +143,7 @@ const createShareLink = async (req, res) => {
       obj.files = mapFiles;
       obj.folders = mapFolders;
       const data = await Transfer.create(obj);
-      success_msg.url = `${serverDomain}/sh/t/${data._id.toString()}`;
+      success_msg.url = `${frontEndDomain}/sh/t/${data._id.toString()}`;
       res.status(200).json(success_msg);
     } catch (err) {
       console.log(err);
