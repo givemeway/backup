@@ -54,6 +54,7 @@ const createShareLink = async (req, res) => {
   const folders = req.body.directories;
   const files = req.body.files;
   const owner = req.user.Username;
+  console.log(type, folders, files, owner);
   // const mapFiles = files.map((file) => ({ uuid: file.id }));
   let mapFiles = {};
   files.forEach((file) => (mapFiles[file.id] = file.file));

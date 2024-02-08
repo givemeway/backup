@@ -10,6 +10,7 @@ import { pool } from "../server.js";
 const root = process.env.VARIABLE;
 const FILE = "fi";
 const FOLDER = "fo";
+const DUPLICATE = "DUPLICATE";
 
 router.use(csurf({ cookie: true }));
 
@@ -83,13 +84,22 @@ const organizeItemsInDB = async (
     try {
       const rows = await sqlExecute(folderCon, checkDuplicate, checkValues);
       if (rows.length > 0) {
-        failed.push({ message: "duplicate", val: to });
-        reject();
+        failed.push({
+          success: false,
+          msg: `Folder ${to} exists in the current directory`,
+          error: "DUPLICATE",
+        });
+        reject({
+          success: false,
+          msg: `Folder ${to} exists in the current directory`,
+          error: "DUPLICATE",
+        });
         return;
       }
-    } catch (err) {
-      console.error("err", err);
-      reject(err);
+    } catch (error) {
+      console.error("err", error);
+      failed.push({ success: false, msg: error });
+      reject({ success: false, msg: error, error });
       return;
     }
 
@@ -131,8 +141,8 @@ const organizeItemsInDB = async (
           await sqlExecute(folderCon, query, val);
           await updateDB(dstPath, dir);
         }
-      } catch (err) {
-        failed.push(src_dir);
+      } catch (error) {
+        failed.push({ success: false, msg: error, error });
       }
     };
 
@@ -166,10 +176,10 @@ const organizeItemsInDB = async (
         }
         resolve();
       })
-      .catch((err) => {
-        console.error(err);
-        failed.push(err);
-        reject();
+      .catch((error) => {
+        console.error(error);
+        failed.push({ success: false, msg: error, error });
+        reject({ success: false, msg: error, error });
       });
   });
 };
@@ -177,19 +187,35 @@ const organizeItemsInDB = async (
 const renameItems = async (req, res, next) => {
   const username = req.user.Username;
   const { type, to, uuid, device } = req.body;
+  console.log(type, to, uuid, device);
+  let versionCon;
+  let fileCon;
+  let folderCon;
+  let failed = [];
+  let status;
+  let error;
+  let oldname;
+  let newname;
   try {
-    let failed = [];
-    const con = req.db;
-    const versionCon = await pool["versions"].getConnection();
+    fileCon = req.db;
+    versionCon = await pool["versions"].getConnection();
     if (type === FILE) {
       const { dir, filename } = req.body;
-
+      oldname = filename;
+      newname = to;
       const query = `UPDATE files.files SET filename = ? 
       WHERE origin = ? AND username = ? AND device = ? AND directory = ? AND filename = ?`;
       const queryVersion = `UPDATE versions.file_versions SET filename = ? 
       WHERE origin = ? AND username = ? AND device = ? AND directory = ? AND filename = ?`;
 
-      await sqlExecute(con, query, [to, uuid, username, device, dir, filename]);
+      await sqlExecute(fileCon, query, [
+        to,
+        uuid,
+        username,
+        device,
+        dir,
+        filename,
+      ]);
       await sqlExecute(versionCon, queryVersion, [
         to,
         uuid,
@@ -198,55 +224,55 @@ const renameItems = async (req, res, next) => {
         dir,
         filename,
       ]);
-
-      if (con) {
-        con.release();
-      }
-      if (versionCon) {
-        versionCon.release();
-      }
     } else if (type === FOLDER) {
-      try {
-        const { folder, oldPath } = req.body;
-        const query = `SELECT device,folder,path 
+      const { folder, oldPath } = req.body;
+      oldname = folder;
+      newname = to;
+      const query = `SELECT device,folder,path 
                         FROM directories.directories 
                         WHERE uuid = ? AND folder = ? 
                         AND username = ? AND device = ? AND path = ?;`;
-        const folderCon = await pool["directories"].getConnection();
-        const val = [uuid, folder, username, device, oldPath];
-        const { path } = (await sqlExecute(folderCon, query, val))[0];
-        const folderPath = path.split("/").slice(1).join("/");
-        const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
-        await organizeItemsInDB(
-          con,
-          versionCon,
-          folderCon,
-          username,
-          folderPath,
-          dst,
-          failed
-        );
-        if (con) {
-          con.release();
-        }
-        if (folderCon) {
-          folderCon.release();
-        }
-        if (versionCon) {
-          versionCon.release();
-        }
-      } catch (err) {
-        console.error(err);
-      }
+      folderCon = await pool["directories"].getConnection();
+      const val = [uuid, folder, username, device, oldPath];
+      const { path } = (await sqlExecute(folderCon, query, val))[0];
+      const folderPath = path.split("/").slice(1).join("/");
+      const dst = to === "/" ? "/" : to.split("/").slice(1).join("/");
+      await organizeItemsInDB(
+        fileCon,
+        versionCon,
+        folderCon,
+        username,
+        folderPath,
+        dst,
+        failed
+      );
     }
-    res.status(200).json({
-      failed: failed,
-    });
   } catch (err) {
-    res.status(500).json(err);
+    console.error(err);
+    console.log(failed);
+    if (err?.error === DUPLICATE) {
+      status = 409;
+      error = err?.error;
+    } else if (failed.length > 0) {
+      status = 206;
+    }
+  } finally {
+    if (failed.length === 0 && error !== DUPLICATE) {
+      status = 200;
+    }
+    if (status === 200) {
+      res
+        .status(200)
+        .json({ success: true, msg: `${oldname} renamed to ${newname}` });
+    } else {
+      if (!status) status = 209;
+      res
+        .status(status)
+        .json({ success: true, msg: "Few Failed", failed: failed });
+    }
   }
 };
 
-router.post("*", verifyToken, renameItems);
+router.patch("/", verifyToken, renameItems);
 
 export { router as renameItem };

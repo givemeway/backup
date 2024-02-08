@@ -35,6 +35,7 @@ router.use(csurf({ cookie: true }));
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Methods", "DELETE");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
   next();
@@ -150,126 +151,132 @@ const insertMissingPaths = (
 
 const deleteFolders = async (req, res, next) => {
   const failed = [];
-  // const connection = req.headers.connection;
-  const deleted_filesDBCon = getConnection("deleted_files");
-  await deleted_filesDBCon(req, res, next);
-  const delFilesConnection = req.db;
-  req.folders.forEach(async (folder) => {
-    try {
-      if (folder.dir === "/") {
-        const insertIntoTable = `INSERT INTO deleted_files.files 
-                                  SELECT  *,?,? 
+  let deleted_filesDBCon;
+  let filesDBCon;
+  let deleted_DirDBCon;
+  let folderDBCon;
+
+  try {
+    // const deleted_filesDBCon = getConnection("deleted_files");
+    deleted_filesDBCon = await pool["deleted_files"].getConnection();
+    filesDBCon = await pool["files"].getConnection();
+    deleted_DirDBCon = await pool["deleted_directories"].getConnection();
+    folderDBCon = await pool["directories"].getConnection();
+
+    for (const folder of req.folders) {
+      try {
+        if (folder.dir === "/") {
+          const insertIntoTable = `INSERT INTO deleted_files.files 
+                                    SELECT  *,?,? 
+                                    FROM files.files 
+                                    WHERE username = ? AND device = ?;`;
+          const deleteFromSourceTable = `DELETE FROM files.files
+                                        WHERE username = ? AND device = ?`;
+
+          await deleted_filesDBCon.beginTransaction();
+          await deleted_filesDBCon.query(insertIntoTable, [
+            req.deletionTime,
+            "folder",
+            folder.username,
+            folder.device,
+          ]);
+          await deleted_filesDBCon.commit();
+          await filesDBCon.beginTransaction();
+          await filesDBCon.query(deleteFromSourceTable, [
+            folder.username,
+            folder.device,
+          ]);
+          await filesDBCon.commit();
+        } else {
+          const regexp = `^${folder.dir}(/[^/]+)*$`;
+          const insertIntoTable = `INSERT INTO deleted_files.files
+                                  SELECT *,?,? 
                                   FROM files.files 
-                                  WHERE username = ? AND device = ?;`;
-        const deleteFromSourceTable = `DELETE FROM files.files
-                                      WHERE username = ? AND device = ?`;
+                                  WHERE username = ? 
+                                  AND device = ? 
+                                  AND directory REGEXP ?`;
+          const deleteFromSourceTable = `DELETE FROM files.files
+                                         WHERE username = ? 
+                                         AND device = ? 
+                                         AND directory REGEXP ?`;
+          await deleted_filesDBCon.beginTransaction();
+          await deleted_filesDBCon.query(insertIntoTable, [
+            req.deletionTime,
+            "folder",
+            folder.username,
+            folder.device,
+            regexp,
+          ]);
+          await deleted_filesDBCon.commit();
+          await filesDBCon.beginTransaction();
+          await filesDBCon.query(deleteFromSourceTable, [
+            folder.username,
+            folder.device,
+            regexp,
+          ]);
+          await filesDBCon.commit();
+        }
 
-        await delFilesConnection.beginTransaction();
-        await delFilesConnection.query(insertIntoTable, [
+        const regex = `^${folder.path}(/[^/]+)*$`;
+        const insertIntoTable = `INSERT INTO deleted_directories.directories 
+                                  SELECT *,?,?,? 
+                                  FROM directories.directories 
+                                  WHERE username = ? AND device = ? AND path REGEXP ?`;
+        const deleteFromSourceTable = `DELETE FROM directories.directories
+                                      WHERE username = ? AND device = ? AND path REGEXP ?`;
+
+        await deleted_DirDBCon.beginTransaction();
+        await deleted_DirDBCon.query(insertIntoTable, [
           req.deletionTime,
-          "folder",
+          folder.path,
+          folder.name,
           folder.username,
           folder.device,
+          regex,
         ]);
-        await delFilesConnection.commit();
-        releaseConnection(req, res, next);
-        const filesDBCon = getConnection("files");
-        await filesDBCon(req, res, next);
-        const filesConnection = req.db;
-        await filesConnection.query(deleteFromSourceTable, [
-          folder.username,
-          folder.device,
-        ]);
-        await filesConnection.commit();
-        releaseConnection(req, res, next);
-      } else {
-        const regexp = `^${folder.dir}(/[^/]+)*$`;
-        const insertIntoTable = `INSERT INTO deleted_files.files
-                                SELECT *,?,? 
-                                FROM files.files 
-                                WHERE username = ? 
-                                AND device = ? 
-                                AND directory REGEXP ?`;
-        const deleteFromSourceTable = `DELETE FROM files.files
-                                       WHERE username = ? 
-                                       AND device = ? 
-                                       AND directory REGEXP ?`;
-        await delFilesConnection.beginTransaction();
-        await delFilesConnection.query(insertIntoTable, [
+        await deleted_DirDBCon.commit();
+        await insertMissingPaths(
+          deleted_DirDBCon,
           req.deletionTime,
-          "folder",
+          folder.path,
+          folder.name,
           folder.username,
           folder.device,
-          regexp,
-        ]);
-        await delFilesConnection.commit();
-        releaseConnection(req, res, next);
-        const filesDBCon = getConnection("files");
-        await filesDBCon(req, res, next);
-        const filesConnection = req.db;
-        await filesConnection.query(deleteFromSourceTable, [
+          folder.path
+        );
+        await folderDBCon.beginTransaction();
+        await folderDBCon.query(deleteFromSourceTable, [
           folder.username,
           folder.device,
-          regexp,
+          regex,
         ]);
-        await filesConnection.commit();
-        releaseConnection(req, res, next);
+        await folderDBCon.commit();
+      } catch (err) {
+        console.error(err);
+        failed.push({ ...folder, error: err });
+        await deleted_filesDBCon.rollback();
       }
-      const deletedDirectoriesDBCon = getConnection("deleted_directories");
-      await deletedDirectoriesDBCon(req, res, next);
-      const delFolderConnection = req.db;
-      const regex = `^${folder.path}(/[^/]+)*$`;
-      const insertIntoTable = `INSERT INTO deleted_directories.directories 
-                                SELECT *,?,?,? 
-                                FROM directories.directories 
-                                WHERE username = ? AND device = ? AND path REGEXP ?`;
-      const deleteFromSourceTable = `DELETE FROM directories.directories
-                                    WHERE username = ? AND device = ? AND path REGEXP ?`;
-
-      await delFolderConnection.beginTransaction();
-      await delFolderConnection.query(insertIntoTable, [
-        req.deletionTime,
-        folder.path,
-        folder.name,
-        folder.username,
-        folder.device,
-        regex,
-      ]);
-      await delFolderConnection.commit();
-      await insertMissingPaths(
-        delFolderConnection,
-        req.deletionTime,
-        folder.path,
-        folder.name,
-        folder.username,
-        folder.device,
-        folder.path
-      );
-      releaseConnection(req, res, next);
-      const directoriesDBCon = getConnection("directories");
-      await directoriesDBCon(req, res, next);
-      const folderConnection = req.db;
-      await folderConnection.query(deleteFromSourceTable, [
-        folder.username,
-        folder.device,
-        regex,
-      ]);
-      await folderConnection.commit();
-      releaseConnection(req, res, next);
-    } catch (err) {
-      console.error(err);
-      failed.push({ ...folder, error: err });
-      await delFilesConnection.rollback();
     }
-  });
-  req.failed.folders = [...failed];
-  next();
+    req.failed.folders = [...failed];
+  } catch (err) {
+    console.error(err);
+    return req.status(500).json({ success: false, msg: err });
+  } finally {
+    deleted_filesDBCon.release();
+    filesDBCon.release();
+    deleted_DirDBCon.release();
+    folderDBCon.release();
+    next();
+  }
 };
 
 const getDeletedItemsList = (req, res, next) => {
   const username = req.user.Username;
-  const folders = JSON.parse(req.body.directories);
-  const files = JSON.parse(req.body.fileIds);
+  console.log(req.body);
+  // const folders = JSON.parse(req.body.directories);
+  // const files = JSON.parse(req.body.fileIds);
+  const folders = req.body.directories;
+  const files = req.body.fileIds;
   const deletionTime = new Date()
     .toISOString()
     .substring(0, 19)
@@ -312,7 +319,7 @@ const getDeletedItemsList = (req, res, next) => {
   next();
 };
 
-router.post(
+router.delete(
   "/",
   verifyToken,
   getDeletedItemsList,

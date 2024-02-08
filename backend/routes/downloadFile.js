@@ -66,7 +66,7 @@ router.get("/", verifyToken, async (req, res) => {
     const username = req.user.Username;
     const { file, uuid, db, dir, device } = req.query;
     const userCon = await pool["customers"].getConnection();
-
+    console.log(file, uuid, db);
     let query;
     let con;
     const values = [uuid];
@@ -79,7 +79,8 @@ router.get("/", verifyToken, async (req, res) => {
       query = `SELECT salt,iv,size from files.files where uuid = ?`;
     }
     const [rows, fields] = await con.execute(query, values);
-
+    console.log(query);
+    console.log(rows);
     if (db === "versions") {
       con.release();
     }

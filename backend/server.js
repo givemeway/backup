@@ -49,6 +49,7 @@ import { moveItemsV2 } from "./routes/MoveItemsV2.js";
 import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
 import { origin } from "./config/config.js";
 import { createFolder } from "./routes/createFolder.js";
+import { getFileVersion } from "./routes/getFileVersion.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -132,6 +133,7 @@ try {
   app.use("/app/emptyTrash", emptyTrash);
   app.use("/app/deleteTrashItems", deleteTrashItems);
   app.use("/app/createFolder", createFolder);
+  app.use("/app/getFileVersion", getFileVersion);
 } catch (err) {
   console.log(err);
 }

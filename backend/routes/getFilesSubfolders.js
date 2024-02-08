@@ -9,51 +9,77 @@ const router = express.Router();
 router.use(csrf({ cookie: true }));
 
 const getFiles = async (req, res, next) => {
-  const currentDir = req.headers.currentdirectory;
-  const order = req.headers.sortorder;
+  const { d, dir, sort, start, page } = req.query;
+  console.log("files-->", start, page);
+  // const order = req.headers.sortorder;
+  const order = sort;
+  // const currentDir = req.headers.currentdirectory;
+  const currentDir = dir;
+
   // const username = req.headers.username;
   const username = req.user.Username;
-  const devicename = req.headers.devicename;
-  const [start, end] = [0, 10000];
-  const filesInCurrentDirQuery = `SELECT * FROM (
-                                    SELECT uuid,origin,filename,salt,iv,directory,
+  // const devicename = req.headers.devicename;
+  const devicename = d;
+
+  // const filesInCurrentDirQuery = `SELECT * FROM (
+  //                                   SELECT uuid,origin,filename,salt,iv,directory,
+  //                                           versions,last_modified,size,device
+  //                                   FROM files
+  //                                   WHERE username = ? AND  device = ? AND directory = ?
+  //                                   ORDER BY directory ASC limit ?,?
+  //                                 ) AS t
+  //                                 UNION ALL
+  //                                 SELECT uuid,origin,filename,salt,iv,directory,versions,
+  //                                         last_modified,size,device
+  //                                 FROM versions.file_versions
+  //                                 WHERE username = ? AND  device = ? AND directory = ?;`;
+  const filesInCurrentDirQuery = `SELECT uuid,origin,filename,salt,iv,directory,
                                             versions,last_modified,size,device 
-                                    FROM files
+                                    FROM files.files
                                     WHERE username = ? AND  device = ? AND directory = ?
                                     ORDER BY directory ASC limit ?,?
-                                  ) AS t
-                                  UNION ALL
-                                  SELECT uuid,origin,filename,salt,iv,directory,versions,
-                                          last_modified,size,device 
-                                  FROM versions.file_versions
-                                  WHERE username = ? AND  device = ? AND directory = ?;`;
+                                  `;
   req.headers.query = filesInCurrentDirQuery;
+  // req.headers.queryValues = [
+  //   username,
+  //   devicename,
+  //   currentDir,
+  //   start.toString(),
+  //   page.toString(),
+  //   username,
+  //   devicename,
+  //   currentDir,
+  // ];
   req.headers.queryValues = [
     username,
     devicename,
     currentDir,
     start.toString(),
-    end.toString(),
-    username,
-    devicename,
-    currentDir,
+    page.toString(),
   ];
   await sqlExecute(req, res, next);
   req.headers.data = {};
   req.headers.data["files"] = JSON.parse(
     JSON.stringify(req.headers.queryStatus)
   );
+  console.log(req.headers.data["files"].length);
   next();
 };
 
 const getFolders = async (req, res, next) => {
-  const currentDir = req.headers.currentdirectory;
+  const { d, dir, sort, start, page } = req.query;
+  console.log("folder->", start, page);
+  // const currentDir = req.headers.currentdirectory;
+  const currentDir = dir;
+
   const order = req.headers.sortorder;
   // const username = req.headers.username;
   const username = req.user.Username;
 
-  const devicename = req.headers.devicename;
-  const [start, end] = [0, 1000000];
+  // const devicename = req.headers.devicename;
+  const devicename = d;
+
+  // const [start, end] = [0, 1000000];
   let regex = `^\\.?${currentDir}(/[^/]+)$`;
   if (currentDir === "/") {
     regex = `^([^/]+)$`;
@@ -88,13 +114,14 @@ const getFolders = async (req, res, next) => {
     username,
     regex_2,
     start.toString(),
-    end.toString(),
+    page.toString(),
   ];
   await sqlExecute(req, res, next);
 
   req.headers.data["folders"] = JSON.parse(
     JSON.stringify(req.headers.queryStatus)
   );
+  console.log(req.headers.data["folders"].length);
   res.json(req.headers.data);
 };
 
@@ -108,7 +135,7 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post(
+router.get(
   "/",
   verifyToken,
   getFiles,
