@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
+import fs from "node:fs";
 dotenv.config();
+const PEM_FILE = "DB/ca.pem";
 
 const DBConfig = {
   files: {
@@ -15,6 +17,7 @@ const DBConfig = {
     queueLimit: 100,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    ssl: { ca: fs.readFileSync(PEM_FILE) },
   },
   directories: {
     host: process.env.DB_HOST,
@@ -29,6 +32,7 @@ const DBConfig = {
     queueLimit: 100,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    ssl: { ca: fs.readFileSync(PEM_FILE) },
   },
   deleted_files: {
     host: process.env.DB_HOST,
@@ -43,6 +47,7 @@ const DBConfig = {
     queueLimit: 100,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    ssl: { ca: fs.readFileSync(PEM_FILE) },
   },
   deleted_directories: {
     host: process.env.DB_HOST,
@@ -57,6 +62,7 @@ const DBConfig = {
     queueLimit: 100,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    ssl: { ca: fs.readFileSync(PEM_FILE) },
   },
   versions: {
     host: process.env.DB_HOST,
@@ -71,6 +77,7 @@ const DBConfig = {
     queueLimit: 100,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    ssl: { ca: fs.readFileSync(PEM_FILE) },
   },
   customers: {
     host: process.env.DB_HOST,
@@ -85,6 +92,7 @@ const DBConfig = {
     queueLimit: 100,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    ssl: { ca: fs.readFileSync(PEM_FILE) },
   },
 };
 
