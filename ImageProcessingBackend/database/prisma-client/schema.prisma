@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../database/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DeletedDirectory {
+  uuid       String   @db.VarChar(36)
+  username   String   @db.VarChar(70)
+  device     String   @db.VarChar(70)
+  folder     String   @db.VarChar(255)
+  path       String   @db.VarChar(255)
+  created_at DateTime
+  deleted    DateTime
+  rel_path   String   @db.VarChar(255)
+  rel_name   String   @db.VarChar(255)
+
+  @@unique([username, device, folder, path])
+  @@index([path])
+}
+
+model DeletedFile {
+  username      String   @db.VarChar(70)
+  device        String   @db.VarChar(70)
+  directory     String   @db.VarChar(255)
+  uuid          String   @db.VarChar(36)
+  origin        String   @db.VarChar(36)
+  filename      String   @db.VarChar(255)
+  last_modified DateTime
+  hashvalue     String   @db.Char(64)
+  enc_hashvalue String   @db.Char(64)
+  versions      Int
+  size          BigInt
+  salt          String   @db.VarChar(64)
+  iv            String   @db.VarChar(64)
+  deletion_date DateTime
+  deletion_type String   @db.VarChar(6)
+
+  @@unique([username, device, directory, filename])
+  @@index([device, directory])
+}
+
+model DeletedFileVersion {
+  username      String   @db.VarChar(70)
+  device        String   @db.VarChar(70)
+  directory     String   @db.VarChar(255)
+  uuid          String   @db.VarChar(36)
+  origin        String   @db.VarChar(36)
+  filename      String   @db.VarChar(255)
+  last_modified DateTime
+  hashvalue     String   @db.Char(64)
+  enc_hashvalue String   @db.Char(64)
+  versions      Int
+  size          BigInt
+  salt          String   @db.VarChar(64)
+  iv            String   @db.VarChar(64)
+  deletion_date DateTime
+  deletion_type String   @db.VarChar(6)
+
+  @@unique([username, device, directory, filename, uuid])
+  @@index([device, directory, origin])
+}
+
+model Directory {
+  uuid       String   @db.VarChar(36)
+  username   String   @db.VarChar(70)
+  device     String   @db.VarChar(70)
+  folder     String   @db.VarChar(255)
+  path       String   @db.VarChar(255)
+  created_at DateTime
+
+  @@unique([username, device, folder, path])
+  @@index([path])
+}
+
+model File {
+  username      String        @db.VarChar(70)
+  device        String        @db.VarChar(70)
+  directory     String        @db.VarChar(255)
+  uuid          String        @db.VarChar(36)
+  origin        String        @unique @db.VarChar(36)
+  filename      String        @db.VarChar(255)
+  last_modified DateTime
+  hashvalue     String        @db.Char(64)
+  enc_hashvalue String        @db.Char(64)
+  versions      Int
+  size          BigInt
+  salt          String        @db.VarChar(64)
+  iv            String        @db.VarChar(64)
+  FileVersion   FileVersion[]
+
+  @@unique([username, device, directory, filename])
+  @@index([device, directory])
+}
+
+model FileVersion {
+  username      String   @db.VarChar(70)
+  device        String   @db.VarChar(70)
+  directory     String   @db.VarChar(255)
+  uuid          String   @unique @db.VarChar(36)
+  origin        String   @db.VarChar(36)
+  filename      String   @db.VarChar(255)
+  last_modified DateTime
+  hashvalue     String   @db.Char(64)
+  enc_hashvalue String   @db.Char(64)
+  versions      Int
+  size          BigInt
+  salt          String   @db.VarChar(64)
+  iv            String   @db.VarChar(64)
+  File          File     @relation(fields: [origin], references: [origin])
+
+  @@unique([username, device, directory, filename, uuid])
+  @@index([origin])
+}
