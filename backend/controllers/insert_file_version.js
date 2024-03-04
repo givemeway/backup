@@ -63,27 +63,4 @@ export const insert_file_version = async (data) => {
       },
     }),
   ]);
-
-  // await prisma.file.upsert({
-  //   where: {
-  //     username_device_directory_filename: {
-  //       filename,
-  //       device,
-  //       username,
-  //       directory,
-  //     },
-  //   },
-  //   create: {
-  //     ...insertData,
-  //     directoryID: {
-  //       connect: {
-  //         uuid: file.dirID,
-  //       },
-  //     },
-  //     versionedFiles: {
-  //       create: fileVersionData,
-  //     },
-  //   },
-  //   update: { ...updateData },
-  // });
 };

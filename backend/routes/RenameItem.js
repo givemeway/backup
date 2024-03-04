@@ -118,6 +118,7 @@ const renameItems = async (req, res, next) => {
       }
     }
   } catch (err) {
+    console.log(err);
   } finally {
     if (status === 200) {
       res

@@ -10,24 +10,22 @@ export const delete_file_version_directory = async (prisma, path, username) => {
       const regex_path = `^${path}(/[^/]+)*$`;
       if (dir !== "/") {
         await prisma.$executeRaw(Prisma.sql`
-          DELETE FROM public."File"
+          DELETE FROM public."FileVersion"
           WHERE username = ${username}
           AND device = ${device}
           AND directory ~ ${regex_dir}`);
-
         await prisma.$executeRaw(Prisma.sql`
-          DELETE FROM public."FileVersion"
+          DELETE FROM public."File"
           WHERE username = ${username}
           AND device = ${device}
           AND directory ~ ${regex_dir}`);
       } else {
         await prisma.$executeRaw(Prisma.sql`
-          DELETE FROM  public."File"
-          WHERE username = ${username}
-          AND device = ${device}`);
-
+            DELETE FROM  public."FileVersion"
+            WHERE username = ${username}
+            AND device = ${device}`);
         await prisma.$executeRaw(Prisma.sql`
-          DELETE FROM  public."FileVersion"
+          DELETE FROM  public."File"
           WHERE username = ${username}
           AND device = ${device}`);
       }
