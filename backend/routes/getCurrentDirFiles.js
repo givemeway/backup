@@ -22,9 +22,13 @@ router.post(
   "/",
   verifyToken,
   getFilesInDirectory,
-  releaseConnection,
+  // releaseConnection,
   (req, res) => {
+    // res.status(200).json(req.headers.data);
+    // req.headers.data = [];
+    console.log(req.headers.data);
     res.status(200).json(req.headers.data);
+
     console.log("response sent");
   }
 );

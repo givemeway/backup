@@ -12,6 +12,8 @@ import { v4 as uuidv4 } from "uuid";
 import { socketIO as io } from "../server.js";
 import { randomFill, createHash } from "crypto";
 import { encryptFile } from "../utils/encrypt.js";
+import mime from "mime-types";
+import { prismaUser } from "../config/prismaDBConfig.js";
 
 const root = process.env.VARIABLE;
 const BUCKET = process.env.BUCKET;
@@ -80,6 +82,10 @@ const parseFile = async (req) => {
         req.iv,
         "aes-256-cbc"
       );
+      console.log(req.ext);
+      const data = {};
+      data.id = req.headers.uuid;
+      data.username = req.user.Username;
       const hash = createHash("sha256");
       let encryptedHash;
       const options = {
@@ -164,7 +170,7 @@ const uploadFile = async (req, res, next) => {
   const salt = await generateRandomBytes(32);
   const iv = await generateRandomBytes(16);
   const fileStat = JSON.parse(req.headers.filestat);
-  req.headers.uuid = uuidv4();
+  req.uuid = uuidv4();
   const size = fileStat.size;
   const userName = req.user.Username;
   req.socket_main_id = fileStat.socket_main_id;
@@ -172,11 +178,11 @@ const uploadFile = async (req, res, next) => {
   const name = fileStat.name;
   let key;
   if (fileStat.modified === true) {
-    req.headers.uuid_new = req.headers.uuid;
-    req.headers.uuid = fileStat.uuid;
-    key = `${userName}/${req.headers.uuid_new}`;
+    req.uuid_new = req.uuid;
+    req.uuid = fileStat.uuid;
+    key = `${userName}/${req.uuid_new}`;
   } else {
-    key = `${userName}/${req.headers.uuid}`;
+    key = `${userName}/${req.uuid}`;
   }
   try {
     req.salt = salt;
@@ -185,20 +191,22 @@ const uploadFile = async (req, res, next) => {
     req.size = size;
     req.id = id;
     req.name = name;
-    const encQuery = `SELECT enc FROM customers.users WHERE username = ?`;
-    const userCon = await pool["customers"].getConnection();
-    const [rows, fields] = await userCon.execute(encQuery, [userName]);
-    req.password = rows[0].enc;
+    req.ext = mime.lookup(name);
+    const { enc } = await prismaUser.user.findUnique({
+      where: { username: userName },
+      select: {
+        enc: true,
+      },
+    });
+    req.password = enc;
     req.enc_hash = await parseFile(req);
     req.salt = arrayBufferToHex(salt);
     req.iv = arrayBufferToHex(iv);
-    if (userCon) {
-      userCon.release();
-    }
+
     next();
   } catch (err) {
     console.log(err);
-    res.status(500).json(err);
+    res.status(500).json({ success: false, msg: err });
   }
 };
 

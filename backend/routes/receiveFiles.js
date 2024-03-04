@@ -1,21 +1,22 @@
 import express from "express";
 import { verifyToken } from "../auth/auth.js";
-import { createDir } from "../controllers/createFilePath.js";
 import { uploadFile } from "../controllers/uploadFile.js";
-import { sqlExecute } from "../controllers/sql_execute.js";
-import { v4 as uuidv4 } from "uuid";
 import { origin } from "../config/config.js";
 import csrf from "csurf";
-import releaseConnection from "../controllers/ReleaseConnection.js";
-import { getConnection } from "../controllers/getConnection.js";
-import { pool } from "../server.js";
 import { socketIO as io } from "../server.js";
-import { Image } from "../models/mongodb.js";
+import { initiKafkaProducer } from "../utils/kafka.js";
+import mimetype from "mime-types";
+import { imageTypes } from "../utils/utils.js";
+import { insert_file_and_directory } from "../controllers/insert_file_directory.js";
+import { insert_file_version } from "../controllers/insert_file_version.js";
 const router = express.Router();
 
 // https://www.turing.com/kb/build-secure-rest-api-in-nodejs
 
 // router.use(bodyParser.urlencoded({ extended: true }));
+
+// https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-pool
+// https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases/connect-your-database-typescript-postgresql
 
 router.use(csrf({ cookie: true }));
 
@@ -29,83 +30,14 @@ router.use((req, res, next) => {
   next();
 });
 
-const insertQuery = `INSERT INTO files 
-                      (username,device,directory,uuid,origin,filename,
-                      last_modified,hashvalue,
-                      enc_hashvalue,versions,size,salt,iv)
-                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-                      ON DUPLICATE KEY
-                      UPDATE uuid = ? ,  origin = ?, filename = ?,
-                      last_modified = ?, hashvalue = ?,
-                      enc_hashvalue = ?, versions = ?,
-                      size = ?,salt = ?, iv = ?;`;
-
-const insertVersionsQuery = `INSERT INTO versions.file_versions
-                              (username,device,directory,uuid,origin,filename,
-                                last_modified,hashvalue,
-                                enc_hashvalue,versions,size,salt,iv)
-                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);`;
-
-const insertPaths = async (req, res, next) => {
-  let folderCon;
-  try {
-    // const username = req.headers.username;
-    const username = req.user.Username;
-
-    const device = req.headers.devicename;
-    const dir = req.headers.dir;
-
-    if (device === "/") {
-      next();
-      return;
-    }
-    let path;
-    if (dir !== "/") {
-      path = "/" + device + "/" + dir;
-    } else {
-      path = "/" + device;
-    }
-    const pathParts = path.split("/");
-    const paths = pathParts
-      .map((part, idx) => [part, pathParts.slice(0, idx + 1).join("/")])
-      .slice(1);
-    const sql = `INSERT IGNORE INTO directories.directories 
-    (uuid,username,device,folder,path,created_at) 
-    VALUES (?, ?, ?, ?, ?,NOW());`;
-    folderCon = await pool["directories"].getConnection();
-    folderCon.beginTransaction();
-    for (const pth of paths) {
-      const val = [uuidv4(), username, device, pth[0], pth[1]];
-      await folderCon.query(sql, val);
-    }
-    folderCon.commit();
-    if (folderCon) {
-      folderCon.release();
-    }
-    next();
-  } catch (err) {
-    console.error(err);
-    await folderCon.rollback();
-    res.status(500).json(err);
-  }
-};
-
-const buildSQLQueryToUpdateFiles = async (req, res, next) => {
-  // const username = req.headers.username;
+const update_file_directory_DB = async (req, res, next) => {
   const username = req.user.Username;
-
   let filename = req.headers.filename;
   const device = req.headers.devicename;
   const enc_file_checksum = req.enc_hash;
-
-  // const enc_file_checksum = req.headers.enc_file_checksum;
   const directory = req.headers.dir;
   const fileStat = JSON.parse(req.headers.filestat);
   const last_modified = new Date(fileStat.mtime);
-  const isoString = last_modified
-    .toISOString()
-    .substring(0, 19)
-    .replace("T", " ");
   const checksum = fileStat.checksum;
   let version;
   let origin;
@@ -113,148 +45,109 @@ const buildSQLQueryToUpdateFiles = async (req, res, next) => {
   let modified = false;
   if (fileStat?.version && fileStat.modified) {
     version = fileStat.version;
-    origin = req.headers.uuid;
-    uuid = req.headers.uuid_new;
-    // filename = `${filename}_${uuid}`;
+    origin = req.uuid;
+    uuid = req.uuid_new;
     modified = true;
   } else {
     version = 1;
-    origin = req.headers.uuid;
-    uuid = req.headers.uuid;
+    origin = req.uuid;
+    uuid = req.uuid;
   }
   const size = `${fileStat.size}`;
   const salt = req.salt;
   const iv = req.iv;
-  // const salt = fileStat.salt;
-  // const iv = fileStat.iv;
-  let fileValue = [
-    username,
-    device,
-    directory,
-    uuid,
-    origin,
-    filename,
-    isoString,
-    checksum,
-    enc_file_checksum,
-    version,
-    size,
-    salt,
-    iv,
-    uuid,
-    origin,
-    filename,
-    isoString,
-    checksum,
-    enc_file_checksum,
-    version,
-    size,
-    salt,
-    iv,
-  ];
-  let fileValue2 = [
-    username,
-    device,
-    directory,
-    uuid,
-    origin,
-    filename,
-    isoString,
-    checksum,
-    enc_file_checksum,
-    version,
-    size,
-    salt,
-    iv,
-  ];
+  req.uuid = uuid;
+  req.username = username;
+  let path;
+  if (directory !== "/") {
+    path = "/" + device + "/" + directory;
+  } else {
+    path = "/" + device;
+  }
 
-  let versionsCon;
-  let fileCon;
+  const insertData = {
+    username,
+    device,
+    directory,
+    uuid,
+    origin,
+    filename,
+    last_modified: last_modified.toISOString(),
+    hashvalue: checksum,
+    enc_hashvalue: enc_file_checksum,
+    versions: version,
+    size,
+    salt,
+    iv,
+  };
+
+  const updateData = {
+    last_modified: last_modified.toISOString(),
+    versions: version,
+    size,
+    salt,
+    iv,
+    hashvalue: checksum,
+    origin,
+    uuid,
+    enc_hashvalue: enc_file_checksum,
+  };
+
   try {
-    let data;
-    fileCon = req.db;
     if (modified) {
-      versionsCon = await pool["versions"].getConnection();
-      const query = `SELECT * FROM files.files WHERE origin = ?`;
-
-      const [rows] = await fileCon.execute(query, [origin]);
-      data = rows[0];
-      let versionValue = [];
-      for (const [key, value] of Object.entries(data)) {
-        versionValue.push(value);
-      }
-      await versionsCon.beginTransaction();
-      await versionsCon.query(insertVersionsQuery, versionValue);
-      await versionsCon.commit();
-    }
-
-    if (data === undefined) {
-      await fileCon.beginTransaction();
-      await fileCon.query(insertQuery, fileValue);
-      await fileCon.commit();
+      const data = {
+        username,
+        filename,
+        device,
+        directory,
+        origin,
+        insertData,
+        updateData,
+      };
+      await insert_file_version(data);
     } else {
-      const {
-        uuid,
-        origin,
-        filename,
-        last_modified,
-        hashvalue,
-        enc_hashvalue,
-        versions,
-        size,
-        salt,
-        iv,
-      } = data;
-      fileValue2 = [
-        ...fileValue2.slice(0, 3),
-        uuid,
-        origin,
-        filename,
-        last_modified,
-        hashvalue,
-        enc_hashvalue,
-        versions,
-        size,
-        salt,
-        iv,
-        ...fileValue2.slice(3),
-      ];
-      await fileCon.beginTransaction();
-      await fileCon.query(insertQuery, fileValue2);
-      await fileCon.commit();
-    }
-
-    if (fileCon) {
-      fileCon.release();
-    }
-    if (modified && versionsCon) {
-      versionsCon.release();
+      await insert_file_and_directory(path, insertData);
     }
     next();
   } catch (err) {
     console.error(err);
-    await fileCon.rollback();
-    if (modified) await versionsCon.rollback();
-    res.status(500).json(err);
+    res.status(500).json(err?.meta);
   }
+};
+
+const triggerImageProcessingMS = async (req, res) => {
+  console.log("sent!!!");
+  const payload = { name: req.name, id: req.id };
+  io.to(req.socket_main_id).emit("done", { payload });
+
+  try {
+    const mime = mimetype.lookup(req.name);
+
+    if (mime instanceof String) {
+      const ext = mime.split("/")[1].toUpperCase();
+
+      if (imageTypes.hasOwnProperty(ext)) {
+        let data = {};
+        data.id = req.uuid;
+        data.username = req.username;
+        data.filename = req.name;
+        console.log("Image process triggered: ", data.filename);
+        await initiKafkaProducer(data);
+        return res.status(200).json(`file ${req.headers.filename} received`);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  res.status(200).json(`file ${req.headers.filename} received`);
 };
 
 router.post(
   "/",
   verifyToken,
-  // createDir,
   uploadFile,
-  buildSQLQueryToUpdateFiles,
-  // getConnection("directories"),
-  insertPaths,
-  // createFolderIndex,
-  // releaseConnection,
-  (req, res) => {
-    console.log("sent!!!");
-    const payload = { name: req.name, id: req.id };
-    io.to(req.socket_main_id).emit("done", { payload });
-    res.status(200).json(`file ${req.headers.filename} received`);
-  }
+  update_file_directory_DB,
+  triggerImageProcessingMS
 );
 
 export { router as receiveFiles };

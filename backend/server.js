@@ -102,7 +102,7 @@ try {
 
 try {
   app.use("/app/login", getConnection("customers"), login);
-  app.use("/app/receiveFiles", getConnection("files"), receiveFiles);
+  app.use("/app/receiveFiles", receiveFiles);
   app.use("/app/signup", getConnection("customers"), signup);
   app.use("/app/browseFolder", getConnection("files"), getFilesSubfolders);
   app.use("/app/getSubFolders", getConnection("directories"), subFolders);

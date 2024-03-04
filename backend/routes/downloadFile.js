@@ -4,12 +4,11 @@ import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { decryptFile } from "../utils/decrypt.js";
 import dotenv from "dotenv";
-await dotenv.config();
+dotenv.config();
 import csrf from "csurf";
-import releaseConnection from "../controllers/ReleaseConnection.js";
-import { pool } from "../server.js";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "../server.js";
+import { prisma, prismaUser } from "../config/prismaDBConfig.js";
 
 const root = process.env.VARIABLE;
 const BUCKET = process.env.BUCKET;
@@ -46,8 +45,6 @@ const file_format = {
   gif: "image/gif",
 };
 
-const encQuery = `SELECT enc FROM customers.users WHERE username = ?`;
-
 router.use(csrf({ cookie: true }));
 
 router.use((req, res, next) => {
@@ -65,43 +62,69 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const username = req.user.Username;
     const { file, uuid, db, dir, device } = req.query;
-    const userCon = await pool["customers"].getConnection();
-    console.log(file, uuid, db);
-    let query;
-    let con;
-    const values = [uuid];
-    console.log(uuid);
-    if (db === "versions") {
-      con = await pool["versions"].getConnection();
-      query = `SELECT salt,iv,size from versions.file_versions where uuid = ?`;
-    } else {
-      con = req.db;
-      query = `SELECT salt,iv,size from files.files where uuid = ?`;
-    }
-    const [rows, fields] = await con.execute(query, values);
-    console.log(query);
-    console.log(rows);
-    if (db === "versions") {
-      con.release();
-    }
+    console.log(file, uuid, db, dir, device);
     const Key = `${username}/${uuid}`;
     const command = new GetObjectCommand({
       Bucket: BUCKET,
       Key,
     });
-    if (rows.length > 0) {
+
+    const userFound = await prismaUser.user.findUnique({
+      where: { username },
+      select: {
+        enc: true,
+      },
+    });
+
+    if (userFound === null) {
+      return res.status(404).json({ success: false, msg: "User not Found" });
+    }
+
+    let fileFound = null;
+    if (db === "versions") {
+      fileFound = await prisma.fileVersion.findUnique({
+        where: {
+          username_device_directory_filename_uuid: {
+            username,
+            directory: dir,
+            device,
+            uuid,
+            filename: file,
+          },
+        },
+        select: {
+          salt: true,
+          iv: true,
+          size: true,
+        },
+      });
+    } else {
+      fileFound = await prisma.file.findUnique({
+        where: {
+          username_device_directory_filename: {
+            username,
+            device,
+            directory: dir,
+            filename: file,
+          },
+        },
+        select: {
+          salt: true,
+          iv: true,
+          size: true,
+        },
+      });
+    }
+
+    if (fileFound !== null) {
       const data = await s3Client.send(command);
-      const [key] = await userCon.execute(encQuery, [username]);
       const decryptStream = await decryptFile(
         data.Body,
-        rows[0]["salt"],
-        rows[0]["iv"],
-        key[0].enc
+        fileFound.salt,
+        fileFound.iv,
+        userFound.enc
       );
-
-      res.set("Content-Length", rows[0]["size"]);
-      // res.set("salt", rows[0]["salt"]);
-      // res.set("iv", rows[0]["iv"]);
+      res.set("Content-Length", fileFound.size);
       res.set("Content-Disposition", `attachment; filename="${file}"`);
       res.set("Cache-Control", "private, max-age=31536000, no-transform");
       const mimetype = file.split(".")[1];
@@ -113,16 +136,10 @@ router.get("/", verifyToken, async (req, res) => {
         res.end();
       });
     } else {
-      res.status(404).json({ success: false, msg: "File not Found" });
-    }
-    if (userCon) {
-      userCon.release();
-    }
-    if (con) {
-      con.release();
+      return res.status(404).json({ success: false, msg: "File not Found" });
     }
   } catch (err) {
-    res.status(500).json({ success: false, msg: err });
+    return res.status(500).json({ success: false, msg: err });
   }
 });
 

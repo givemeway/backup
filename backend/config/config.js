@@ -1,13 +1,21 @@
-const domain = "localhost";
-const host_url = `http://${domain}`;
-const origin = `${host_url}:3000`;
-const serverDomain = `http://localhost:3001`;
-const frontEndDomain = `http://localhost:3000`;
-// const domain = "wealthy-grouse-modest.ngrok-free.app";
-// const host_url = `https://wealthy-grouse-modest.ngrok-free.app`;
-// const origin = `https://wealthy-grouse-modest.ngrok-free.app`;
-// const serverDomain = `https://wealthy-grouse-modest.ngrok-free.app`;
+import dotenv from "dotenv";
+dotenv.config();
 
-// https://wealthy-grouse-modest.ngrok-free.app/
-//  "ngrok http --host-header=rewrite --domain=wealthy-grouse-modest.ngrok-free.app 3000"
-export { origin, domain, serverDomain, frontEndDomain };
+export const domain = "localhost";
+export const host_url = `http://${domain}`;
+export const origin = `${host_url}:3000`;
+export const serverDomain = `http://localhost:3001`;
+export const frontEndDomain = `http://localhost:3000`;
+export const thumbnailMicroservice =
+  "http://localhost:3003/api/v1/thumbnail?key=";
+
+export const {
+  PORT,
+  API_BASE_URL,
+  ORIGIN,
+  FRONT_END_DOMAIN,
+  SERVER_DOMAIN,
+  DATABASE_URL,
+  DOMAIN,
+  JWT_SECRET,
+} = process.env;

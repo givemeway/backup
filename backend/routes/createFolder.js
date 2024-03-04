@@ -5,6 +5,7 @@ import { pool } from "../server.js";
 import { origin } from "../config/config.js";
 import csrf from "csurf";
 import { verifyToken } from "../auth/auth.js";
+import { prisma } from "../config/prismaDBConfig.js";
 
 const ER_DUP_ENTRY = 1062;
 
@@ -51,15 +52,26 @@ router.post("/", verifyToken, async (req, res, next) => {
   const query = `INSERT INTO directories.directories 
                  VALUES(?,?,?,?,?,NOW())`;
   try {
-    const con = await pool["directories"].getConnection();
-    const values = [uuidv4(), username, device, folder, path];
-    await sql_execute(con, query, values);
+    // const con = await pool["directories"].getConnection();
+    // const values = [uuidv4(), username, device, folder, path];
+    await prisma.directory.create({
+      data: {
+        uuid: uuidv4(),
+        username,
+        device,
+        folder,
+        path,
+        created_at: new Date().toISOString(),
+      },
+    });
+    // await sql_execute(con, query, values);
     success = true;
     status = 200;
     msg = `Folder ${folder} created!`;
   } catch (err) {
+    console.log(err);
     success = false;
-    if (err?.errno === ER_DUP_ENTRY) {
+    if (err?.code === "P2002") {
       msg = err.message;
       status = 409;
     } else {

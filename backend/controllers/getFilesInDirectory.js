@@ -1,25 +1,18 @@
 const FILE = "file";
 const FOLDER = "folder";
+import { prisma, Prisma } from "../config/prismaDBConfig.js";
 
-const sqlExecute = (req, res, next) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // const con = req.headers.connection;
-      const con = req.db;
-
-      const [rows] = await con.execute(req.headers.query, [
-        ...req.headers.queryValues,
-      ]);
-      // req.headers.queryStatus = rows;
-      // req.headers.query_success = true;
-      resolve(rows);
-    } catch (error) {
-      console.error(error);
-      // res.status(500).json(error.message);
-      // res.end();
-      reject(error);
-    }
-  });
+const selectedFields = {
+  directory: true,
+  filename: true,
+  hashvalue: true,
+  last_modified: true,
+  salt: true,
+  iv: true,
+  device: true,
+  uuid: true,
+  origin: true,
+  versions: true,
 };
 
 const getFilesInDirectory = async (req, res, next) => {
@@ -32,72 +25,52 @@ const getFilesInDirectory = async (req, res, next) => {
     req.headers.data = [];
     if (backupType === FOLDER) {
       if (currentdirectory === "/") {
-        const filesInOtherDirectoriesUnion = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
-                                              FROM  files 
-                                              WHERE username = ? AND  device = ?
-                                              UNION ALL
-                                              SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
-                                              FROM  versions.file_versions 
-                                              WHERE username = ? AND  device = ?;`;
-        req.headers.query = filesInOtherDirectoriesUnion;
-        req.headers.queryValues = [username, devicename, username, devicename];
-        const rows = await sqlExecute(req, res, next);
-        req.headers.data.push(...rows);
+        const files =
+          await prisma.$queryRaw(Prisma.sql`SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
+                        FROM  public."File" 
+                        WHERE username = ${username} AND  device = ${devicename}
+                        UNION ALL
+                        SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions
+                        FROM  public."FileVersion" 
+                        WHERE username = ${username} AND  device = ${devicename}`);
+        req.headers.data.push(...files);
       } else {
         const regex_other_files = `^${currentdirectory}(/[^/]+)*$`;
 
-        const filesInOtherDirectoriesUnion = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
-                                              FROM files 
-                                              WHERE username = ? AND device = ? AND directory REGEXP ?
-                                              UNION ALL
-                                              SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
-                                              FROM versions.file_versions  
-                                              WHERE username = ? AND device = ? AND directory REGEXP ?;`;
-        req.headers.query = filesInOtherDirectoriesUnion;
-        req.headers.queryValues = [
-          username,
-          devicename,
-          regex_other_files,
-          username,
-          devicename,
-          regex_other_files,
-        ];
-        const rows = await sqlExecute(req, res, next);
+        const rows =
+          await prisma.$queryRaw(Prisma.sql`SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                            FROM public."File"
+                                            WHERE username = ${username} AND device = ${devicename} AND directory ~ ${regex_other_files}
+                                            UNION ALL
+                                            SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                            FROM public."FileVersion"
+                                            WHERE username = ${username} AND device = ${devicename} AND directory ~ ${regex_other_files}`);
         req.headers.data.push(...rows);
       }
     } else {
       if (currentdirectory === "/") {
-        const filesInOtherDirectoriesUnion = `SELECT  directory,filename,hashvalue,last_modified,
-                                                    salt,iv,device,uuid,origin,versions
-                                              FROM files 
-                                              WHERE username = ? AND device = ?
-                                              UNION ALL
-                                              SELECT  directory,filename,hashvalue,last_modified,
-                                                    salt,iv,device,uuid,origin,versions
-                                              FROM versions.file_versions 
-                                              WHERE username = ? AND device = ?;`;
-        req.headers.query = filesInOtherDirectoriesUnion;
-        req.headers.queryValues = [username, devicename, username, devicename];
-        const rows = await sqlExecute(req, res, next);
+        const rows =
+          await prisma.$queryRaw(Prisma.sql`SELECT  directory,filename,hashvalue,last_modified,
+                                            salt,iv,device,uuid,origin,versions
+                                            FROM public."File"
+                                            WHERE username = ${username} AND device = ${devicename}
+                                            UNION ALL
+                                            SELECT  directory,filename,hashvalue,last_modified,
+                                                  salt,iv,device,uuid,origin,versions
+                                            FROM public."FileVersion"
+                                            WHERE username = ${username} AND device = ${devicename}`);
+
         req.headers.data.push(...rows);
       } else {
-        const filesInFolderRootUnion = `SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
-                                        FROM files 
-                                        WHERE  username = ? AND device = ? AND directory = ?
-                                        UNION ALL
-                                        SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
-                                        FROM versions.file_versions  
-                                        WHERE  username = ? AND device = ? AND directory = ?;`;
-        req.headers.query = filesInFolderRootUnion;
-        req.headers.queryValues = [
-          username,
-          devicename,
-          currentdirectory,
-          username,
-          devicename,
-          currentdirectory,
-        ];
-        const rows = await sqlExecute(req, res, next);
+        const rows = await prisma.$queryRaw(Prisma.sql`
+                                SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                FROM public."File"
+                                WHERE  username = ${username} AND device = ${devicename} AND directory = ${currentdirectory}
+                                UNION ALL
+                                SELECT directory,filename,hashvalue,last_modified,salt,iv,device,uuid,origin,versions 
+                                FROM public."FileVersion"  
+                                WHERE  username = ${username} AND device = ${devicename} AND directory = ${currentdirectory}`);
+
         req.headers.data.push(...rows);
       }
     }

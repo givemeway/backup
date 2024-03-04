@@ -6,4 +6,6 @@ function hexToBuffer(hexString) {
   return byteArray;
 }
 
-export { hexToBuffer };
+const imageTypes = { PNG: "png", JPG: "jpg", JPEG: "jpeg", TIFF: "tiff" };
+
+export { hexToBuffer, imageTypes };

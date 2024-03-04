@@ -1,128 +1,138 @@
 import express from "express";
 import csrf from "csurf";
-import { sqlExecute } from "../controllers/sql_execute.js";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
-import releaseConnection from "../controllers/ReleaseConnection.js";
-import { getConnection } from "../controllers/getConnection.js";
+import mimetype from "mime-types";
+import { imageTypes } from "../utils/utils.js";
+import { thumbnailMicroservice } from "../config/config.js";
+import axios from "axios";
+import { pool } from "../server.js";
+import { prisma, Prisma } from "../config/prismaDBConfig.js";
+
+const headers = {
+  headers: { "Content-Type": "application/json" },
+};
+
 const router = express.Router();
 router.use(csrf({ cookie: true }));
 
-const getFiles = async (req, res, next) => {
-  const { d, dir, sort, start, page } = req.query;
-  console.log("files-->", start, page);
-  // const order = req.headers.sortorder;
-  const order = sort;
-  // const currentDir = req.headers.currentdirectory;
-  const currentDir = dir;
+const getSignedURls = async (files, username) => {
+  const images = files.filter((file) => {
+    const mime = mimetype.lookup(file.filename);
+    if (mime) {
+      const ext = mime.split("/")[1].toUpperCase();
+      return imageTypes.hasOwnProperty(ext);
+    }
+    return false;
+  });
 
-  // const username = req.headers.username;
-  const username = req.user.Username;
-  // const devicename = req.headers.devicename;
-  const devicename = d;
+  const dataFiles = files.filter((file) => {
+    const mime = mimetype.lookup(file.filename);
 
-  // const filesInCurrentDirQuery = `SELECT * FROM (
-  //                                   SELECT uuid,origin,filename,salt,iv,directory,
-  //                                           versions,last_modified,size,device
-  //                                   FROM files
-  //                                   WHERE username = ? AND  device = ? AND directory = ?
-  //                                   ORDER BY directory ASC limit ?,?
-  //                                 ) AS t
-  //                                 UNION ALL
-  //                                 SELECT uuid,origin,filename,salt,iv,directory,versions,
-  //                                         last_modified,size,device
-  //                                 FROM versions.file_versions
-  //                                 WHERE username = ? AND  device = ? AND directory = ?;`;
-  const filesInCurrentDirQuery = `SELECT uuid,origin,filename,salt,iv,directory,
-                                            versions,last_modified,size,device 
-                                    FROM files.files
-                                    WHERE username = ? AND  device = ? AND directory = ?
-                                    ORDER BY directory ASC limit ?,?
-                                  `;
-  req.headers.query = filesInCurrentDirQuery;
-  // req.headers.queryValues = [
-  //   username,
-  //   devicename,
-  //   currentDir,
-  //   start.toString(),
-  //   page.toString(),
-  //   username,
-  //   devicename,
-  //   currentDir,
-  // ];
-  req.headers.queryValues = [
-    username,
-    devicename,
-    currentDir,
-    start.toString(),
-    page.toString(),
-  ];
-  await sqlExecute(req, res, next);
-  req.headers.data = {};
-  req.headers.data["files"] = JSON.parse(
-    JSON.stringify(req.headers.queryStatus)
-  );
-  console.log(req.headers.data["files"].length);
-  next();
+    if (mime) {
+      const ext = mime.split("/")[1].toUpperCase();
+      return !imageTypes.hasOwnProperty(ext);
+    }
+    return true;
+  });
+
+  for (let i = 0; i < images.length; i++) {
+    try {
+      const url =
+        thumbnailMicroservice +
+        images[i].uuid +
+        "_32w" +
+        `&username=${username}`;
+
+      const response = await axios.get(url, headers);
+      images[i].signedURL = response.data.url_thumb;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  let allFiles = [];
+  allFiles = [...images, ...dataFiles];
+
+  return allFiles;
 };
 
-const getFolders = async (req, res, next) => {
-  const { d, dir, sort, start, page } = req.query;
-  console.log("folder->", start, page);
-  // const currentDir = req.headers.currentdirectory;
-  const currentDir = dir;
+const getFiles = async (req, res, next) => {
+  let con;
+  try {
+    const { d, dir, sort, start, page } = req.query;
+    console.log("files-->", start, page);
+    const order = sort;
+    const currentDir = dir;
+    const username = req.user.Username;
+    const devicename = d;
+    const rows = await prisma.file.findMany({
+      where: {
+        username,
+        device: devicename,
+        directory: currentDir,
+      },
+      skip: parseInt(start),
+      take: parseInt(page),
+      orderBy: {
+        directory: "asc",
+      },
+    });
 
-  const order = req.headers.sortorder;
-  // const username = req.headers.username;
-  const username = req.user.Username;
-
-  // const devicename = req.headers.devicename;
-  const devicename = d;
-
-  // const [start, end] = [0, 1000000];
-  let regex = `^\\.?${currentDir}(/[^/]+)$`;
-  if (currentDir === "/") {
-    regex = `^([^/]+)$`;
+    req.data = {};
+    const updatedFiles = await getSignedURls(rows, username);
+    req.data["files"] = updatedFiles;
+    next();
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, msg: err });
   }
+};
 
-  let regex_2 = ``;
-  let path = ``;
-  if (devicename === "/") {
-    regex_2 = `^\\.?(/[^/]+)$`;
-  } else if (currentDir === "/") {
-    let device = devicename;
-    device = device.replace(/\(/g, "\\(");
-    device = device.replace(/\)/g, "\\)");
-    regex_2 = `^\\.?/${device}(/[^/]+)$`;
-  } else {
-    path = `/${devicename}/${currentDir}`;
-    path = path.replace(/\(/g, "\\(");
-    path = path.replace(/\)/g, "\\)");
-    regex_2 = `^\\.?${path}(/[^/]+)$`;
-  }
-  const foldersQuery = `SELECT 
+const getFolders = async (req, res) => {
+  let con;
+  try {
+    const { d, dir, sort, start, page } = req.query;
+    console.log("folder->", start, page);
+    const currentDir = dir;
+
+    const order = req.headers.sortorder;
+    const username = req.user.Username;
+    const devicename = d;
+    console.log(username, devicename);
+    let regex = ``;
+    let path = ``;
+    if (devicename === "/") {
+      regex = `^(/[^/]+)$`;
+    } else if (currentDir === "/") {
+      let device = devicename;
+      device = device.replace(/\(/g, "\\(");
+      device = device.replace(/\)/g, "\\)");
+      regex = `^/${device}(/[^/]+)$`;
+    } else {
+      path = `/${devicename}/${currentDir}`;
+      path = path.replace(/\(/g, "\\(");
+      path = path.replace(/\)/g, "\\)");
+      regex = `^${path}(/[^/]+)$`;
+    }
+
+    let rows = await prisma.$queryRaw(Prisma.sql`SELECT 
                         uuid,folder,path,created_at,device 
-                        FROM directories.directories 
-                        WHERE username = ?
+                        FROM public."Directory" 
+                        WHERE username = ${username}
                         AND
-                        path REGEXP ? 
+                        path ~ ${regex} 
                         ORDER BY folder ASC
-                        limit ?,?;`;
+                        LIMIT ${parseInt(page)} OFFSET ${parseInt(start)}`);
+    req.data["folders"] = rows;
 
-  req.headers.query = foldersQuery;
-  req.headers.queryValues = [
-    username,
-    regex_2,
-    start.toString(),
-    page.toString(),
-  ];
-  await sqlExecute(req, res, next);
-
-  req.headers.data["folders"] = JSON.parse(
-    JSON.stringify(req.headers.queryStatus)
-  );
-  console.log(req.headers.data["folders"].length);
-  res.json(req.headers.data);
+    const data = JSON.stringify(req.data, (key, value) =>
+      typeof value === "bigint" ? parseInt(value) : value
+    );
+    res.json(JSON.parse(data));
+  } catch (err) {
+    console.log(err);
+    res.json(500).json({ success: false, msg: err });
+  }
 };
 
 router.use((req, res, next) => {
@@ -135,17 +145,6 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get(
-  "/",
-  verifyToken,
-  getFiles,
-  releaseConnection,
-  getConnection("directories"),
-  getFolders,
-  releaseConnection,
-  (req, res) => {
-    console.log("done");
-  }
-);
+router.get("/", verifyToken, getFiles, getFolders);
 
 export { router as getFilesSubfolders };

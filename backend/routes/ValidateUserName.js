@@ -5,6 +5,7 @@ const router = express.Router();
 import { origin } from "../config/config.js";
 
 import { pool } from "../server.js";
+import { prismaUser } from "../config/prismaDBConfig.js";
 
 router.use(csrf({ cookie: true }));
 
@@ -21,10 +22,11 @@ router.use((req, res, next) => {
 router.get("/", async (req, res) => {
   try {
     const { username } = req.query;
-    const query = `SELECT * FROM users WHERE username = ?`;
-    const userCon = await pool["customers"].getConnection();
-    const [rows, fields] = await userCon.execute(query, [username]);
-    if (rows.length > 0) {
+    // const query = `SELECT * FROM users WHERE username = ?`;
+    const user = await prismaUser.user.findUnique({ where: { username } });
+    // const userCon = await pool["customers"].getConnection();
+    // const [rows, fields] = await userCon.execute(query, [username]);
+    if (user !== null) {
       res.status(200).json({ exist: true, username });
     } else {
       res.status(200).json({ exist: false, username });

@@ -14,7 +14,7 @@ const DBConfig = {
     connectionLimit: 10000,
     maxIdle: 10000, // max idle connections, the default value is the same as `connectionLimit`
     idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
-    queueLimit: 100,
+    queueLimit: 100000,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
     ssl: { ca: fs.readFileSync(PEM_FILE) },
@@ -29,7 +29,7 @@ const DBConfig = {
     connectionLimit: 10000,
     maxIdle: 10000, // max idle connections, the default value is the same as `connectionLimit`
     idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
-    queueLimit: 100,
+    queueLimit: 100000,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
     ssl: { ca: fs.readFileSync(PEM_FILE) },
