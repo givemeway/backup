@@ -155,7 +155,8 @@ exports.Prisma.DeletedFileScalarFieldEnum = {
   salt: 'salt',
   iv: 'iv',
   deletion_date: 'deletion_date',
-  deletion_type: 'deletion_type'
+  deletion_type: 'deletion_type',
+  dirID: 'dirID'
 };
 
 exports.Prisma.DeletedFileVersionScalarFieldEnum = {
@@ -245,7 +246,8 @@ exports.Prisma.DeletedFileOrderByRelevanceFieldEnum = {
   enc_hashvalue: 'enc_hashvalue',
   salt: 'salt',
   iv: 'iv',
-  deletion_type: 'deletion_type'
+  deletion_type: 'deletion_type',
+  dirID: 'dirID'
 };
 
 exports.Prisma.DeletedFileVersionOrderByRelevanceFieldEnum = {

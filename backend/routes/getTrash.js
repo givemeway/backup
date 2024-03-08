@@ -3,45 +3,10 @@ import { origin } from "../config/config.js";
 import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { v4 as uuidv4 } from "uuid";
-import { pool } from "../server.js";
+import { Prisma, prisma } from "../config/prismaDBConfig.js";
 
 const router = express.Router();
 const BATCH = 500;
-
-const groupFoldersByParentQuery = `SELECT rel_path, rel_name, 
-                                  count(folder) as folder_count 
-                                  FROM deleted_directories.directories 
-                                  WHERE username = ? 
-                                  GROUP BY rel_name,rel_path`;
-
-const filesQuery = `SELECT filename,deletion_date,uuid
-                    FROM deleted_files.files 
-                    WHERE username = ? AND device = ? AND directory regexp ?
-                    ORDER BY directory
-                    LIMIT ?,?`;
-const folderRootFilesQuery = `SELECT filename,deletion_date,uuid
-                              FROM deleted_files.files 
-                              WHERE username = ? 
-                              AND device = ? 
-                              AND directory = ?
-                              ORDER BY filename
-                              LIMIT ?,?;`;
-const deletedFilesQuery = `SELECT filename,deletion_date,device,directory,uuid 
-                              FROM deleted_files.files
-                              WHERE username = ?
-                              AND deletion_type = ?;`;
-
-const sqlExecute = (con, query, values) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const [rows, fields] = await con.execute(query, values);
-      resolve(rows);
-    } catch (error) {
-      console.log(error);
-      reject(error);
-    }
-  });
-};
 
 const func = (total, item) => {
   const { count } = item;
@@ -58,7 +23,6 @@ router.use((req, res, next) => {
 });
 
 function batchSubFolderFiles(
-  con,
   req,
   total,
   subFolders,
@@ -66,8 +30,7 @@ function batchSubFolderFiles(
   rel_path,
   rel_name,
   idx,
-  accumulate,
-  filesQuery
+  accumulate
 ) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -85,14 +48,16 @@ function batchSubFolderFiles(
         const regexp = `^${directory}(/[^/]+)*$`;
         let begin = 0;
         while (true) {
-          const val = [
-            username,
-            device,
-            regexp,
-            begin.toString(),
-            BATCH.toString(),
-          ];
-          const files = await sqlExecute(con, filesQuery, val);
+          const files = await prisma.$queryRaw(Prisma.sql`
+                        SELECT filename,deletion_date,uuid
+                        FROM public."DeletedFile"
+                        WHERE username = ${username} 
+                        AND device = ${device} 
+                        AND directory ~ ${regexp}
+                        ORDER BY directory
+                        LIMIT ${BATCH}
+                        OFFSET ${begin};`);
+
           if (files.length === 0) break;
           if (
             files.length > 0 &&
@@ -232,8 +197,6 @@ function batchSubFolderFiles(
 }
 
 function batchFolderRootFiles(
-  con,
-  folderRootFilesQuery,
   rel_path,
   rel_name,
   req,
@@ -248,8 +211,15 @@ function batchFolderRootFiles(
       let idx = 0;
       let total = 0;
       while (true) {
-        const val = [username, device, dir, begin.toString(), BATCH.toString()];
-        const files = await sqlExecute(con, folderRootFilesQuery, val);
+        const files = await prisma.deletedFile.findMany({
+          where: { username, device, directory: dir },
+          skip: begin,
+          take: BATCH,
+          orderBy: {
+            filename: "asc",
+          },
+        });
+
         // files = 450
         if (files.length < BATCH && files.length > 0) {
           total += files.length;
@@ -302,10 +272,6 @@ function batchFolderRootFiles(
 }
 
 function createBatchTrashItems(
-  con,
-  folderCon,
-  filesQuery,
-  folderRootFilesQuery,
   rel_path,
   rel_name,
   subFoldersRegExp,
@@ -315,18 +281,14 @@ function createBatchTrashItems(
   username
 ) {
   return new Promise(async (resolve, reject) => {
-    const subFoldersQuery = `SELECT folder,path,device,uuid 
-                            from deleted_directories.directories 
-                            where username = ? AND path regexp ?`;
     try {
-      const subFolders = await sqlExecute(folderCon, subFoldersQuery, [
-        username,
-        subFoldersRegExp,
-      ]);
+      const subFolders = await prisma.$queryRaw(Prisma.sql`
+                              SELECT folder,path,device,uuid 
+                              FROM public."DeletedDirectory" 
+                              WHERE username = ${username} 
+                              AND path ~ ${subFoldersRegExp};`);
       let accumulate = [];
       let { total, idx } = await batchFolderRootFiles(
-        con,
-        folderRootFilesQuery,
         rel_path,
         rel_name,
         req,
@@ -336,7 +298,6 @@ function createBatchTrashItems(
         dir
       );
       const { consolidate, id } = await batchSubFolderFiles(
-        con,
         req,
         total,
         subFolders,
@@ -344,8 +305,7 @@ function createBatchTrashItems(
         rel_path,
         rel_name,
         idx,
-        accumulate,
-        filesQuery
+        accumulate
       );
       if (consolidate.length > 0) {
         const func = (total, item) => {
@@ -382,18 +342,30 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const username = req.user.Username;
     req.data = {};
-    let con;
-    let folderCon;
-    con = req.db;
-    folderCon = await pool["deleted_directories"].getConnection();
-    const group_folder = await sqlExecute(
-      folderCon,
-      groupFoldersByParentQuery,
-      [username]
-    );
 
-    const val = [username, "file"];
-    const deleted_files = await sqlExecute(con, deletedFilesQuery, val);
+    const group_folder_ = await prisma.$queryRaw(Prisma.sql`
+                          SELECT rel_path,rel_name, count(folder) AS folder_count
+                          FROM public."DeletedDirectory"
+                          WHERE username = ${username}
+                          GROUP BY
+                          rel_name,rel_path;`);
+
+    const group_folder = group_folder_.map((folder) => ({
+      ...folder,
+      folder_count: parseInt(folder.folder_count),
+    }));
+    console.log(group_folder);
+
+    const deleted_files = await prisma.deletedFile.findMany({
+      where: { username, deletion_type: "file" },
+      select: {
+        filename: true,
+        deletion_date: true,
+        device: true,
+        directory: true,
+        uuid: true,
+      },
+    });
 
     req.trash = {};
     req.trash["files"] = [];
@@ -407,12 +379,9 @@ router.get("/", verifyToken, async (req, res) => {
       let rel_path = group.rel_path.replace(/\(/g, "\\(");
       rel_path = rel_path.replace(/\)/g, "\\)");
       const subFoldersRegExp = `^${rel_path}(/[^/]+)$`;
+
       if (dir === "/") {
         await createBatchTrashItems(
-          con,
-          folderCon,
-          filesQuery,
-          folderRootFilesQuery,
           group.rel_path,
           group.rel_name,
           subFoldersRegExp,
@@ -423,10 +392,6 @@ router.get("/", verifyToken, async (req, res) => {
         );
       } else {
         await createBatchTrashItems(
-          con,
-          folderCon,
-          filesQuery,
-          folderRootFilesQuery,
           group.rel_path,
           group.rel_name,
           subFoldersRegExp,
@@ -437,12 +402,7 @@ router.get("/", verifyToken, async (req, res) => {
         );
       }
     }
-    if (con) {
-      con.release();
-    }
-    if (folderCon) {
-      folderCon.release();
-    }
+
     res.status(200).json(req.trash);
   } catch (err) {
     console.error(err);

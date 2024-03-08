@@ -1306,6 +1306,40 @@ export namespace Prisma {
 
 
   /**
+   * Count Type DeletedFileCountOutputType
+   */
+
+  export type DeletedFileCountOutputType = {
+    deletedFileVersions: number
+  }
+
+  export type DeletedFileCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    deletedFileVersions?: boolean | DeletedFileCountOutputTypeCountDeletedFileVersionsArgs
+  }
+
+  // Custom InputTypes
+
+  /**
+   * DeletedFileCountOutputType without action
+   */
+  export type DeletedFileCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedFileCountOutputType
+     */
+    select?: DeletedFileCountOutputTypeSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * DeletedFileCountOutputType without action
+   */
+  export type DeletedFileCountOutputTypeCountDeletedFileVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DeletedFileVersionWhereInput
+  }
+
+
+
+  /**
    * Count Type DirectoryCountOutputType
    */
 
@@ -1335,6 +1369,40 @@ export namespace Prisma {
    */
   export type DirectoryCountOutputTypeCountFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FileWhereInput
+  }
+
+
+
+  /**
+   * Count Type DeletedDirectoryCountOutputType
+   */
+
+  export type DeletedDirectoryCountOutputType = {
+    files: number
+  }
+
+  export type DeletedDirectoryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    files?: boolean | DeletedDirectoryCountOutputTypeCountFilesArgs
+  }
+
+  // Custom InputTypes
+
+  /**
+   * DeletedDirectoryCountOutputType without action
+   */
+  export type DeletedDirectoryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedDirectoryCountOutputType
+     */
+    select?: DeletedDirectoryCountOutputTypeSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * DeletedDirectoryCountOutputType without action
+   */
+  export type DeletedDirectoryCountOutputTypeCountFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DeletedFileWhereInput
   }
 
 
@@ -3508,6 +3576,7 @@ export namespace Prisma {
     iv: string | null
     deletion_date: Date | null
     deletion_type: string | null
+    dirID: string | null
   }
 
   export type DeletedFileMaxAggregateOutputType = {
@@ -3526,6 +3595,7 @@ export namespace Prisma {
     iv: string | null
     deletion_date: Date | null
     deletion_type: string | null
+    dirID: string | null
   }
 
   export type DeletedFileCountAggregateOutputType = {
@@ -3544,6 +3614,7 @@ export namespace Prisma {
     iv: number
     deletion_date: number
     deletion_type: number
+    dirID: number
     _all: number
   }
 
@@ -3574,6 +3645,7 @@ export namespace Prisma {
     iv?: true
     deletion_date?: true
     deletion_type?: true
+    dirID?: true
   }
 
   export type DeletedFileMaxAggregateInputType = {
@@ -3592,6 +3664,7 @@ export namespace Prisma {
     iv?: true
     deletion_date?: true
     deletion_type?: true
+    dirID?: true
   }
 
   export type DeletedFileCountAggregateInputType = {
@@ -3610,6 +3683,7 @@ export namespace Prisma {
     iv?: true
     deletion_date?: true
     deletion_type?: true
+    dirID?: true
     _all?: true
   }
 
@@ -3715,6 +3789,7 @@ export namespace Prisma {
     iv: string
     deletion_date: Date
     deletion_type: string
+    dirID: string
     _count: DeletedFileCountAggregateOutputType | null
     _avg: DeletedFileAvgAggregateOutputType | null
     _sum: DeletedFileSumAggregateOutputType | null
@@ -3752,6 +3827,10 @@ export namespace Prisma {
     iv?: boolean
     deletion_date?: boolean
     deletion_type?: boolean
+    dirID?: boolean
+    directoryID?: boolean | DeletedDirectoryDefaultArgs<ExtArgs>
+    deletedFileVersions?: boolean | DeletedFile$deletedFileVersionsArgs<ExtArgs>
+    _count?: boolean | DeletedFileCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["deletedFile"]>
 
   export type DeletedFileSelectScalar = {
@@ -3770,12 +3849,22 @@ export namespace Prisma {
     iv?: boolean
     deletion_date?: boolean
     deletion_type?: boolean
+    dirID?: boolean
+  }
+
+  export type DeletedFileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    directoryID?: boolean | DeletedDirectoryDefaultArgs<ExtArgs>
+    deletedFileVersions?: boolean | DeletedFile$deletedFileVersionsArgs<ExtArgs>
+    _count?: boolean | DeletedFileCountOutputTypeDefaultArgs<ExtArgs>
   }
 
 
   export type $DeletedFilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "DeletedFile"
-    objects: {}
+    objects: {
+      directoryID: Prisma.$DeletedDirectoryPayload<ExtArgs>
+      deletedFileVersions: Prisma.$DeletedFileVersionPayload<ExtArgs>[]
+    }
     scalars: $Extensions.GetPayloadResult<{
       username: string
       device: string
@@ -3792,6 +3881,7 @@ export namespace Prisma {
       iv: string
       deletion_date: Date
       deletion_type: string
+      dirID: string
     }, ExtArgs["result"]["deletedFile"]>
     composites: {}
   }
@@ -4157,6 +4247,9 @@ export namespace Prisma {
   export interface Prisma__DeletedFileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
 
+    directoryID<T extends DeletedDirectoryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DeletedDirectoryDefaultArgs<ExtArgs>>): Prisma__DeletedDirectoryClient<$Result.GetResult<Prisma.$DeletedDirectoryPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
+
+    deletedFileVersions<T extends DeletedFile$deletedFileVersionsArgs<ExtArgs> = {}>(args?: Subset<T, DeletedFile$deletedFileVersionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedFileVersionPayload<ExtArgs>, T, 'findMany'> | Null>;
 
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4201,6 +4294,7 @@ export namespace Prisma {
     readonly iv: FieldRef<"DeletedFile", 'String'>
     readonly deletion_date: FieldRef<"DeletedFile", 'DateTime'>
     readonly deletion_type: FieldRef<"DeletedFile", 'String'>
+    readonly dirID: FieldRef<"DeletedFile", 'String'>
   }
     
 
@@ -4214,6 +4308,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFile
      */
     select?: DeletedFileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
     /**
      * Filter, which DeletedFile to fetch.
      */
@@ -4230,6 +4328,10 @@ export namespace Prisma {
      */
     select?: DeletedFileSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedFile to fetch.
      */
     where: DeletedFileWhereUniqueInput
@@ -4244,6 +4346,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFile
      */
     select?: DeletedFileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
     /**
      * Filter, which DeletedFile to fetch.
      */
@@ -4290,6 +4396,10 @@ export namespace Prisma {
      */
     select?: DeletedFileSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedFile to fetch.
      */
     where?: DeletedFileWhereInput
@@ -4335,6 +4445,10 @@ export namespace Prisma {
      */
     select?: DeletedFileSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedFiles to fetch.
      */
     where?: DeletedFileWhereInput
@@ -4375,6 +4489,10 @@ export namespace Prisma {
      */
     select?: DeletedFileSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
+    /**
      * The data needed to create a DeletedFile.
      */
     data: XOR<DeletedFileCreateInput, DeletedFileUncheckedCreateInput>
@@ -4401,6 +4519,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFile
      */
     select?: DeletedFileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
     /**
      * The data needed to update a DeletedFile.
      */
@@ -4436,6 +4558,10 @@ export namespace Prisma {
      */
     select?: DeletedFileSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
+    /**
      * The filter to search for the DeletedFile to update in case it exists.
      */
     where: DeletedFileWhereUniqueInput
@@ -4459,6 +4585,10 @@ export namespace Prisma {
      */
     select?: DeletedFileSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
+    /**
      * Filter which DeletedFile to delete.
      */
     where: DeletedFileWhereUniqueInput
@@ -4477,6 +4607,27 @@ export namespace Prisma {
 
 
   /**
+   * DeletedFile.deletedFileVersions
+   */
+  export type DeletedFile$deletedFileVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedFileVersion
+     */
+    select?: DeletedFileVersionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
+    where?: DeletedFileVersionWhereInput
+    orderBy?: DeletedFileVersionOrderByWithRelationAndSearchRelevanceInput | DeletedFileVersionOrderByWithRelationAndSearchRelevanceInput[]
+    cursor?: DeletedFileVersionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DeletedFileVersionScalarFieldEnum | DeletedFileVersionScalarFieldEnum[]
+  }
+
+
+  /**
    * DeletedFile without action
    */
   export type DeletedFileDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4484,6 +4635,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFile
      */
     select?: DeletedFileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
   }
 
 
@@ -4770,6 +4925,7 @@ export namespace Prisma {
     iv?: boolean
     deletion_date?: boolean
     deletion_type?: boolean
+    latest_deleted_file?: boolean | DeletedFileDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["deletedFileVersion"]>
 
   export type DeletedFileVersionSelectScalar = {
@@ -4790,10 +4946,16 @@ export namespace Prisma {
     deletion_type?: boolean
   }
 
+  export type DeletedFileVersionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    latest_deleted_file?: boolean | DeletedFileDefaultArgs<ExtArgs>
+  }
+
 
   export type $DeletedFileVersionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "DeletedFileVersion"
-    objects: {}
+    objects: {
+      latest_deleted_file: Prisma.$DeletedFilePayload<ExtArgs>
+    }
     scalars: $Extensions.GetPayloadResult<{
       username: string
       device: string
@@ -5175,6 +5337,7 @@ export namespace Prisma {
   export interface Prisma__DeletedFileVersionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
 
+    latest_deleted_file<T extends DeletedFileDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DeletedFileDefaultArgs<ExtArgs>>): Prisma__DeletedFileClient<$Result.GetResult<Prisma.$DeletedFilePayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
 
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5233,6 +5396,10 @@ export namespace Prisma {
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedFileVersion to fetch.
      */
     where: DeletedFileVersionWhereUniqueInput
@@ -5248,6 +5415,10 @@ export namespace Prisma {
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedFileVersion to fetch.
      */
     where: DeletedFileVersionWhereUniqueInput
@@ -5262,6 +5433,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFileVersion
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
     /**
      * Filter, which DeletedFileVersion to fetch.
      */
@@ -5308,6 +5483,10 @@ export namespace Prisma {
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedFileVersion to fetch.
      */
     where?: DeletedFileVersionWhereInput
@@ -5353,6 +5532,10 @@ export namespace Prisma {
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedFileVersions to fetch.
      */
     where?: DeletedFileVersionWhereInput
@@ -5393,6 +5576,10 @@ export namespace Prisma {
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
+    /**
      * The data needed to create a DeletedFileVersion.
      */
     data: XOR<DeletedFileVersionCreateInput, DeletedFileVersionUncheckedCreateInput>
@@ -5419,6 +5606,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFileVersion
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
     /**
      * The data needed to update a DeletedFileVersion.
      */
@@ -5454,6 +5645,10 @@ export namespace Prisma {
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
+    /**
      * The filter to search for the DeletedFileVersion to update in case it exists.
      */
     where: DeletedFileVersionWhereUniqueInput
@@ -5476,6 +5671,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFileVersion
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
     /**
      * Filter which DeletedFileVersion to delete.
      */
@@ -5502,6 +5701,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedFileVersion
      */
     select?: DeletedFileVersionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileVersionInclude<ExtArgs> | null
   }
 
 
@@ -6654,6 +6857,8 @@ export namespace Prisma {
     deleted?: boolean
     rel_path?: boolean
     rel_name?: boolean
+    files?: boolean | DeletedDirectory$filesArgs<ExtArgs>
+    _count?: boolean | DeletedDirectoryCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["deletedDirectory"]>
 
   export type DeletedDirectorySelectScalar = {
@@ -6668,10 +6873,17 @@ export namespace Prisma {
     rel_name?: boolean
   }
 
+  export type DeletedDirectoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    files?: boolean | DeletedDirectory$filesArgs<ExtArgs>
+    _count?: boolean | DeletedDirectoryCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
 
   export type $DeletedDirectoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "DeletedDirectory"
-    objects: {}
+    objects: {
+      files: Prisma.$DeletedFilePayload<ExtArgs>[]
+    }
     scalars: $Extensions.GetPayloadResult<{
       uuid: string
       username: string
@@ -7047,6 +7259,7 @@ export namespace Prisma {
   export interface Prisma__DeletedDirectoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
 
+    files<T extends DeletedDirectory$filesArgs<ExtArgs> = {}>(args?: Subset<T, DeletedDirectory$filesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedFilePayload<ExtArgs>, T, 'findMany'> | Null>;
 
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -7099,6 +7312,10 @@ export namespace Prisma {
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedDirectory to fetch.
      */
     where: DeletedDirectoryWhereUniqueInput
@@ -7114,6 +7331,10 @@ export namespace Prisma {
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedDirectory to fetch.
      */
     where: DeletedDirectoryWhereUniqueInput
@@ -7128,6 +7349,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedDirectory
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
     /**
      * Filter, which DeletedDirectory to fetch.
      */
@@ -7174,6 +7399,10 @@ export namespace Prisma {
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedDirectory to fetch.
      */
     where?: DeletedDirectoryWhereInput
@@ -7219,6 +7448,10 @@ export namespace Prisma {
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
+    /**
      * Filter, which DeletedDirectories to fetch.
      */
     where?: DeletedDirectoryWhereInput
@@ -7259,6 +7492,10 @@ export namespace Prisma {
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
+    /**
      * The data needed to create a DeletedDirectory.
      */
     data: XOR<DeletedDirectoryCreateInput, DeletedDirectoryUncheckedCreateInput>
@@ -7285,6 +7522,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedDirectory
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
     /**
      * The data needed to update a DeletedDirectory.
      */
@@ -7320,6 +7561,10 @@ export namespace Prisma {
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
+    /**
      * The filter to search for the DeletedDirectory to update in case it exists.
      */
     where: DeletedDirectoryWhereUniqueInput
@@ -7343,6 +7588,10 @@ export namespace Prisma {
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
+    /**
      * Filter which DeletedDirectory to delete.
      */
     where: DeletedDirectoryWhereUniqueInput
@@ -7361,6 +7610,27 @@ export namespace Prisma {
 
 
   /**
+   * DeletedDirectory.files
+   */
+  export type DeletedDirectory$filesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedFile
+     */
+    select?: DeletedFileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedFileInclude<ExtArgs> | null
+    where?: DeletedFileWhereInput
+    orderBy?: DeletedFileOrderByWithRelationAndSearchRelevanceInput | DeletedFileOrderByWithRelationAndSearchRelevanceInput[]
+    cursor?: DeletedFileWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DeletedFileScalarFieldEnum | DeletedFileScalarFieldEnum[]
+  }
+
+
+  /**
    * DeletedDirectory without action
    */
   export type DeletedDirectoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7368,6 +7638,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the DeletedDirectory
      */
     select?: DeletedDirectorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: DeletedDirectoryInclude<ExtArgs> | null
   }
 
 
@@ -7440,7 +7714,8 @@ export namespace Prisma {
     salt: 'salt',
     iv: 'iv',
     deletion_date: 'deletion_date',
-    deletion_type: 'deletion_type'
+    deletion_type: 'deletion_type',
+    dirID: 'dirID'
   };
 
   export type DeletedFileScalarFieldEnum = (typeof DeletedFileScalarFieldEnum)[keyof typeof DeletedFileScalarFieldEnum]
@@ -7554,7 +7829,8 @@ export namespace Prisma {
     enc_hashvalue: 'enc_hashvalue',
     salt: 'salt',
     iv: 'iv',
-    deletion_type: 'deletion_type'
+    deletion_type: 'deletion_type',
+    dirID: 'dirID'
   };
 
   export type DeletedFileOrderByRelevanceFieldEnum = (typeof DeletedFileOrderByRelevanceFieldEnum)[keyof typeof DeletedFileOrderByRelevanceFieldEnum]
@@ -7904,6 +8180,9 @@ export namespace Prisma {
     iv?: StringFilter<"DeletedFile"> | string
     deletion_date?: DateTimeFilter<"DeletedFile"> | Date | string
     deletion_type?: StringFilter<"DeletedFile"> | string
+    dirID?: StringFilter<"DeletedFile"> | string
+    directoryID?: XOR<DeletedDirectoryRelationFilter, DeletedDirectoryWhereInput>
+    deletedFileVersions?: DeletedFileVersionListRelationFilter
   }
 
   export type DeletedFileOrderByWithRelationAndSearchRelevanceInput = {
@@ -7922,10 +8201,14 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    dirID?: SortOrder
+    directoryID?: DeletedDirectoryOrderByWithRelationAndSearchRelevanceInput
+    deletedFileVersions?: DeletedFileVersionOrderByRelationAggregateInput
     _relevance?: DeletedFileOrderByRelevanceInput
   }
 
   export type DeletedFileWhereUniqueInput = Prisma.AtLeast<{
+    origin?: string
     username_device_directory_filename?: DeletedFileUsernameDeviceDirectoryFilenameCompoundUniqueInput
     AND?: DeletedFileWhereInput | DeletedFileWhereInput[]
     OR?: DeletedFileWhereInput[]
@@ -7934,7 +8217,6 @@ export namespace Prisma {
     device?: StringFilter<"DeletedFile"> | string
     directory?: StringFilter<"DeletedFile"> | string
     uuid?: StringFilter<"DeletedFile"> | string
-    origin?: StringFilter<"DeletedFile"> | string
     filename?: StringFilter<"DeletedFile"> | string
     last_modified?: DateTimeFilter<"DeletedFile"> | Date | string
     hashvalue?: StringFilter<"DeletedFile"> | string
@@ -7945,7 +8227,10 @@ export namespace Prisma {
     iv?: StringFilter<"DeletedFile"> | string
     deletion_date?: DateTimeFilter<"DeletedFile"> | Date | string
     deletion_type?: StringFilter<"DeletedFile"> | string
-  }, "username_device_directory_filename">
+    dirID?: StringFilter<"DeletedFile"> | string
+    directoryID?: XOR<DeletedDirectoryRelationFilter, DeletedDirectoryWhereInput>
+    deletedFileVersions?: DeletedFileVersionListRelationFilter
+  }, "origin" | "username_device_directory_filename">
 
   export type DeletedFileOrderByWithAggregationInput = {
     username?: SortOrder
@@ -7963,6 +8248,7 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    dirID?: SortOrder
     _count?: DeletedFileCountOrderByAggregateInput
     _avg?: DeletedFileAvgOrderByAggregateInput
     _max?: DeletedFileMaxOrderByAggregateInput
@@ -7989,6 +8275,7 @@ export namespace Prisma {
     iv?: StringWithAggregatesFilter<"DeletedFile"> | string
     deletion_date?: DateTimeWithAggregatesFilter<"DeletedFile"> | Date | string
     deletion_type?: StringWithAggregatesFilter<"DeletedFile"> | string
+    dirID?: StringWithAggregatesFilter<"DeletedFile"> | string
   }
 
   export type DeletedFileVersionWhereInput = {
@@ -8010,6 +8297,7 @@ export namespace Prisma {
     iv?: StringFilter<"DeletedFileVersion"> | string
     deletion_date?: DateTimeFilter<"DeletedFileVersion"> | Date | string
     deletion_type?: StringFilter<"DeletedFileVersion"> | string
+    latest_deleted_file?: XOR<DeletedFileRelationFilter, DeletedFileWhereInput>
   }
 
   export type DeletedFileVersionOrderByWithRelationAndSearchRelevanceInput = {
@@ -8028,6 +8316,7 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    latest_deleted_file?: DeletedFileOrderByWithRelationAndSearchRelevanceInput
     _relevance?: DeletedFileVersionOrderByRelevanceInput
   }
 
@@ -8051,6 +8340,7 @@ export namespace Prisma {
     iv?: StringFilter<"DeletedFileVersion"> | string
     deletion_date?: DateTimeFilter<"DeletedFileVersion"> | Date | string
     deletion_type?: StringFilter<"DeletedFileVersion"> | string
+    latest_deleted_file?: XOR<DeletedFileRelationFilter, DeletedFileWhereInput>
   }, "username_device_directory_filename_uuid">
 
   export type DeletedFileVersionOrderByWithAggregationInput = {
@@ -8172,6 +8462,7 @@ export namespace Prisma {
     deleted?: DateTimeFilter<"DeletedDirectory"> | Date | string
     rel_path?: StringFilter<"DeletedDirectory"> | string
     rel_name?: StringFilter<"DeletedDirectory"> | string
+    files?: DeletedFileListRelationFilter
   }
 
   export type DeletedDirectoryOrderByWithRelationAndSearchRelevanceInput = {
@@ -8184,15 +8475,16 @@ export namespace Prisma {
     deleted?: SortOrder
     rel_path?: SortOrder
     rel_name?: SortOrder
+    files?: DeletedFileOrderByRelationAggregateInput
     _relevance?: DeletedDirectoryOrderByRelevanceInput
   }
 
   export type DeletedDirectoryWhereUniqueInput = Prisma.AtLeast<{
+    uuid?: string
     username_device_folder_path?: DeletedDirectoryUsernameDeviceFolderPathCompoundUniqueInput
     AND?: DeletedDirectoryWhereInput | DeletedDirectoryWhereInput[]
     OR?: DeletedDirectoryWhereInput[]
     NOT?: DeletedDirectoryWhereInput | DeletedDirectoryWhereInput[]
-    uuid?: StringFilter<"DeletedDirectory"> | string
     username?: StringFilter<"DeletedDirectory"> | string
     device?: StringFilter<"DeletedDirectory"> | string
     folder?: StringFilter<"DeletedDirectory"> | string
@@ -8201,7 +8493,8 @@ export namespace Prisma {
     deleted?: DateTimeFilter<"DeletedDirectory"> | Date | string
     rel_path?: StringFilter<"DeletedDirectory"> | string
     rel_name?: StringFilter<"DeletedDirectory"> | string
-  }, "username_device_folder_path">
+    files?: DeletedFileListRelationFilter
+  }, "uuid" | "username_device_folder_path">
 
   export type DeletedDirectoryOrderByWithAggregationInput = {
     uuid?: SortOrder
@@ -8482,6 +8775,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    directoryID: DeletedDirectoryCreateNestedOneWithoutFilesInput
+    deletedFileVersions?: DeletedFileVersionCreateNestedManyWithoutLatest_deleted_fileInput
   }
 
   export type DeletedFileUncheckedCreateInput = {
@@ -8500,6 +8795,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    dirID: string
+    deletedFileVersions?: DeletedFileVersionUncheckedCreateNestedManyWithoutLatest_deleted_fileInput
   }
 
   export type DeletedFileUpdateInput = {
@@ -8518,6 +8815,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    directoryID?: DeletedDirectoryUpdateOneRequiredWithoutFilesNestedInput
+    deletedFileVersions?: DeletedFileVersionUpdateManyWithoutLatest_deleted_fileNestedInput
   }
 
   export type DeletedFileUncheckedUpdateInput = {
@@ -8536,6 +8835,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    dirID?: StringFieldUpdateOperationsInput | string
+    deletedFileVersions?: DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileNestedInput
   }
 
   export type DeletedFileCreateManyInput = {
@@ -8554,6 +8855,7 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    dirID: string
   }
 
   export type DeletedFileUpdateManyMutationInput = {
@@ -8590,6 +8892,7 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    dirID?: StringFieldUpdateOperationsInput | string
   }
 
   export type DeletedFileVersionCreateInput = {
@@ -8597,7 +8900,6 @@ export namespace Prisma {
     device: string
     directory: string
     uuid: string
-    origin: string
     filename: string
     last_modified: Date | string
     hashvalue: string
@@ -8608,6 +8910,7 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    latest_deleted_file: DeletedFileCreateNestedOneWithoutDeletedFileVersionsInput
   }
 
   export type DeletedFileVersionUncheckedCreateInput = {
@@ -8633,7 +8936,6 @@ export namespace Prisma {
     device?: StringFieldUpdateOperationsInput | string
     directory?: StringFieldUpdateOperationsInput | string
     uuid?: StringFieldUpdateOperationsInput | string
-    origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
@@ -8644,6 +8946,7 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    latest_deleted_file?: DeletedFileUpdateOneRequiredWithoutDeletedFileVersionsNestedInput
   }
 
   export type DeletedFileVersionUncheckedUpdateInput = {
@@ -8687,7 +8990,6 @@ export namespace Prisma {
     device?: StringFieldUpdateOperationsInput | string
     directory?: StringFieldUpdateOperationsInput | string
     uuid?: StringFieldUpdateOperationsInput | string
-    origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
@@ -8795,6 +9097,7 @@ export namespace Prisma {
     deleted: Date | string
     rel_path: string
     rel_name: string
+    files?: DeletedFileCreateNestedManyWithoutDirectoryIDInput
   }
 
   export type DeletedDirectoryUncheckedCreateInput = {
@@ -8807,6 +9110,7 @@ export namespace Prisma {
     deleted: Date | string
     rel_path: string
     rel_name: string
+    files?: DeletedFileUncheckedCreateNestedManyWithoutDirectoryIDInput
   }
 
   export type DeletedDirectoryUpdateInput = {
@@ -8819,6 +9123,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    files?: DeletedFileUpdateManyWithoutDirectoryIDNestedInput
   }
 
   export type DeletedDirectoryUncheckedUpdateInput = {
@@ -8831,6 +9136,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    files?: DeletedFileUncheckedUpdateManyWithoutDirectoryIDNestedInput
   }
 
   export type DeletedDirectoryCreateManyInput = {
@@ -9149,6 +9455,21 @@ export namespace Prisma {
     size?: SortOrder
   }
 
+  export type DeletedDirectoryRelationFilter = {
+    is?: DeletedDirectoryWhereInput
+    isNot?: DeletedDirectoryWhereInput
+  }
+
+  export type DeletedFileVersionListRelationFilter = {
+    every?: DeletedFileVersionWhereInput
+    some?: DeletedFileVersionWhereInput
+    none?: DeletedFileVersionWhereInput
+  }
+
+  export type DeletedFileVersionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type DeletedFileOrderByRelevanceInput = {
     fields: DeletedFileOrderByRelevanceFieldEnum | DeletedFileOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -9178,6 +9499,7 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    dirID?: SortOrder
   }
 
   export type DeletedFileAvgOrderByAggregateInput = {
@@ -9201,6 +9523,7 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    dirID?: SortOrder
   }
 
   export type DeletedFileMinOrderByAggregateInput = {
@@ -9219,11 +9542,17 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    dirID?: SortOrder
   }
 
   export type DeletedFileSumOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+  }
+
+  export type DeletedFileRelationFilter = {
+    is?: DeletedFileWhereInput
+    isNot?: DeletedFileWhereInput
   }
 
   export type DeletedFileVersionOrderByRelevanceInput = {
@@ -9352,6 +9681,16 @@ export namespace Prisma {
     folder?: SortOrder
     path?: SortOrder
     created_at?: SortOrder
+  }
+
+  export type DeletedFileListRelationFilter = {
+    every?: DeletedFileWhereInput
+    some?: DeletedFileWhereInput
+    none?: DeletedFileWhereInput
+  }
+
+  export type DeletedFileOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type DeletedDirectoryOrderByRelevanceInput = {
@@ -9497,6 +9836,76 @@ export namespace Prisma {
     update?: XOR<XOR<FileUpdateToOneWithWhereWithoutVersionedFilesInput, FileUpdateWithoutVersionedFilesInput>, FileUncheckedUpdateWithoutVersionedFilesInput>
   }
 
+  export type DeletedDirectoryCreateNestedOneWithoutFilesInput = {
+    create?: XOR<DeletedDirectoryCreateWithoutFilesInput, DeletedDirectoryUncheckedCreateWithoutFilesInput>
+    connectOrCreate?: DeletedDirectoryCreateOrConnectWithoutFilesInput
+    connect?: DeletedDirectoryWhereUniqueInput
+  }
+
+  export type DeletedFileVersionCreateNestedManyWithoutLatest_deleted_fileInput = {
+    create?: XOR<DeletedFileVersionCreateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput> | DeletedFileVersionCreateWithoutLatest_deleted_fileInput[] | DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput[]
+    connectOrCreate?: DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput | DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput[]
+    createMany?: DeletedFileVersionCreateManyLatest_deleted_fileInputEnvelope
+    connect?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+  }
+
+  export type DeletedFileVersionUncheckedCreateNestedManyWithoutLatest_deleted_fileInput = {
+    create?: XOR<DeletedFileVersionCreateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput> | DeletedFileVersionCreateWithoutLatest_deleted_fileInput[] | DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput[]
+    connectOrCreate?: DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput | DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput[]
+    createMany?: DeletedFileVersionCreateManyLatest_deleted_fileInputEnvelope
+    connect?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+  }
+
+  export type DeletedDirectoryUpdateOneRequiredWithoutFilesNestedInput = {
+    create?: XOR<DeletedDirectoryCreateWithoutFilesInput, DeletedDirectoryUncheckedCreateWithoutFilesInput>
+    connectOrCreate?: DeletedDirectoryCreateOrConnectWithoutFilesInput
+    upsert?: DeletedDirectoryUpsertWithoutFilesInput
+    connect?: DeletedDirectoryWhereUniqueInput
+    update?: XOR<XOR<DeletedDirectoryUpdateToOneWithWhereWithoutFilesInput, DeletedDirectoryUpdateWithoutFilesInput>, DeletedDirectoryUncheckedUpdateWithoutFilesInput>
+  }
+
+  export type DeletedFileVersionUpdateManyWithoutLatest_deleted_fileNestedInput = {
+    create?: XOR<DeletedFileVersionCreateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput> | DeletedFileVersionCreateWithoutLatest_deleted_fileInput[] | DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput[]
+    connectOrCreate?: DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput | DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput[]
+    upsert?: DeletedFileVersionUpsertWithWhereUniqueWithoutLatest_deleted_fileInput | DeletedFileVersionUpsertWithWhereUniqueWithoutLatest_deleted_fileInput[]
+    createMany?: DeletedFileVersionCreateManyLatest_deleted_fileInputEnvelope
+    set?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    disconnect?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    delete?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    connect?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    update?: DeletedFileVersionUpdateWithWhereUniqueWithoutLatest_deleted_fileInput | DeletedFileVersionUpdateWithWhereUniqueWithoutLatest_deleted_fileInput[]
+    updateMany?: DeletedFileVersionUpdateManyWithWhereWithoutLatest_deleted_fileInput | DeletedFileVersionUpdateManyWithWhereWithoutLatest_deleted_fileInput[]
+    deleteMany?: DeletedFileVersionScalarWhereInput | DeletedFileVersionScalarWhereInput[]
+  }
+
+  export type DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileNestedInput = {
+    create?: XOR<DeletedFileVersionCreateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput> | DeletedFileVersionCreateWithoutLatest_deleted_fileInput[] | DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput[]
+    connectOrCreate?: DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput | DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput[]
+    upsert?: DeletedFileVersionUpsertWithWhereUniqueWithoutLatest_deleted_fileInput | DeletedFileVersionUpsertWithWhereUniqueWithoutLatest_deleted_fileInput[]
+    createMany?: DeletedFileVersionCreateManyLatest_deleted_fileInputEnvelope
+    set?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    disconnect?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    delete?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    connect?: DeletedFileVersionWhereUniqueInput | DeletedFileVersionWhereUniqueInput[]
+    update?: DeletedFileVersionUpdateWithWhereUniqueWithoutLatest_deleted_fileInput | DeletedFileVersionUpdateWithWhereUniqueWithoutLatest_deleted_fileInput[]
+    updateMany?: DeletedFileVersionUpdateManyWithWhereWithoutLatest_deleted_fileInput | DeletedFileVersionUpdateManyWithWhereWithoutLatest_deleted_fileInput[]
+    deleteMany?: DeletedFileVersionScalarWhereInput | DeletedFileVersionScalarWhereInput[]
+  }
+
+  export type DeletedFileCreateNestedOneWithoutDeletedFileVersionsInput = {
+    create?: XOR<DeletedFileCreateWithoutDeletedFileVersionsInput, DeletedFileUncheckedCreateWithoutDeletedFileVersionsInput>
+    connectOrCreate?: DeletedFileCreateOrConnectWithoutDeletedFileVersionsInput
+    connect?: DeletedFileWhereUniqueInput
+  }
+
+  export type DeletedFileUpdateOneRequiredWithoutDeletedFileVersionsNestedInput = {
+    create?: XOR<DeletedFileCreateWithoutDeletedFileVersionsInput, DeletedFileUncheckedCreateWithoutDeletedFileVersionsInput>
+    connectOrCreate?: DeletedFileCreateOrConnectWithoutDeletedFileVersionsInput
+    upsert?: DeletedFileUpsertWithoutDeletedFileVersionsInput
+    connect?: DeletedFileWhereUniqueInput
+    update?: XOR<XOR<DeletedFileUpdateToOneWithWhereWithoutDeletedFileVersionsInput, DeletedFileUpdateWithoutDeletedFileVersionsInput>, DeletedFileUncheckedUpdateWithoutDeletedFileVersionsInput>
+  }
+
   export type FileCreateNestedManyWithoutDirectoryIDInput = {
     create?: XOR<FileCreateWithoutDirectoryIDInput, FileUncheckedCreateWithoutDirectoryIDInput> | FileCreateWithoutDirectoryIDInput[] | FileUncheckedCreateWithoutDirectoryIDInput[]
     connectOrCreate?: FileCreateOrConnectWithoutDirectoryIDInput | FileCreateOrConnectWithoutDirectoryIDInput[]
@@ -9537,6 +9946,48 @@ export namespace Prisma {
     update?: FileUpdateWithWhereUniqueWithoutDirectoryIDInput | FileUpdateWithWhereUniqueWithoutDirectoryIDInput[]
     updateMany?: FileUpdateManyWithWhereWithoutDirectoryIDInput | FileUpdateManyWithWhereWithoutDirectoryIDInput[]
     deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
+  }
+
+  export type DeletedFileCreateNestedManyWithoutDirectoryIDInput = {
+    create?: XOR<DeletedFileCreateWithoutDirectoryIDInput, DeletedFileUncheckedCreateWithoutDirectoryIDInput> | DeletedFileCreateWithoutDirectoryIDInput[] | DeletedFileUncheckedCreateWithoutDirectoryIDInput[]
+    connectOrCreate?: DeletedFileCreateOrConnectWithoutDirectoryIDInput | DeletedFileCreateOrConnectWithoutDirectoryIDInput[]
+    createMany?: DeletedFileCreateManyDirectoryIDInputEnvelope
+    connect?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+  }
+
+  export type DeletedFileUncheckedCreateNestedManyWithoutDirectoryIDInput = {
+    create?: XOR<DeletedFileCreateWithoutDirectoryIDInput, DeletedFileUncheckedCreateWithoutDirectoryIDInput> | DeletedFileCreateWithoutDirectoryIDInput[] | DeletedFileUncheckedCreateWithoutDirectoryIDInput[]
+    connectOrCreate?: DeletedFileCreateOrConnectWithoutDirectoryIDInput | DeletedFileCreateOrConnectWithoutDirectoryIDInput[]
+    createMany?: DeletedFileCreateManyDirectoryIDInputEnvelope
+    connect?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+  }
+
+  export type DeletedFileUpdateManyWithoutDirectoryIDNestedInput = {
+    create?: XOR<DeletedFileCreateWithoutDirectoryIDInput, DeletedFileUncheckedCreateWithoutDirectoryIDInput> | DeletedFileCreateWithoutDirectoryIDInput[] | DeletedFileUncheckedCreateWithoutDirectoryIDInput[]
+    connectOrCreate?: DeletedFileCreateOrConnectWithoutDirectoryIDInput | DeletedFileCreateOrConnectWithoutDirectoryIDInput[]
+    upsert?: DeletedFileUpsertWithWhereUniqueWithoutDirectoryIDInput | DeletedFileUpsertWithWhereUniqueWithoutDirectoryIDInput[]
+    createMany?: DeletedFileCreateManyDirectoryIDInputEnvelope
+    set?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    disconnect?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    delete?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    connect?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    update?: DeletedFileUpdateWithWhereUniqueWithoutDirectoryIDInput | DeletedFileUpdateWithWhereUniqueWithoutDirectoryIDInput[]
+    updateMany?: DeletedFileUpdateManyWithWhereWithoutDirectoryIDInput | DeletedFileUpdateManyWithWhereWithoutDirectoryIDInput[]
+    deleteMany?: DeletedFileScalarWhereInput | DeletedFileScalarWhereInput[]
+  }
+
+  export type DeletedFileUncheckedUpdateManyWithoutDirectoryIDNestedInput = {
+    create?: XOR<DeletedFileCreateWithoutDirectoryIDInput, DeletedFileUncheckedCreateWithoutDirectoryIDInput> | DeletedFileCreateWithoutDirectoryIDInput[] | DeletedFileUncheckedCreateWithoutDirectoryIDInput[]
+    connectOrCreate?: DeletedFileCreateOrConnectWithoutDirectoryIDInput | DeletedFileCreateOrConnectWithoutDirectoryIDInput[]
+    upsert?: DeletedFileUpsertWithWhereUniqueWithoutDirectoryIDInput | DeletedFileUpsertWithWhereUniqueWithoutDirectoryIDInput[]
+    createMany?: DeletedFileCreateManyDirectoryIDInputEnvelope
+    set?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    disconnect?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    delete?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    connect?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
+    update?: DeletedFileUpdateWithWhereUniqueWithoutDirectoryIDInput | DeletedFileUpdateWithWhereUniqueWithoutDirectoryIDInput[]
+    updateMany?: DeletedFileUpdateManyWithWhereWithoutDirectoryIDInput | DeletedFileUpdateManyWithWhereWithoutDirectoryIDInput[]
+    deleteMany?: DeletedFileScalarWhereInput | DeletedFileScalarWhereInput[]
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -9873,6 +10324,243 @@ export namespace Prisma {
     dirID?: StringFieldUpdateOperationsInput | string
   }
 
+  export type DeletedDirectoryCreateWithoutFilesInput = {
+    uuid: string
+    username: string
+    device: string
+    folder: string
+    path: string
+    created_at: Date | string
+    deleted: Date | string
+    rel_path: string
+    rel_name: string
+  }
+
+  export type DeletedDirectoryUncheckedCreateWithoutFilesInput = {
+    uuid: string
+    username: string
+    device: string
+    folder: string
+    path: string
+    created_at: Date | string
+    deleted: Date | string
+    rel_path: string
+    rel_name: string
+  }
+
+  export type DeletedDirectoryCreateOrConnectWithoutFilesInput = {
+    where: DeletedDirectoryWhereUniqueInput
+    create: XOR<DeletedDirectoryCreateWithoutFilesInput, DeletedDirectoryUncheckedCreateWithoutFilesInput>
+  }
+
+  export type DeletedFileVersionCreateWithoutLatest_deleted_fileInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+  }
+
+  export type DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+  }
+
+  export type DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput = {
+    where: DeletedFileVersionWhereUniqueInput
+    create: XOR<DeletedFileVersionCreateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput>
+  }
+
+  export type DeletedFileVersionCreateManyLatest_deleted_fileInputEnvelope = {
+    data: DeletedFileVersionCreateManyLatest_deleted_fileInput | DeletedFileVersionCreateManyLatest_deleted_fileInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DeletedDirectoryUpsertWithoutFilesInput = {
+    update: XOR<DeletedDirectoryUpdateWithoutFilesInput, DeletedDirectoryUncheckedUpdateWithoutFilesInput>
+    create: XOR<DeletedDirectoryCreateWithoutFilesInput, DeletedDirectoryUncheckedCreateWithoutFilesInput>
+    where?: DeletedDirectoryWhereInput
+  }
+
+  export type DeletedDirectoryUpdateToOneWithWhereWithoutFilesInput = {
+    where?: DeletedDirectoryWhereInput
+    data: XOR<DeletedDirectoryUpdateWithoutFilesInput, DeletedDirectoryUncheckedUpdateWithoutFilesInput>
+  }
+
+  export type DeletedDirectoryUpdateWithoutFilesInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    folder?: StringFieldUpdateOperationsInput | string
+    path?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    deleted?: DateTimeFieldUpdateOperationsInput | Date | string
+    rel_path?: StringFieldUpdateOperationsInput | string
+    rel_name?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type DeletedDirectoryUncheckedUpdateWithoutFilesInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    folder?: StringFieldUpdateOperationsInput | string
+    path?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    deleted?: DateTimeFieldUpdateOperationsInput | Date | string
+    rel_path?: StringFieldUpdateOperationsInput | string
+    rel_name?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type DeletedFileVersionUpsertWithWhereUniqueWithoutLatest_deleted_fileInput = {
+    where: DeletedFileVersionWhereUniqueInput
+    update: XOR<DeletedFileVersionUpdateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedUpdateWithoutLatest_deleted_fileInput>
+    create: XOR<DeletedFileVersionCreateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput>
+  }
+
+  export type DeletedFileVersionUpdateWithWhereUniqueWithoutLatest_deleted_fileInput = {
+    where: DeletedFileVersionWhereUniqueInput
+    data: XOR<DeletedFileVersionUpdateWithoutLatest_deleted_fileInput, DeletedFileVersionUncheckedUpdateWithoutLatest_deleted_fileInput>
+  }
+
+  export type DeletedFileVersionUpdateManyWithWhereWithoutLatest_deleted_fileInput = {
+    where: DeletedFileVersionScalarWhereInput
+    data: XOR<DeletedFileVersionUpdateManyMutationInput, DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileInput>
+  }
+
+  export type DeletedFileVersionScalarWhereInput = {
+    AND?: DeletedFileVersionScalarWhereInput | DeletedFileVersionScalarWhereInput[]
+    OR?: DeletedFileVersionScalarWhereInput[]
+    NOT?: DeletedFileVersionScalarWhereInput | DeletedFileVersionScalarWhereInput[]
+    username?: StringFilter<"DeletedFileVersion"> | string
+    device?: StringFilter<"DeletedFileVersion"> | string
+    directory?: StringFilter<"DeletedFileVersion"> | string
+    uuid?: StringFilter<"DeletedFileVersion"> | string
+    origin?: StringFilter<"DeletedFileVersion"> | string
+    filename?: StringFilter<"DeletedFileVersion"> | string
+    last_modified?: DateTimeFilter<"DeletedFileVersion"> | Date | string
+    hashvalue?: StringFilter<"DeletedFileVersion"> | string
+    enc_hashvalue?: StringFilter<"DeletedFileVersion"> | string
+    versions?: IntFilter<"DeletedFileVersion"> | number
+    size?: BigIntFilter<"DeletedFileVersion"> | bigint | number
+    salt?: StringFilter<"DeletedFileVersion"> | string
+    iv?: StringFilter<"DeletedFileVersion"> | string
+    deletion_date?: DateTimeFilter<"DeletedFileVersion"> | Date | string
+    deletion_type?: StringFilter<"DeletedFileVersion"> | string
+  }
+
+  export type DeletedFileCreateWithoutDeletedFileVersionsInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    origin: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+    directoryID: DeletedDirectoryCreateNestedOneWithoutFilesInput
+  }
+
+  export type DeletedFileUncheckedCreateWithoutDeletedFileVersionsInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    origin: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+    dirID: string
+  }
+
+  export type DeletedFileCreateOrConnectWithoutDeletedFileVersionsInput = {
+    where: DeletedFileWhereUniqueInput
+    create: XOR<DeletedFileCreateWithoutDeletedFileVersionsInput, DeletedFileUncheckedCreateWithoutDeletedFileVersionsInput>
+  }
+
+  export type DeletedFileUpsertWithoutDeletedFileVersionsInput = {
+    update: XOR<DeletedFileUpdateWithoutDeletedFileVersionsInput, DeletedFileUncheckedUpdateWithoutDeletedFileVersionsInput>
+    create: XOR<DeletedFileCreateWithoutDeletedFileVersionsInput, DeletedFileUncheckedCreateWithoutDeletedFileVersionsInput>
+    where?: DeletedFileWhereInput
+  }
+
+  export type DeletedFileUpdateToOneWithWhereWithoutDeletedFileVersionsInput = {
+    where?: DeletedFileWhereInput
+    data: XOR<DeletedFileUpdateWithoutDeletedFileVersionsInput, DeletedFileUncheckedUpdateWithoutDeletedFileVersionsInput>
+  }
+
+  export type DeletedFileUpdateWithoutDeletedFileVersionsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
+    directoryID?: DeletedDirectoryUpdateOneRequiredWithoutFilesNestedInput
+  }
+
+  export type DeletedFileUncheckedUpdateWithoutDeletedFileVersionsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
+    dirID?: StringFieldUpdateOperationsInput | string
+  }
+
   export type FileCreateWithoutDirectoryIDInput = {
     username: string
     device: string
@@ -9953,6 +10641,92 @@ export namespace Prisma {
     dirID?: StringFilter<"File"> | string
   }
 
+  export type DeletedFileCreateWithoutDirectoryIDInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    origin: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+    deletedFileVersions?: DeletedFileVersionCreateNestedManyWithoutLatest_deleted_fileInput
+  }
+
+  export type DeletedFileUncheckedCreateWithoutDirectoryIDInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    origin: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+    deletedFileVersions?: DeletedFileVersionUncheckedCreateNestedManyWithoutLatest_deleted_fileInput
+  }
+
+  export type DeletedFileCreateOrConnectWithoutDirectoryIDInput = {
+    where: DeletedFileWhereUniqueInput
+    create: XOR<DeletedFileCreateWithoutDirectoryIDInput, DeletedFileUncheckedCreateWithoutDirectoryIDInput>
+  }
+
+  export type DeletedFileCreateManyDirectoryIDInputEnvelope = {
+    data: DeletedFileCreateManyDirectoryIDInput | DeletedFileCreateManyDirectoryIDInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DeletedFileUpsertWithWhereUniqueWithoutDirectoryIDInput = {
+    where: DeletedFileWhereUniqueInput
+    update: XOR<DeletedFileUpdateWithoutDirectoryIDInput, DeletedFileUncheckedUpdateWithoutDirectoryIDInput>
+    create: XOR<DeletedFileCreateWithoutDirectoryIDInput, DeletedFileUncheckedCreateWithoutDirectoryIDInput>
+  }
+
+  export type DeletedFileUpdateWithWhereUniqueWithoutDirectoryIDInput = {
+    where: DeletedFileWhereUniqueInput
+    data: XOR<DeletedFileUpdateWithoutDirectoryIDInput, DeletedFileUncheckedUpdateWithoutDirectoryIDInput>
+  }
+
+  export type DeletedFileUpdateManyWithWhereWithoutDirectoryIDInput = {
+    where: DeletedFileScalarWhereInput
+    data: XOR<DeletedFileUpdateManyMutationInput, DeletedFileUncheckedUpdateManyWithoutDirectoryIDInput>
+  }
+
+  export type DeletedFileScalarWhereInput = {
+    AND?: DeletedFileScalarWhereInput | DeletedFileScalarWhereInput[]
+    OR?: DeletedFileScalarWhereInput[]
+    NOT?: DeletedFileScalarWhereInput | DeletedFileScalarWhereInput[]
+    username?: StringFilter<"DeletedFile"> | string
+    device?: StringFilter<"DeletedFile"> | string
+    directory?: StringFilter<"DeletedFile"> | string
+    uuid?: StringFilter<"DeletedFile"> | string
+    origin?: StringFilter<"DeletedFile"> | string
+    filename?: StringFilter<"DeletedFile"> | string
+    last_modified?: DateTimeFilter<"DeletedFile"> | Date | string
+    hashvalue?: StringFilter<"DeletedFile"> | string
+    enc_hashvalue?: StringFilter<"DeletedFile"> | string
+    versions?: IntFilter<"DeletedFile"> | number
+    size?: BigIntFilter<"DeletedFile"> | bigint | number
+    salt?: StringFilter<"DeletedFile"> | string
+    iv?: StringFilter<"DeletedFile"> | string
+    deletion_date?: DateTimeFilter<"DeletedFile"> | Date | string
+    deletion_type?: StringFilter<"DeletedFile"> | string
+    dirID?: StringFilter<"DeletedFile"> | string
+  }
+
   export type FileVersionCreateManyLatestFileInput = {
     username: string
     device: string
@@ -10011,6 +10785,74 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type DeletedFileVersionCreateManyLatest_deleted_fileInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+  }
+
+  export type DeletedFileVersionUpdateWithoutLatest_deleted_fileInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type DeletedFileVersionUncheckedUpdateWithoutLatest_deleted_fileInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
   }
 
   export type FileCreateManyDirectoryIDInput = {
@@ -10079,6 +10921,80 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
   }
 
+  export type DeletedFileCreateManyDirectoryIDInput = {
+    username: string
+    device: string
+    directory: string
+    uuid: string
+    origin: string
+    filename: string
+    last_modified: Date | string
+    hashvalue: string
+    enc_hashvalue: string
+    versions: number
+    size: bigint | number
+    salt: string
+    iv: string
+    deletion_date: Date | string
+    deletion_type: string
+  }
+
+  export type DeletedFileUpdateWithoutDirectoryIDInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
+    deletedFileVersions?: DeletedFileVersionUpdateManyWithoutLatest_deleted_fileNestedInput
+  }
+
+  export type DeletedFileUncheckedUpdateWithoutDirectoryIDInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
+    deletedFileVersions?: DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileNestedInput
+  }
+
+  export type DeletedFileUncheckedUpdateManyWithoutDirectoryIDInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    directory?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    filename?: StringFieldUpdateOperationsInput | string
+    last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashvalue?: StringFieldUpdateOperationsInput | string
+    enc_hashvalue?: StringFieldUpdateOperationsInput | string
+    versions?: IntFieldUpdateOperationsInput | number
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    salt?: StringFieldUpdateOperationsInput | string
+    iv?: StringFieldUpdateOperationsInput | string
+    deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletion_type?: StringFieldUpdateOperationsInput | string
+  }
+
 
 
   /**
@@ -10089,9 +11005,17 @@ export namespace Prisma {
      */
     export type FileCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FileCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use DeletedFileCountOutputTypeDefaultArgs instead
+     */
+    export type DeletedFileCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DeletedFileCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use DirectoryCountOutputTypeDefaultArgs instead
      */
     export type DirectoryCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DirectoryCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DeletedDirectoryCountOutputTypeDefaultArgs instead
+     */
+    export type DeletedDirectoryCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DeletedDirectoryCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use FileDefaultArgs instead
      */

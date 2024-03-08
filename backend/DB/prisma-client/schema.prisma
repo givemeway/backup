@@ -61,7 +61,7 @@ model DeletedFile {
   device String @db.VarChar(70)
   directory String @db.VarChar(255)
   uuid String @db.VarChar(36)
-  origin String @db.VarChar(36)
+  origin String @db.VarChar(36) @unique
   filename String @db.VarChar(255)
   last_modified DateTime
   hashvalue String @db.Char(64)
@@ -72,6 +72,9 @@ model DeletedFile {
   iv String @db.VarChar(64)
   deletion_date DateTime
   deletion_type String @db.VarChar(6)
+  dirID String @db.VarChar(36)
+  directoryID DeletedDirectory @relation(fields: [dirID],references: [uuid])
+  deletedFileVersions DeletedFileVersion[]
   @@unique([username,device,directory,filename])
   // @@schema("deleted_files")
   @@index([device,directory])
@@ -93,6 +96,7 @@ model DeletedFileVersion {
   iv String @db.VarChar(64)
   deletion_date DateTime
   deletion_type String @db.VarChar(6)
+  latest_deleted_file DeletedFile @relation(fields: [origin],references: [origin])
   @@unique([username,device,directory,filename,uuid])
   // @@schema("deleted_files")
   @@index([device,directory,origin])
@@ -113,13 +117,14 @@ model Directory {
 }
 
 model DeletedDirectory {
-  uuid String @db.VarChar(36)
+  uuid String @db.VarChar(36) @unique()
   username String @db.VarChar(70)
   device String @db.VarChar(70)
   folder String @db.VarChar(255)
   path String @db.VarChar(255)
   created_at DateTime
   deleted DateTime
+  files DeletedFile[]
   rel_path String @db.VarChar(255)
   rel_name String @db.VarChar(255)
   @@unique([username,device,folder,path])

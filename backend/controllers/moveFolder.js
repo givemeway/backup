@@ -1,4 +1,8 @@
-import { getDstFilePaths } from "./copyFolder.js";
+import {
+  getDirectoryMap,
+  getDstFilePaths,
+  getSrcFilePaths,
+} from "../controllers/utils.js";
 import { delete_file_version_directory } from "./delete_file_version_directory.js";
 import { copy_file_version_directory } from "./insert_file_directory.js";
 import { Prisma, prisma } from "../config/prismaDBConfig.js";
@@ -38,41 +42,10 @@ export const moveFolder = async (
   rename = false
 ) => {
   const srcDepth = fromPath.split("/").length;
-  let dir = fromPath.split("/").slice(1).join("/");
-  dir = dir === "" ? "/" : dir;
-  const device = fromPath.split("/")[0];
-  let dirMatch = `^${dir}(/[^/]+)*$`;
-  let files = [];
-  console.log("From Path ", fromPath);
-  console.log("Directory: ", dir);
-  console.log("To Path:", toPath);
-  if (dir === "/") {
-    files = await prisma.$queryRaw(Prisma.sql`SELECT * FROM public."File"
-                                              WHERE username = ${username} 
-                                              AND device = ${device}
-                                              ORDER BY directory ASC;`);
-  } else {
-    files = await prisma.$queryRaw(Prisma.sql`SELECT * FROM public."File"
-                                               WHERE username = ${username} 
-                                               AND device = ${device}
-                                               AND directory ~ ${dirMatch}
-                                               ORDER BY directory ASC;`);
-  }
+  const files = await getSrcFilePaths(prisma, fromPath, username);
   const dstFiles = getDstFilePaths(files, toPath, srcDepth, rename);
-  let dstFilesObj = {};
-  dstFiles.forEach((file) => {
-    const path = file.path;
-    if (dstFilesObj.hasOwnProperty(path)) {
-      delete file.path;
-      delete file.dirID;
-      dstFilesObj[path].set(file.origin, file);
-    } else {
-      dstFilesObj[path] = new Map([]);
-      delete file.path;
-      delete file.dirID;
-      dstFilesObj[path].set(file.origin, file);
-    }
-  });
+  const dstFilesObj = getDirectoryMap(dstFiles);
+  // todo HANDLE the empty folder
   for (const [path, files] of Object.entries(dstFilesObj)) {
     console.log(path, Array.from(files).length);
     const device = path.split("/")[1];

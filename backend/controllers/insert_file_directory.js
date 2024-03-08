@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
+import { updateVersionedFiles } from "./utils.js";
 
 export const insert_file_and_directory = (path, insertData) => {
   return new Promise(async (resolve, reject) => {
@@ -158,27 +159,27 @@ export const copy_file_version_directory = async (
   });
 };
 
-const updateVersionedFiles = async (device, dir, username, files) => {
-  const versions = await prisma.$queryRaw(Prisma.sql`
-      SELECT * FROM public."FileVersion" 
-      WHERE username = ${username} AND
-      device = ${device} AND
-      directory = ${dir}`);
+// const updateVersionedFiles = async (device, dir, username, files) => {
+//   const versions = await prisma.$queryRaw(Prisma.sql`
+//       SELECT * FROM public."FileVersion"
+//       WHERE username = ${username} AND
+//       device = ${device} AND
+//       directory = ${dir}`);
 
-  let versionedFiles = [];
-  for (const file of versions) {
-    const data = {
-      ...file,
-      // uuid: uuidv4(),
-      origin: files.get(file.uuid).origin,
-      directory: files.get(file.uuid).directory,
-      device: files.get(file.uuid).device,
-    };
-    versionedFiles.push(data);
-  }
+//   let versionedFiles = [];
+//   for (const file of versions) {
+//     const data = {
+//       ...file,
+//       // uuid: uuidv4(),
+//       origin: files.get(file.uuid).origin,
+//       directory: files.get(file.uuid).directory,
+//       device: files.get(file.uuid).device,
+//     };
+//     versionedFiles.push(data);
+//   }
 
-  return versionedFiles;
-};
+//   return versionedFiles;
+// };
 
 export const insert_file_version_and_directory = (
   username,
