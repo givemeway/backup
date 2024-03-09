@@ -195,7 +195,8 @@ exports.Prisma.DeletedDirectoryScalarFieldEnum = {
   created_at: 'created_at',
   deleted: 'deleted',
   rel_path: 'rel_path',
-  rel_name: 'rel_name'
+  rel_name: 'rel_name',
+  deletion_type: 'deletion_type'
 };
 
 exports.Prisma.SortOrder = {
@@ -272,6 +273,11 @@ exports.Prisma.DirectoryOrderByRelevanceFieldEnum = {
   path: 'path'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.DeletedDirectoryOrderByRelevanceFieldEnum = {
   uuid: 'uuid',
   username: 'username',
@@ -279,7 +285,8 @@ exports.Prisma.DeletedDirectoryOrderByRelevanceFieldEnum = {
   folder: 'folder',
   path: 'path',
   rel_path: 'rel_path',
-  rel_name: 'rel_name'
+  rel_name: 'rel_name',
+  deletion_type: 'deletion_type'
 };
 
 

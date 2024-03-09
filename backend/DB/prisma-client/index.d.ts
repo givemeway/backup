@@ -6681,6 +6681,7 @@ export namespace Prisma {
     deleted: Date | null
     rel_path: string | null
     rel_name: string | null
+    deletion_type: string | null
   }
 
   export type DeletedDirectoryMaxAggregateOutputType = {
@@ -6693,6 +6694,7 @@ export namespace Prisma {
     deleted: Date | null
     rel_path: string | null
     rel_name: string | null
+    deletion_type: string | null
   }
 
   export type DeletedDirectoryCountAggregateOutputType = {
@@ -6705,6 +6707,7 @@ export namespace Prisma {
     deleted: number
     rel_path: number
     rel_name: number
+    deletion_type: number
     _all: number
   }
 
@@ -6719,6 +6722,7 @@ export namespace Prisma {
     deleted?: true
     rel_path?: true
     rel_name?: true
+    deletion_type?: true
   }
 
   export type DeletedDirectoryMaxAggregateInputType = {
@@ -6731,6 +6735,7 @@ export namespace Prisma {
     deleted?: true
     rel_path?: true
     rel_name?: true
+    deletion_type?: true
   }
 
   export type DeletedDirectoryCountAggregateInputType = {
@@ -6743,6 +6748,7 @@ export namespace Prisma {
     deleted?: true
     rel_path?: true
     rel_name?: true
+    deletion_type?: true
     _all?: true
   }
 
@@ -6828,6 +6834,7 @@ export namespace Prisma {
     deleted: Date
     rel_path: string
     rel_name: string
+    deletion_type: string | null
     _count: DeletedDirectoryCountAggregateOutputType | null
     _min: DeletedDirectoryMinAggregateOutputType | null
     _max: DeletedDirectoryMaxAggregateOutputType | null
@@ -6857,6 +6864,7 @@ export namespace Prisma {
     deleted?: boolean
     rel_path?: boolean
     rel_name?: boolean
+    deletion_type?: boolean
     files?: boolean | DeletedDirectory$filesArgs<ExtArgs>
     _count?: boolean | DeletedDirectoryCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["deletedDirectory"]>
@@ -6871,6 +6879,7 @@ export namespace Prisma {
     deleted?: boolean
     rel_path?: boolean
     rel_name?: boolean
+    deletion_type?: boolean
   }
 
   export type DeletedDirectoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6894,6 +6903,7 @@ export namespace Prisma {
       deleted: Date
       rel_path: string
       rel_name: string
+      deletion_type: string | null
     }, ExtArgs["result"]["deletedDirectory"]>
     composites: {}
   }
@@ -7298,6 +7308,7 @@ export namespace Prisma {
     readonly deleted: FieldRef<"DeletedDirectory", 'DateTime'>
     readonly rel_path: FieldRef<"DeletedDirectory", 'String'>
     readonly rel_name: FieldRef<"DeletedDirectory", 'String'>
+    readonly deletion_type: FieldRef<"DeletedDirectory", 'String'>
   }
     
 
@@ -7763,7 +7774,8 @@ export namespace Prisma {
     created_at: 'created_at',
     deleted: 'deleted',
     rel_path: 'rel_path',
-    rel_name: 'rel_name'
+    rel_name: 'rel_name',
+    deletion_type: 'deletion_type'
   };
 
   export type DeletedDirectoryScalarFieldEnum = (typeof DeletedDirectoryScalarFieldEnum)[keyof typeof DeletedDirectoryScalarFieldEnum]
@@ -7864,6 +7876,14 @@ export namespace Prisma {
   export type DirectoryOrderByRelevanceFieldEnum = (typeof DirectoryOrderByRelevanceFieldEnum)[keyof typeof DirectoryOrderByRelevanceFieldEnum]
 
 
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
   export const DeletedDirectoryOrderByRelevanceFieldEnum: {
     uuid: 'uuid',
     username: 'username',
@@ -7871,7 +7891,8 @@ export namespace Prisma {
     folder: 'folder',
     path: 'path',
     rel_path: 'rel_path',
-    rel_name: 'rel_name'
+    rel_name: 'rel_name',
+    deletion_type: 'deletion_type'
   };
 
   export type DeletedDirectoryOrderByRelevanceFieldEnum = (typeof DeletedDirectoryOrderByRelevanceFieldEnum)[keyof typeof DeletedDirectoryOrderByRelevanceFieldEnum]
@@ -8462,6 +8483,7 @@ export namespace Prisma {
     deleted?: DateTimeFilter<"DeletedDirectory"> | Date | string
     rel_path?: StringFilter<"DeletedDirectory"> | string
     rel_name?: StringFilter<"DeletedDirectory"> | string
+    deletion_type?: StringNullableFilter<"DeletedDirectory"> | string | null
     files?: DeletedFileListRelationFilter
   }
 
@@ -8475,6 +8497,7 @@ export namespace Prisma {
     deleted?: SortOrder
     rel_path?: SortOrder
     rel_name?: SortOrder
+    deletion_type?: SortOrderInput | SortOrder
     files?: DeletedFileOrderByRelationAggregateInput
     _relevance?: DeletedDirectoryOrderByRelevanceInput
   }
@@ -8493,6 +8516,7 @@ export namespace Prisma {
     deleted?: DateTimeFilter<"DeletedDirectory"> | Date | string
     rel_path?: StringFilter<"DeletedDirectory"> | string
     rel_name?: StringFilter<"DeletedDirectory"> | string
+    deletion_type?: StringNullableFilter<"DeletedDirectory"> | string | null
     files?: DeletedFileListRelationFilter
   }, "uuid" | "username_device_folder_path">
 
@@ -8506,6 +8530,7 @@ export namespace Prisma {
     deleted?: SortOrder
     rel_path?: SortOrder
     rel_name?: SortOrder
+    deletion_type?: SortOrderInput | SortOrder
     _count?: DeletedDirectoryCountOrderByAggregateInput
     _max?: DeletedDirectoryMaxOrderByAggregateInput
     _min?: DeletedDirectoryMinOrderByAggregateInput
@@ -8524,6 +8549,7 @@ export namespace Prisma {
     deleted?: DateTimeWithAggregatesFilter<"DeletedDirectory"> | Date | string
     rel_path?: StringWithAggregatesFilter<"DeletedDirectory"> | string
     rel_name?: StringWithAggregatesFilter<"DeletedDirectory"> | string
+    deletion_type?: StringNullableWithAggregatesFilter<"DeletedDirectory"> | string | null
   }
 
   export type FileCreateInput = {
@@ -9097,6 +9123,7 @@ export namespace Prisma {
     deleted: Date | string
     rel_path: string
     rel_name: string
+    deletion_type?: string | null
     files?: DeletedFileCreateNestedManyWithoutDirectoryIDInput
   }
 
@@ -9110,6 +9137,7 @@ export namespace Prisma {
     deleted: Date | string
     rel_path: string
     rel_name: string
+    deletion_type?: string | null
     files?: DeletedFileUncheckedCreateNestedManyWithoutDirectoryIDInput
   }
 
@@ -9123,6 +9151,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    deletion_type?: NullableStringFieldUpdateOperationsInput | string | null
     files?: DeletedFileUpdateManyWithoutDirectoryIDNestedInput
   }
 
@@ -9136,6 +9165,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    deletion_type?: NullableStringFieldUpdateOperationsInput | string | null
     files?: DeletedFileUncheckedUpdateManyWithoutDirectoryIDNestedInput
   }
 
@@ -9149,6 +9179,7 @@ export namespace Prisma {
     deleted: Date | string
     rel_path: string
     rel_name: string
+    deletion_type?: string | null
   }
 
   export type DeletedDirectoryUpdateManyMutationInput = {
@@ -9161,6 +9192,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    deletion_type?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeletedDirectoryUncheckedUpdateManyInput = {
@@ -9173,6 +9205,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    deletion_type?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -9683,10 +9716,31 @@ export namespace Prisma {
     created_at?: SortOrder
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type DeletedFileListRelationFilter = {
     every?: DeletedFileWhereInput
     some?: DeletedFileWhereInput
     none?: DeletedFileWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type DeletedFileOrderByRelationAggregateInput = {
@@ -9716,6 +9770,7 @@ export namespace Prisma {
     deleted?: SortOrder
     rel_path?: SortOrder
     rel_name?: SortOrder
+    deletion_type?: SortOrder
   }
 
   export type DeletedDirectoryMaxOrderByAggregateInput = {
@@ -9728,6 +9783,7 @@ export namespace Prisma {
     deleted?: SortOrder
     rel_path?: SortOrder
     rel_name?: SortOrder
+    deletion_type?: SortOrder
   }
 
   export type DeletedDirectoryMinOrderByAggregateInput = {
@@ -9740,6 +9796,26 @@ export namespace Prisma {
     deleted?: SortOrder
     rel_path?: SortOrder
     rel_name?: SortOrder
+    deletion_type?: SortOrder
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type FileVersionCreateNestedManyWithoutLatestFileInput = {
@@ -9962,6 +10038,10 @@ export namespace Prisma {
     connect?: DeletedFileWhereUniqueInput | DeletedFileWhereUniqueInput[]
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type DeletedFileUpdateManyWithoutDirectoryIDNestedInput = {
     create?: XOR<DeletedFileCreateWithoutDirectoryIDInput, DeletedFileUncheckedCreateWithoutDirectoryIDInput> | DeletedFileCreateWithoutDirectoryIDInput[] | DeletedFileUncheckedCreateWithoutDirectoryIDInput[]
     connectOrCreate?: DeletedFileCreateOrConnectWithoutDirectoryIDInput | DeletedFileCreateOrConnectWithoutDirectoryIDInput[]
@@ -10111,6 +10191,50 @@ export namespace Prisma {
     _sum?: NestedBigIntFilter<$PrismaModel>
     _min?: NestedBigIntFilter<$PrismaModel>
     _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type FileVersionCreateWithoutLatestFileInput = {
@@ -10334,6 +10458,7 @@ export namespace Prisma {
     deleted: Date | string
     rel_path: string
     rel_name: string
+    deletion_type?: string | null
   }
 
   export type DeletedDirectoryUncheckedCreateWithoutFilesInput = {
@@ -10346,6 +10471,7 @@ export namespace Prisma {
     deleted: Date | string
     rel_path: string
     rel_name: string
+    deletion_type?: string | null
   }
 
   export type DeletedDirectoryCreateOrConnectWithoutFilesInput = {
@@ -10418,6 +10544,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    deletion_type?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeletedDirectoryUncheckedUpdateWithoutFilesInput = {
@@ -10430,6 +10557,7 @@ export namespace Prisma {
     deleted?: DateTimeFieldUpdateOperationsInput | Date | string
     rel_path?: StringFieldUpdateOperationsInput | string
     rel_name?: StringFieldUpdateOperationsInput | string
+    deletion_type?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeletedFileVersionUpsertWithWhereUniqueWithoutLatest_deleted_fileInput = {

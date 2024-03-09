@@ -9,7 +9,8 @@ const insertIntoDeletedDirectory = async (prisma, data) => {
             SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name}
             FROM public."Directory"
             WHERE username = ${username}
-            AND device = ${device};`);
+            AND device = ${device}
+            ON CONFLICT DO NOTHING;`);
   } else {
     const regex_path = `^${path}(/[^/]+)*$`;
     await prisma.$executeRaw(Prisma.sql`
@@ -19,7 +20,8 @@ const insertIntoDeletedDirectory = async (prisma, data) => {
         FROM public."Directory"
         WHERE username = ${username}
         AND device = ${device}
-        AND path ~ ${regex_path};`);
+        AND path ~ ${regex_path}
+        ON CONFLICT DO NOTHING;`);
   }
 };
 
@@ -164,9 +166,9 @@ const insertFileDirectoryIntoDeletedDirectory = async (prisma, data) => {
 
   await prisma.$executeRaw(Prisma.sql`
             INSERT INTO public."DeletedDirectory"
-                (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name)
+                (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
             SELECT uuid,username,device,folder,path,created_at,
-            CURRENT_TIMESTAMP,${path},${name}
+            CURRENT_TIMESTAMP,${path},${name},'file'
             FROM public."Directory"
             WHERE username = ${username}
             AND device = ${device}
@@ -233,6 +235,7 @@ const deleteRowFromFileVersion = async (prisma, data) => {
 const fileTransactionFn = (data) => async (prisma) => {
   const fileData = { ...data };
   fileData["deletion_type"] = "file";
+  console.log(fileData);
   await insertFileDirectoryIntoDeletedDirectory(prisma, fileData);
   await insertRowIntoDeletedFile(prisma, fileData);
   await insertRowIntoDeletedFileVersion(prisma, fileData);

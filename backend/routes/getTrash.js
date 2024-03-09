@@ -347,6 +347,7 @@ router.get("/", verifyToken, async (req, res) => {
                           SELECT rel_path,rel_name, count(folder) AS folder_count
                           FROM public."DeletedDirectory"
                           WHERE username = ${username}
+                          AND deletion_type IS NULL
                           GROUP BY
                           rel_name,rel_path;`);
 
@@ -354,7 +355,6 @@ router.get("/", verifyToken, async (req, res) => {
       ...folder,
       folder_count: parseInt(folder.folder_count),
     }));
-    console.log(group_folder);
 
     const deleted_files = await prisma.deletedFile.findMany({
       where: { username, deletion_type: "file" },

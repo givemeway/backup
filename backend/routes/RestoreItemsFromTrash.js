@@ -4,6 +4,10 @@ import csurf from "csurf";
 import { origin } from "../config/config.js";
 import { pool } from "../server.js";
 import { verifyToken } from "../auth/auth.js";
+import {
+  restore_file_from_trash,
+  restore_items_from_trash,
+} from "../controllers/putBackFilesFromTrash.js";
 const SINGLEFILE = "singleFile";
 
 router.use(csurf({ cookie: true }));
@@ -24,9 +28,9 @@ router.post("/", verifyToken, async (req, res) => {
   let fileCon;
   let deletedFileCon;
   try {
-    folderCon = await pool["directories"].getConnection();
-    fileCon = await pool["files"].getConnection();
-    deletedFileCon = await pool["deleted_files"].getConnection();
+    // folderCon = await pool["directories"].getConnection();
+    // fileCon = await pool["files"].getConnection();
+    // deletedFileCon = await pool["deleted_files"].getConnection();
   } catch (err) {
     console.error(err);
   }
@@ -44,19 +48,16 @@ router.post("/", verifyToken, async (req, res) => {
             dir = dir.replace(/\(/g, "\\(");
             dir = dir.replace(/\)/g, "\\)");
             const regexp = `^${dir}(/[^/]+)*$`;
-            if (!el?.root) {
-              const values = [username, device, regexp, begin, end];
-              await folderCon.execute(
-                `CALL putBackFilesFromTrash(?,?,?,?,?)`,
-                values
-              );
-            } else {
-              const values = [username, device, dir, begin, end];
-              await folderCon.execute(
-                `CALL putBackFilesFromTrash2(?,?,?,?,?)`,
-                values
-              );
-            }
+            let data = {};
+            data.root = el?.root;
+            data.dir = dir;
+            data.device = device;
+            data.username = username;
+            data.reg = regexp;
+            data.pg = end;
+            data.bg = begin;
+
+            await restore_items_from_trash(data);
           } catch (err) {
             console.error(err);
           }
@@ -70,19 +71,15 @@ router.post("/", verifyToken, async (req, res) => {
           dir = dir.replace(/\(/g, "\\(");
           dir = dir.replace(/\)/g, "\\)");
           const regexp = `^${dir}(/[^/]+)*$`;
-          if (!item?.root) {
-            const values = [username, device, regexp, begin, end];
-            await folderCon.execute(
-              `CALL putBackFilesFromTrash(?,?,?,?,?)`,
-              values
-            );
-          } else {
-            const values = [username, device, dir, begin, end];
-            await folderCon.execute(
-              `CALL putBackFilesFromTrash2(?,?,?,?,?)`,
-              values
-            );
-          }
+          let data = {};
+          data.root = item?.root;
+          data.dir = dir;
+          data.device = device;
+          data.username = username;
+          data.reg = regexp;
+          data.pg = end;
+          data.bg = begin;
+          await restore_items_from_trash(data);
         } catch (err) {
           console.error(err);
         }
@@ -93,29 +90,40 @@ router.post("/", verifyToken, async (req, res) => {
       const dirPart = pathPart.slice(2).join("/");
       const dir = dirPart === "" ? "/" : dirPart;
       const filename = item.name;
-      const value = [username, device, dir, filename];
-      await fileCon.execute(`CALL restoreFileFromTrash(?,?,?,?)`, value);
+      // const value = [username, device, dir, filename];
+      let data = {};
+      data.dir = dir;
+      data.device = device;
+      data.username = username;
+      data.filename = filename;
+      data.path = item.path;
+      try {
+        await restore_file_from_trash(data);
+      } catch (err) {
+        console.error(err);
+      }
+      // await fileCon.execute(`CALL restoreFileFromTrash(?,?,?,?)`, value);
     }
   }
-  try {
-    const del_val = [username, subFolderRegexp];
-    await folderCon.execute(`CALL DeletePaths(?,?)`, del_val);
-  } catch (err) {
-    console.error(err);
-  }
-  try {
-    if (fileCon) {
-      fileCon.release();
-    }
-    if (folderCon) {
-      folderCon.release();
-    }
-    if (deletedFileCon) {
-      deletedFileCon.release();
-    }
-  } catch (err) {
-    console.error(err);
-  }
+  // try {
+  //   const del_val = [username, subFolderRegexp];
+  //   await folderCon.execute(`CALL DeletePaths(?,?)`, del_val);
+  // } catch (err) {
+  //   console.error(err);
+  // }
+  // try {
+  //   if (fileCon) {
+  //     fileCon.release();
+  //   }
+  //   if (folderCon) {
+  //     folderCon.release();
+  //   }
+  //   if (deletedFileCon) {
+  //     deletedFileCon.release();
+  //   }
+  // } catch (err) {
+  //   console.error(err);
+  // }
 
   // Plan of action
   // 1. Check whether the item we're trying to restore is batch of multiple items, or a single item

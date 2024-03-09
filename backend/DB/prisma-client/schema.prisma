@@ -127,6 +127,7 @@ model DeletedDirectory {
   files DeletedFile[]
   rel_path String @db.VarChar(255)
   rel_name String @db.VarChar(255)
+  deletion_type String? @db.VarChar(6) 
   @@unique([username,device,folder,path])
   // @@schema("deleted_directories")
   @@index([path])
