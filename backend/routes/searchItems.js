@@ -1,39 +1,10 @@
 import express from "express";
 import { origin } from "../config/config.js";
-import { sqlExecute } from "../controllers/sql_execute.js";
 import csrf from "csurf";
-import releaseConnection from "../controllers/ReleaseConnection.js";
-import { getConnection } from "../controllers/getConnection.js";
+import { prisma } from "../config/prismaDBConfig.js";
+import { verifyToken } from "../auth/auth.js";
 const router = express.Router();
 router.use(csrf({ cookie: true }));
-
-const findFiles = async (req, res, next) => {
-  const param = req.query.search;
-  req.headers.data = {};
-  const fileSearchQuery = `SELECT uuid,filename,directory,size,versions,last_modified,iv,salt,device 
-                    FROM files
-                    WHERE 
-                    MATCH(filename)
-                    AGAINST(?)
-                    `;
-  req.headers.query = fileSearchQuery;
-  req.headers.queryValues = [param];
-  next();
-};
-
-const findFolders = async (req, res, next) => {
-  const param = req.query.search;
-  req.headers.data.files = [...req.headers.queryStatus];
-  const folderSearchQuery = `SELECT folder,path,created_at
-                            FROM directories.directories
-                            WHERE
-                            MATCH(folder)
-                            AGAINST(?)
-                            `;
-  req.headers.query = folderSearchQuery;
-  req.headers.queryValues = [param];
-  next();
-};
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
@@ -44,20 +15,36 @@ router.use((req, res, next) => {
   );
   next();
 });
-router.get(
-  "/",
-  findFiles,
-  sqlExecute,
-  releaseConnection,
-  getConnection("directories"),
-  findFolders,
-  sqlExecute,
-  releaseConnection,
-  (req, res) => {
-    req.headers.data.folders = [...req.headers.queryStatus];
-    res.status(200).json(req.headers.data);
-    console.log("search response sent");
+router.get("/", verifyToken, async (req, res) => {
+  try {
+    const param = req.query.search;
+    const username = req.user.Username;
+    const files = await prisma.file.findMany({
+      where: {
+        username,
+        filename: {
+          search: param,
+        },
+      },
+    });
+
+    const folders = await prisma.directory.findMany({
+      where: {
+        username,
+        folder: {
+          search: param,
+        },
+      },
+    });
+    let data = {};
+    data["folders"] = folders;
+    data["files"] = files;
+    console.log(data);
+    res.status(200).json(data);
+  } catch (err) {
+    console.log(err);
+    req.status(500).json({ success: false, msg: err });
   }
-);
+});
 
 export { router as searchFiles };

@@ -10,6 +10,7 @@ import { Readable } from "node:stream";
 import { DownloadZip } from "../models/mongodb.js";
 import releaseConnection from "../controllers/ReleaseConnection.js";
 import { pool } from "../server.js";
+import { Prisma, prisma, prismaUser } from "../config/prismaDBConfig.js";
 await dotenv.config();
 
 router.use(csrf({ cookie: true }));
@@ -55,17 +56,31 @@ const getFilesInDirectory_promise = async (req, res) => {
       const devicename = req.headers.devicename;
       req.headers.data = [];
       if (currentdirectory === "/") {
-        const val = [req.user.Username, devicename];
-        const rows = await sqlExecute_promise(req.db, filesInDevice, val);
+        // const val = [req.user.Username, devicename];
+        // const rows = await sqlExecute_promise(req.db, filesInDevice, val);
+        const rows = await prisma.file.findMany({
+          where: {
+            username,
+            device: devicename,
+          },
+        });
+
         resolve(rows);
       } else {
-        const regex_other_files = `^${currentdirectory}(/[^/]+)*$`;
-        const val = [username, devicename, regex_other_files];
-        const rows = await sqlExecute_promise(
-          req.db,
-          filesInSubDirectories,
-          val
-        );
+        // const regex_other_files = `^${currentdirectory}(/[^/]+)*$`;
+        // const val = [username, devicename, regex_other_files];
+        // const filesInSubDirectories = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
+        const rows = await prisma.$queryRaw(Prisma.sql`
+          SELECT uuid,filename,salt,iv,directory,size
+          FROM public."File" 
+          WHERE username = ${username}
+          AND device = ${devicename}
+          AND directory ~ ${regex_other_files};`);
+        // const rows = await sqlExecute_promise(
+        //   req.db,
+        //   filesInSubDirectories,
+        //   val
+        // );
         resolve(rows);
       }
     } catch (err) {
@@ -155,7 +170,7 @@ const extractFilesInforFromDB = async (req, res, next) => {
     const dirFiles = await getFilesInDirectory_promise(req, res);
     for (let j = 0; j < dirFiles.length; j++) {
       const { filename, salt, iv, directory, uuid, size } = dirFiles[j];
-      totalSize += size;
+      totalSize += parseInt(size);
       // const filePath = path.join(root, username, device, directory, filename);
       const filePath = path.join(root, username, uuid);
       const actualPath = path.join(device, directory);
@@ -204,21 +219,21 @@ router.get(
   verifyToken,
   getFilesFoldersFromDownloadID,
   extractFilesInforFromDB,
-  releaseConnection,
   async (req, res) => {
     try {
       const username = req.user.Username;
-      const userCon = await pool["customers"].getConnection();
-      const [key] = await userCon.execute(encQuery, [username]);
+      const { enc } = await prismaUser.user.findUnique({
+        where: { username },
+        select: { enc: true },
+      });
       const worker = new Worker("../backend/controllers/DownloadWorker.js");
       const channel = new MessageChannel();
       const readable = new Readable({
         read() {},
       });
-      worker.postMessage(
-        { files: req.files, enc: key[0].enc, port: channel.port1 },
-        [channel.port1]
-      );
+      worker.postMessage({ files: req.files, enc: enc, port: channel.port1 }, [
+        channel.port1,
+      ]);
 
       channel.port2.on("message", ({ mode, chunk }) => {
         if (mode === "chunk") {
@@ -237,9 +252,6 @@ router.get(
       worker.on("error", (err) => {
         console.error(err);
       });
-      if (userCon) {
-        userCon.release();
-      }
     } catch (err) {
       console.error(err);
       res.status(500).json(err);
