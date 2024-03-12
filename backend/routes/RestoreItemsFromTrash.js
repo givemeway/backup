@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 import csurf from "csurf";
 import { origin } from "../config/config.js";
-import { pool } from "../server.js";
 import { verifyToken } from "../auth/auth.js";
 import {
   restore_file_from_trash,
@@ -20,20 +19,8 @@ router.use((req, res, next) => {
 });
 
 router.post("/", verifyToken, async (req, res) => {
-  // const items = JSON.parse(req.body.items);
   const items = req.body.items;
   const username = req.user.Username;
-  const subFolderRegexp = "^(/[^/]+)$";
-  let folderCon;
-  let fileCon;
-  let deletedFileCon;
-  try {
-    // folderCon = await pool["directories"].getConnection();
-    // fileCon = await pool["files"].getConnection();
-    // deletedFileCon = await pool["deleted_files"].getConnection();
-  } catch (err) {
-    console.error(err);
-  }
 
   for (const item of items) {
     if (item.item !== SINGLEFILE) {
@@ -90,7 +77,6 @@ router.post("/", verifyToken, async (req, res) => {
       const dirPart = pathPart.slice(2).join("/");
       const dir = dirPart === "" ? "/" : dirPart;
       const filename = item.name;
-      // const value = [username, device, dir, filename];
       let data = {};
       data.dir = dir;
       data.device = device;
@@ -102,28 +88,8 @@ router.post("/", verifyToken, async (req, res) => {
       } catch (err) {
         console.error(err);
       }
-      // await fileCon.execute(`CALL restoreFileFromTrash(?,?,?,?)`, value);
     }
   }
-  // try {
-  //   const del_val = [username, subFolderRegexp];
-  //   await folderCon.execute(`CALL DeletePaths(?,?)`, del_val);
-  // } catch (err) {
-  //   console.error(err);
-  // }
-  // try {
-  //   if (fileCon) {
-  //     fileCon.release();
-  //   }
-  //   if (folderCon) {
-  //     folderCon.release();
-  //   }
-  //   if (deletedFileCon) {
-  //     deletedFileCon.release();
-  //   }
-  // } catch (err) {
-  //   console.error(err);
-  // }
 
   // Plan of action
   // 1. Check whether the item we're trying to restore is batch of multiple items, or a single item

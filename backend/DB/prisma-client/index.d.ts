@@ -1743,7 +1743,7 @@ export namespace Prisma {
   type FileGetPayload<S extends boolean | null | undefined | FileDefaultArgs> = $Result.GetResult<Prisma.$FilePayload, S>
 
   type FileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<FileFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    Omit<FileFindManyArgs, 'select' | 'include' | 'distinct' | 'relationLoadStrategy'> & {
       select?: FileCountAggregateInputType | true
     }
 
@@ -2167,6 +2167,7 @@ export namespace Prisma {
      * Filter, which File to fetch.
      */
     where: FileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2186,6 +2187,7 @@ export namespace Prisma {
      * Filter, which File to fetch.
      */
     where: FileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2235,6 +2237,7 @@ export namespace Prisma {
      * Filter by unique combinations of Files.
      */
     distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2284,6 +2287,7 @@ export namespace Prisma {
      * Filter by unique combinations of Files.
      */
     distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2328,6 +2332,7 @@ export namespace Prisma {
      */
     skip?: number
     distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2347,6 +2352,7 @@ export namespace Prisma {
      * The data needed to create a File.
      */
     data: XOR<FileCreateInput, FileUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2382,6 +2388,7 @@ export namespace Prisma {
      * Choose, which File to update.
      */
     where: FileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2424,6 +2431,7 @@ export namespace Prisma {
      * In case the File was found with the provided `where` argument, update it with this data.
      */
     update: XOR<FileUpdateInput, FileUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2443,6 +2451,7 @@ export namespace Prisma {
      * Filter which File to delete.
      */
     where: FileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -2811,7 +2820,7 @@ export namespace Prisma {
   type FileVersionGetPayload<S extends boolean | null | undefined | FileVersionDefaultArgs> = $Result.GetResult<Prisma.$FileVersionPayload, S>
 
   type FileVersionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<FileVersionFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    Omit<FileVersionFindManyArgs, 'select' | 'include' | 'distinct' | 'relationLoadStrategy'> & {
       select?: FileVersionCountAggregateInputType | true
     }
 
@@ -3232,6 +3241,7 @@ export namespace Prisma {
      * Filter, which FileVersion to fetch.
      */
     where: FileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3251,6 +3261,7 @@ export namespace Prisma {
      * Filter, which FileVersion to fetch.
      */
     where: FileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3300,6 +3311,7 @@ export namespace Prisma {
      * Filter by unique combinations of FileVersions.
      */
     distinct?: FileVersionScalarFieldEnum | FileVersionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3349,6 +3361,7 @@ export namespace Prisma {
      * Filter by unique combinations of FileVersions.
      */
     distinct?: FileVersionScalarFieldEnum | FileVersionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3393,6 +3406,7 @@ export namespace Prisma {
      */
     skip?: number
     distinct?: FileVersionScalarFieldEnum | FileVersionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3412,6 +3426,7 @@ export namespace Prisma {
      * The data needed to create a FileVersion.
      */
     data: XOR<FileVersionCreateInput, FileVersionUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3447,6 +3462,7 @@ export namespace Prisma {
      * Choose, which FileVersion to update.
      */
     where: FileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3489,6 +3505,7 @@ export namespace Prisma {
      * In case the FileVersion was found with the provided `where` argument, update it with this data.
      */
     update: XOR<FileVersionUpdateInput, FileVersionUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3508,6 +3525,7 @@ export namespace Prisma {
      * Filter which FileVersion to delete.
      */
     where: FileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -3890,7 +3908,7 @@ export namespace Prisma {
   type DeletedFileGetPayload<S extends boolean | null | undefined | DeletedFileDefaultArgs> = $Result.GetResult<Prisma.$DeletedFilePayload, S>
 
   type DeletedFileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<DeletedFileFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    Omit<DeletedFileFindManyArgs, 'select' | 'include' | 'distinct' | 'relationLoadStrategy'> & {
       select?: DeletedFileCountAggregateInputType | true
     }
 
@@ -4316,6 +4334,7 @@ export namespace Prisma {
      * Filter, which DeletedFile to fetch.
      */
     where: DeletedFileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4335,6 +4354,7 @@ export namespace Prisma {
      * Filter, which DeletedFile to fetch.
      */
     where: DeletedFileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4384,6 +4404,7 @@ export namespace Prisma {
      * Filter by unique combinations of DeletedFiles.
      */
     distinct?: DeletedFileScalarFieldEnum | DeletedFileScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4433,6 +4454,7 @@ export namespace Prisma {
      * Filter by unique combinations of DeletedFiles.
      */
     distinct?: DeletedFileScalarFieldEnum | DeletedFileScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4477,6 +4499,7 @@ export namespace Prisma {
      */
     skip?: number
     distinct?: DeletedFileScalarFieldEnum | DeletedFileScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4496,6 +4519,7 @@ export namespace Prisma {
      * The data needed to create a DeletedFile.
      */
     data: XOR<DeletedFileCreateInput, DeletedFileUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4531,6 +4555,7 @@ export namespace Prisma {
      * Choose, which DeletedFile to update.
      */
     where: DeletedFileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4573,6 +4598,7 @@ export namespace Prisma {
      * In case the DeletedFile was found with the provided `where` argument, update it with this data.
      */
     update: XOR<DeletedFileUpdateInput, DeletedFileUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4592,6 +4618,7 @@ export namespace Prisma {
      * Filter which DeletedFile to delete.
      */
     where: DeletedFileWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -4980,7 +5007,7 @@ export namespace Prisma {
   type DeletedFileVersionGetPayload<S extends boolean | null | undefined | DeletedFileVersionDefaultArgs> = $Result.GetResult<Prisma.$DeletedFileVersionPayload, S>
 
   type DeletedFileVersionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<DeletedFileVersionFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    Omit<DeletedFileVersionFindManyArgs, 'select' | 'include' | 'distinct' | 'relationLoadStrategy'> & {
       select?: DeletedFileVersionCountAggregateInputType | true
     }
 
@@ -5403,6 +5430,7 @@ export namespace Prisma {
      * Filter, which DeletedFileVersion to fetch.
      */
     where: DeletedFileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5422,6 +5450,7 @@ export namespace Prisma {
      * Filter, which DeletedFileVersion to fetch.
      */
     where: DeletedFileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5471,6 +5500,7 @@ export namespace Prisma {
      * Filter by unique combinations of DeletedFileVersions.
      */
     distinct?: DeletedFileVersionScalarFieldEnum | DeletedFileVersionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5520,6 +5550,7 @@ export namespace Prisma {
      * Filter by unique combinations of DeletedFileVersions.
      */
     distinct?: DeletedFileVersionScalarFieldEnum | DeletedFileVersionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5564,6 +5595,7 @@ export namespace Prisma {
      */
     skip?: number
     distinct?: DeletedFileVersionScalarFieldEnum | DeletedFileVersionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5583,6 +5615,7 @@ export namespace Prisma {
      * The data needed to create a DeletedFileVersion.
      */
     data: XOR<DeletedFileVersionCreateInput, DeletedFileVersionUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5618,6 +5651,7 @@ export namespace Prisma {
      * Choose, which DeletedFileVersion to update.
      */
     where: DeletedFileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5660,6 +5694,7 @@ export namespace Prisma {
      * In case the DeletedFileVersion was found with the provided `where` argument, update it with this data.
      */
     update: XOR<DeletedFileVersionUpdateInput, DeletedFileVersionUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5679,6 +5714,7 @@ export namespace Prisma {
      * Filter which DeletedFileVersion to delete.
      */
     where: DeletedFileVersionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -5920,7 +5956,7 @@ export namespace Prisma {
   type DirectoryGetPayload<S extends boolean | null | undefined | DirectoryDefaultArgs> = $Result.GetResult<Prisma.$DirectoryPayload, S>
 
   type DirectoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<DirectoryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    Omit<DirectoryFindManyArgs, 'select' | 'include' | 'distinct' | 'relationLoadStrategy'> & {
       select?: DirectoryCountAggregateInputType | true
     }
 
@@ -6334,6 +6370,7 @@ export namespace Prisma {
      * Filter, which Directory to fetch.
      */
     where: DirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6353,6 +6390,7 @@ export namespace Prisma {
      * Filter, which Directory to fetch.
      */
     where: DirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6402,6 +6440,7 @@ export namespace Prisma {
      * Filter by unique combinations of Directories.
      */
     distinct?: DirectoryScalarFieldEnum | DirectoryScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6451,6 +6490,7 @@ export namespace Prisma {
      * Filter by unique combinations of Directories.
      */
     distinct?: DirectoryScalarFieldEnum | DirectoryScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6495,6 +6535,7 @@ export namespace Prisma {
      */
     skip?: number
     distinct?: DirectoryScalarFieldEnum | DirectoryScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6514,6 +6555,7 @@ export namespace Prisma {
      * The data needed to create a Directory.
      */
     data: XOR<DirectoryCreateInput, DirectoryUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6549,6 +6591,7 @@ export namespace Prisma {
      * Choose, which Directory to update.
      */
     where: DirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6591,6 +6634,7 @@ export namespace Prisma {
      * In case the Directory was found with the provided `where` argument, update it with this data.
      */
     update: XOR<DirectoryUpdateInput, DirectoryUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6610,6 +6654,7 @@ export namespace Prisma {
      * Filter which Directory to delete.
      */
     where: DirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -6912,7 +6957,7 @@ export namespace Prisma {
   type DeletedDirectoryGetPayload<S extends boolean | null | undefined | DeletedDirectoryDefaultArgs> = $Result.GetResult<Prisma.$DeletedDirectoryPayload, S>
 
   type DeletedDirectoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<DeletedDirectoryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    Omit<DeletedDirectoryFindManyArgs, 'select' | 'include' | 'distinct' | 'relationLoadStrategy'> & {
       select?: DeletedDirectoryCountAggregateInputType | true
     }
 
@@ -7330,6 +7375,7 @@ export namespace Prisma {
      * Filter, which DeletedDirectory to fetch.
      */
     where: DeletedDirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7349,6 +7395,7 @@ export namespace Prisma {
      * Filter, which DeletedDirectory to fetch.
      */
     where: DeletedDirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7398,6 +7445,7 @@ export namespace Prisma {
      * Filter by unique combinations of DeletedDirectories.
      */
     distinct?: DeletedDirectoryScalarFieldEnum | DeletedDirectoryScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7447,6 +7495,7 @@ export namespace Prisma {
      * Filter by unique combinations of DeletedDirectories.
      */
     distinct?: DeletedDirectoryScalarFieldEnum | DeletedDirectoryScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7491,6 +7540,7 @@ export namespace Prisma {
      */
     skip?: number
     distinct?: DeletedDirectoryScalarFieldEnum | DeletedDirectoryScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7510,6 +7560,7 @@ export namespace Prisma {
      * The data needed to create a DeletedDirectory.
      */
     data: XOR<DeletedDirectoryCreateInput, DeletedDirectoryUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7545,6 +7596,7 @@ export namespace Prisma {
      * Choose, which DeletedDirectory to update.
      */
     where: DeletedDirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7587,6 +7639,7 @@ export namespace Prisma {
      * In case the DeletedDirectory was found with the provided `where` argument, update it with this data.
      */
     update: XOR<DeletedDirectoryUpdateInput, DeletedDirectoryUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7606,6 +7659,7 @@ export namespace Prisma {
      * Filter which DeletedDirectory to delete.
      */
     where: DeletedDirectoryWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
   }
 
 
@@ -7689,6 +7743,14 @@ export namespace Prisma {
   };
 
   export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
+
+
+  export const RelationLoadStrategy: {
+    query: 'query',
+    join: 'join'
+  };
+
+  export type RelationLoadStrategy = (typeof RelationLoadStrategy)[keyof typeof RelationLoadStrategy]
 
 
   export const FileVersionScalarFieldEnum: {

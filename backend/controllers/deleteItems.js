@@ -59,9 +59,10 @@ const insertIntoDeletedFile = async (prisma, data) => {
 
 const insertIntoDeletedFileVersion = async (prisma, data) => {
   const { deletion_type, device, username, directory } = data;
-
+  console.log({ deletion_type, device, username, directory });
   if (directory === "/") {
-    await prisma.$executeRaw(Prisma.sql`
+    console.log("-----------------inside directory--------------------");
+    const affected = await prisma.$executeRaw(Prisma.sql`
         INSERT INTO public."DeletedFileVersion"
         (username,device,directory,uuid,origin,filename,last_modified,
           hashvalue,enc_hashvalue,versions,size,salt,iv,deletion_date,
@@ -72,10 +73,14 @@ const insertIntoDeletedFileVersion = async (prisma, data) => {
         WHERE 
         username = ${username} AND 
         device = ${device};`);
+    console.log(affected);
+    console.log("-----------------inside directory--------------------");
   } else {
-    const regex_dir = `^${directory}(/[^/]+)*$`;
+    console.log("-----------------outside directory--------------------");
 
-    await prisma.$executeRaw(Prisma.sql`
+    const regex_dir = `^${directory}(/[^/]+)*$`;
+    console.log(regex_dir);
+    const affected = await prisma.$executeRaw(Prisma.sql`
         INSERT INTO public."DeletedFileVersion"
         (username,device,directory,uuid,origin,filename,last_modified,
           hashvalue,enc_hashvalue,versions,size,salt,iv,deletion_date,
@@ -87,6 +92,8 @@ const insertIntoDeletedFileVersion = async (prisma, data) => {
           WHERE username = ${username}
           AND device =  ${device}
           AND directory ~ ${regex_dir};`);
+    console.log(affected);
+    console.log("-----------------outside directory--------------------");
   }
 };
 
@@ -163,8 +170,10 @@ const deleteFolder = async (data) => {
 
 const insertFileDirectoryIntoDeletedDirectory = async (prisma, data) => {
   const { username, device, path, name } = data;
+  console.log("=======insert directdory =============");
+  console.log({ username, device, path, name });
 
-  await prisma.$executeRaw(Prisma.sql`
+  const affected = await prisma.$executeRaw(Prisma.sql`
             INSERT INTO public."DeletedDirectory"
                 (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
             SELECT uuid,username,device,folder,path,created_at,
@@ -174,11 +183,15 @@ const insertFileDirectoryIntoDeletedDirectory = async (prisma, data) => {
             AND device = ${device}
             AND path = ${path}
             ON CONFLICT DO NOTHING;`);
+  console.log(affected);
+  console.log("=======insert directory =============");
 };
 
 const insertRowIntoDeletedFile = async (prisma, data) => {
   const { deletion_type, username, device, name, dir } = data;
-  await prisma.$executeRaw(Prisma.sql`
+  console.log("+++++++++++ insert file into delete ++++++++++++++");
+  console.log({ deletion_type, username, device, name, dir });
+  const affected = await prisma.$executeRaw(Prisma.sql`
     INSERT INTO public."DeletedFile"
         (username,device,directory,uuid,origin,filename,last_modified,
         hashvalue,enc_hashvalue,versions,size,salt,iv,deletion_date,
@@ -191,11 +204,15 @@ const insertRowIntoDeletedFile = async (prisma, data) => {
     AND device =  ${device}
     AND directory = ${dir} 
     AND filename = ${name};`);
+  console.log(affected, " affected");
+  console.log("+++++++++++ insert file into delete ++++++++++++++");
 };
 
 const insertRowIntoDeletedFileVersion = async (prisma, data) => {
   const { deletion_type, username, device, name, dir } = data;
-  await prisma.$executeRaw(Prisma.sql`
+  console.log("+++++++++++ insert file into delete version ++++++++++++++");
+  console.log({ deletion_type, username, device, name, dir });
+  const affected = await prisma.$executeRaw(Prisma.sql`
     INSERT INTO public."DeletedFileVersion"
         (username,device,directory,uuid,origin,filename,last_modified,
         hashvalue,enc_hashvalue,versions,size,salt,iv,deletion_date,
@@ -208,28 +225,37 @@ const insertRowIntoDeletedFileVersion = async (prisma, data) => {
     AND device =  ${device}
     AND directory = ${dir} 
     AND filename = ${name};`);
+  console.log(affected, " affected");
+  console.log("+++++++++++ insert file into delete version ++++++++++++++");
 };
 
 const deleteRowFromFile = async (prisma, data) => {
   const { username, dir, device, name } = data;
+  console.log("+++++++++++ delete file from  file ++++++++++++++");
+  console.log({ username, dir, device, name });
 
-  await prisma.$executeRaw(Prisma.sql`
+  const affected = await prisma.$executeRaw(Prisma.sql`
     DELETE FROM public."File"
     WHERE username = ${username}
     AND filename = ${name}
     AND directory = ${dir}
     AND device = ${device};`);
+  console.log(affected, " affected");
+  console.log("+++++++++++ delete file from  file ++++++++++++++");
 };
 
 const deleteRowFromFileVersion = async (prisma, data) => {
   const { username, dir, device, name } = data;
-
-  await prisma.$executeRaw(Prisma.sql`
+  console.log("+++++++++++ delete file from  version ++++++++++++++");
+  console.log({ username, dir, device, name });
+  const affected = await prisma.$executeRaw(Prisma.sql`
       DELETE FROM public."FileVersion"
       WHERE username = ${username}
       AND filename = ${name}
       AND directory = ${dir}
       AND device = ${device};`);
+  console.log(affected, " affected");
+  console.log("+++++++++++ delete file from  version ++++++++++++++");
 };
 
 const fileTransactionFn = (data) => async (prisma) => {
@@ -239,8 +265,8 @@ const fileTransactionFn = (data) => async (prisma) => {
   await insertFileDirectoryIntoDeletedDirectory(prisma, fileData);
   await insertRowIntoDeletedFile(prisma, fileData);
   await insertRowIntoDeletedFileVersion(prisma, fileData);
-  await deleteRowFromFile(prisma, fileData);
   await deleteRowFromFileVersion(prisma, fileData);
+  await deleteRowFromFile(prisma, fileData);
 };
 
 const deleteFile = async (data) => {
@@ -254,6 +280,14 @@ export const deleteItems = async (req, res) => {
   for (const file of files) {
     try {
       file["username"] = username;
+      console.log(
+        "+++++++++++ inside individual file delete++++++++++++++++++++++"
+      );
+      console.log(file);
+      console.log(
+        "+++++++++++ inside individual file delete++++++++++++++++++++++"
+      );
+
       await deleteFile(file);
     } catch (err) {
       console.error(err);

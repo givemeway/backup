@@ -5,28 +5,15 @@ import {
 } from "../controllers/utils.js";
 import { delete_file_version_directory } from "./delete_file_version_directory.js";
 import { copy_file_version_directory } from "./insert_file_directory.js";
-import { Prisma, prisma } from "../config/prismaDBConfig.js";
+import { prisma } from "../config/prismaDBConfig.js";
 
-const insert_file_version_directory_and_delete_files_directory = (
-  username,
-  path,
-  device,
-  directory,
-  dstFiles,
-  from
-) => {
+const copy_dir_delete_dir = (username, data) => {
   return new Promise(async (resolve, reject) => {
     try {
       await prisma.$transaction(async (prisma) => {
-        await copy_file_version_directory(
-          prisma,
-          path,
-          username,
-          device,
-          directory,
-          dstFiles
-        );
-        await delete_file_version_directory(prisma, "/" + from, username);
+        const from = "/" + data.fromPath;
+        await copy_file_version_directory(prisma, data);
+        await delete_file_version_directory(prisma, from, username);
       });
       resolve();
     } catch (err) {
@@ -48,17 +35,13 @@ export const moveFolder = async (
   // todo HANDLE the empty folder
   for (const [path, files] of Object.entries(dstFilesObj)) {
     console.log(path, Array.from(files).length);
-    const device = path.split("/")[1];
-    let dir = path.split("/").slice(2).join("/");
+    const [dstPath, srcPath] = path.split(";");
+    const device = dstPath.split("/")[1];
+    let dir = dstPath.split("/").slice(2).join("/");
     dir = dir === "" ? "/" : dir;
-    await insert_file_version_directory_and_delete_files_directory(
-      username,
-      path,
-      device,
-      dir,
-      files,
-      fromPath
-    );
+    const data = { dstPath, username, device, dir, files, fromPath, srcPath };
+
+    await copy_dir_delete_dir(username, data);
   }
   console.log("completed!!");
 };

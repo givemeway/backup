@@ -59,10 +59,18 @@ const update_file_directory_DB = async (req, res, next) => {
   req.uuid = uuid;
   req.username = username;
   let path;
-  if (directory !== "/") {
-    path = "/" + device + "/" + directory;
-  } else {
+  // if (directory !== "/") {
+  //   path = "/" + device + "/" + directory;
+  // } else {
+  //   path = "/" + device;
+  // }
+
+  if (directory === "/" && device === "/") {
+    path = "/";
+  } else if (device !== "/" && directory === "/") {
     path = "/" + device;
+  } else {
+    path = "/" + device + "/" + directory;
   }
 
   const insertData = {

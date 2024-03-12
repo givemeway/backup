@@ -124,6 +124,11 @@ exports.Prisma.FileScalarFieldEnum = {
   dirID: 'dirID'
 };
 
+exports.Prisma.RelationLoadStrategy = {
+  query: 'query',
+  join: 'join'
+};
+
 exports.Prisma.FileVersionScalarFieldEnum = {
   username: 'username',
   device: 'device',

@@ -5,7 +5,6 @@ await dotenv.config();
 import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
-import { pool } from "../server.js";
 import { prisma } from "../config/prismaDBConfig.js";
 import { moveFolder } from "../controllers/moveFolder.js";
 

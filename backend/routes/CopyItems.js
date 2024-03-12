@@ -60,6 +60,6 @@ const organizeItems = async (req, res, next) => {
   }
 };
 
-router.post("*", verifyToken, organizeItems);
+router.post("/", verifyToken, organizeItems);
 
 export { router as copyItems };

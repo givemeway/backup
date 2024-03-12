@@ -364,6 +364,7 @@ router.get("/", verifyToken, async (req, res) => {
         device: true,
         directory: true,
         uuid: true,
+        origin: true,
       },
     });
 

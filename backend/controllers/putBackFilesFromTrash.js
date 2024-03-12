@@ -33,9 +33,10 @@ const copy_files_into_file_table = async (prisma, data) => {
 
 const copy_ver_into_ver_table = async (prisma, data) => {
   const { root, username, dir, reg, pg, bg, device } = data;
-
+  console.log({ root, username, dir, reg, pg, bg, device });
   if (root) {
-    await prisma.$executeRaw(Prisma.sql`
+    console.log("--------------inside root------------");
+    const affected = await prisma.$executeRaw(Prisma.sql`
               INSERT INTO public."FileVersion"
               SELECT username,device,directory,uuid,origin,filename,last_modified,
                   hashvalue,enc_hashvalue,versions,size,salt,iv
@@ -44,11 +45,13 @@ const copy_ver_into_ver_table = async (prisma, data) => {
               AND device = ${device}
               AND directory = ${dir}
               AND deletion_type = 'folder'
-              ORDER BY directory
-              LIMIT ${pg}
-              OFFSET ${bg};`);
+              ORDER BY directory;`);
+    console.log(affected);
+    console.log("--------------inside root------------");
   } else {
-    await prisma.$executeRaw(Prisma.sql`
+    console.log("--------------outside root------------");
+
+    const affected = await prisma.$executeRaw(Prisma.sql`
               INSERT INTO public."FileVersion"
               SELECT username,device,directory,uuid,origin,filename,last_modified,
                   hashvalue,enc_hashvalue,versions,size,salt,iv
@@ -57,13 +60,13 @@ const copy_ver_into_ver_table = async (prisma, data) => {
               AND device = ${device}
               AND directory ~ ${reg}
               AND deletion_type = 'folder'
-              ORDER BY directory
-              LIMIT ${pg}
-              OFFSET ${bg};`);
+              ORDER BY directory;`);
+    console.log(affected);
+    console.log("--------------outside root------------");
   }
 };
 
-const copy_dir_into_dir_table = async (prisma, data) => {
+export const getDeletedFiles = async (prisma, data) => {
   const { root, username, dir, reg, pg, bg, device } = data;
   let files = [];
   if (root) {
@@ -89,6 +92,11 @@ const copy_dir_into_dir_table = async (prisma, data) => {
                         LIMIT ${pg}
                         OFFSET ${bg};`);
   }
+  return files;
+};
+
+export const getPathsToInsert = async (prisma, data, files) => {
+  const { username } = data;
 
   const directories = {};
 
@@ -97,7 +105,7 @@ const copy_dir_into_dir_table = async (prisma, data) => {
     if (file.device === "/" && file.directory === "/") {
       path = "/";
     } else if (file.directory === "/" && file.device !== "/") {
-      path = "/" + device;
+      path = "/" + file.device;
     } else {
       path = "/" + file.device + "/" + file.directory;
     }
@@ -134,6 +142,13 @@ const copy_dir_into_dir_table = async (prisma, data) => {
 
     if (directory !== null) pathsToInsert.push(directory);
   }
+  return pathsToInsert;
+};
+
+const copy_dir_into_dir_table = async (prisma, data) => {
+  const files = await getDeletedFiles(prisma, data);
+
+  const pathsToInsert = await getPathsToInsert(prisma, data, files);
 
   await prisma.directory.createMany({
     data: pathsToInsert,
@@ -142,7 +157,7 @@ const copy_dir_into_dir_table = async (prisma, data) => {
   return pathsToInsert;
 };
 
-const delete_files_from_deletedFile_table = async (prisma, data) => {
+export const delete_files_from_deletedFile_table = async (prisma, data) => {
   const { root, username, dir, reg, pg, bg, device } = data;
 
   if (root) {
@@ -177,41 +192,105 @@ const delete_files_from_deletedFile_table = async (prisma, data) => {
           WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
   }
 };
-const delete_version_from_deletedFileVersion_table = async (prisma, data) => {
-  const { root, username, dir, reg, pg, bg, device } = data;
+
+const getVersionUuids = (files) => {
+  return files
+    .filter((file) => file.deletedFileVersions.length > 0)
+    .map((file) => file.deletedFileVersions.map((file) => file.origin))
+    .flat();
+};
+
+const get_root_files_in_directory = async (prisma, data) => {
+  const { username, dir, pg, bg, device } = data;
+
+  return await prisma.deletedFile.findMany({
+    where: { username, device, directory: dir },
+    skip: bg,
+    take: pg,
+    include: {
+      deletedFileVersions: true,
+    },
+    relationLoadStrategy: "join",
+  });
+};
+
+const get_all_files_in_directory = async (prisma, data) => {
+  const { username, dir, pg, bg, device } = data;
+
+  return await prisma.deletedFile.findMany({
+    where: {
+      username,
+      device,
+      directory: {
+        contains: dir + "%",
+      },
+    },
+    skip: bg,
+    take: pg,
+    include: {
+      deletedFileVersions: true,
+    },
+    relationLoadStrategy: "join",
+  });
+};
+
+const delete_file_versions = async (prisma, files) => {
+  await prisma.deletedFileVersion.deleteMany({
+    where: {
+      origin: {
+        in: files,
+      },
+    },
+  });
+};
+
+export const delete_version_from_deletedFileVersion_table = async (
+  prisma,
+  data
+) => {
+  // const { root, username, dir, reg, pg, bg, device } = data;
+  const { root } = data;
+
   if (root) {
-    await prisma.$executeRaw(Prisma.sql`
-                WITH deleted_rows AS (
-                  SELECT ctid
-                  FROM public."DeletedFileVersion"
-                  WHERE username = ${username}
-                  AND device = ${device}
-                  AND deletion_type = 'folder'
-                  AND directory = ${dir}
-                  ORDER BY directory
-                  LIMIT ${pg}
-                  OFFSET ${bg}
-                  )
-              DELETE FROM public."DeletedFileVersion"
-              WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
+    const allFiles = await get_root_files_in_directory(prisma, data);
+
+    const fileVersions = getVersionUuids(allFiles);
+
+    await delete_file_versions(prisma, fileVersions);
+    // await prisma.$executeRaw(Prisma.sql`
+    //             WITH deleted_rows AS (
+    //               SELECT ctid
+    //               FROM public."DeletedFileVersion"
+    //               WHERE username = ${username}
+    //               AND device = ${device}
+    //               AND directory = ${dir}
+    //               AND deletion_type = 'folder'
+    //               ORDER BY directory
+    //               )
+    //           DELETE FROM public."DeletedFileVersion"
+    //           WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
   } else {
-    await prisma.$executeRaw(Prisma.sql`
-              WITH deleted_rows AS (
-                SELECT ctid
-                FROM public."DeletedFileVersion"
-                WHERE username = ${username}
-                AND device = ${device}
-                AND directory ~ ${reg}
-                AND deletion_type = 'folder'
-                ORDER BY directory
-                LIMIT ${pg}
-                OFFSET ${bg}
-                )
-            DELETE FROM public."DeletedFileVersion"
-            WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
+    const allFiles = await get_all_files_in_directory(prisma, data);
+
+    const fileVersions = getVersionUuids(allFiles);
+
+    await delete_file_versions(prisma, fileVersions);
+
+    // await prisma.$executeRaw(Prisma.sql`
+    //           WITH deleted_rows AS (
+    //             SELECT ctid
+    //             FROM public."DeletedFileVersion"
+    //             WHERE username = ${username}
+    //             AND device = ${device}
+    //             AND directory ~ ${reg}
+    //             AND deletion_type = 'folder'
+    //             ORDER BY directory
+    //             )
+    //         DELETE FROM public."DeletedFileVersion"
+    //         WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
   }
 };
-const delete_dir_from_deletedDir_table = async (prisma, folders) => {
+export const delete_dir_from_deletedDir_table = async (prisma, folders) => {
   for (const folder of folders) {
     let dir = folder.path.split("/").slice(2).join("/");
     dir = dir === "" ? "/" : dir;
@@ -276,7 +355,7 @@ const copy_file_dir_into_dir_table = async (prisma, data) => {
         created_at: true,
       },
     });
-    if (directories !== null) {
+    if (directory !== null) {
       paths.push(directory);
     }
   }
