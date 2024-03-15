@@ -56,7 +56,10 @@ const insertFile = async (prisma, data) => {
 
 const getPathTree = (pathParts) => {
   return pathParts
-    .map((part, idx) => [part, pathParts.slice(0, idx + 1).join("/")])
+    .map((part, idx) => [
+      part === "" ? "/" : part,
+      pathParts.slice(0, idx + 1).join("/"),
+    ])
     .slice(1);
 };
 
