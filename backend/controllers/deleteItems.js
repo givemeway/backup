@@ -10,7 +10,10 @@ const insertIntoDeletedDirectory = async (prisma, data) => {
             FROM public."Directory"
             WHERE username = ${username}
             AND device = ${device}
-            ON CONFLICT DO NOTHING;`);
+            ON CONFLICT (username,device,folder,path)
+            DO UPDATE SET deletion_type = 'folder', 
+            rel_path = ${rel_path},
+            rel_name = ${rel_name};`);
   } else {
     const regex_path = `^${path}(/[^/]+)*$`;
     await prisma.$executeRaw(Prisma.sql`
@@ -21,7 +24,10 @@ const insertIntoDeletedDirectory = async (prisma, data) => {
         WHERE username = ${username}
         AND device = ${device}
         AND path ~ ${regex_path}
-        ON CONFLICT DO NOTHING;`);
+        ON CONFLICT (username,device,folder,path)
+        DO UPDATE SET deletion_type = 'folder', 
+        rel_path = ${rel_path},
+        rel_name = ${rel_name};`);
   }
 };
 

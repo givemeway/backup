@@ -91,17 +91,6 @@ router.post("/", verifyToken, async (req, res) => {
     }
   }
 
-  // Plan of action
-  // 1. Check whether the item we're trying to restore is batch of multiple items, or a single item
-  //    a. if single Item.
-  //        i. run a query to extract files based on device, directory,username from deleted_files.files table
-  //        ii. insert the files into files.files table
-  //        iii. run similar query as i to retrieve files from deleted_files.file_versions table
-  //        iv. insert step 3 files into versions.file_versions table.
-  //    b. Multiple items.
-  //        i. Iterate over every item.
-  //        ii. Perform steps in a
-  // 2. Check whether multiple batches have been selected, and repeat steps in 1.
   res.status(200).json("Response Received");
 });
 

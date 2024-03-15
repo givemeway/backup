@@ -347,14 +347,16 @@ router.get("/", verifyToken, async (req, res) => {
                           SELECT rel_path,rel_name, count(folder) AS folder_count
                           FROM public."DeletedDirectory"
                           WHERE username = ${username}
-                          AND deletion_type IS NULL
+                          AND (deletion_type IS NULL OR deletion_type = 'folder' )
                           GROUP BY
                           rel_name,rel_path;`);
-
+    console.log("group - folder _ ", group_folder_);
     const group_folder = group_folder_.map((folder) => ({
       ...folder,
       folder_count: parseInt(folder.folder_count),
     }));
+
+    console.log("group-folder ", group_folder);
 
     const deleted_files = await prisma.deletedFile.findMany({
       where: { username, deletion_type: "file" },
@@ -381,16 +383,32 @@ router.get("/", verifyToken, async (req, res) => {
       rel_path = rel_path.replace(/\)/g, "\\)");
       const subFoldersRegExp = `^${rel_path}(/[^/]+)$`;
 
-      if (dir === "/") {
-        await createBatchTrashItems(
-          group.rel_path,
-          group.rel_name,
-          subFoldersRegExp,
-          req,
+      const fileCount = await prisma.deletedFile.findMany({
+        where: {
+          username,
           device,
-          dir,
-          username
-        );
+          directory: {
+            contains: dir + "%",
+          },
+        },
+      });
+
+      if (fileCount.length === 0) {
+        const folder = await prisma.deletedDirectory.findFirst({
+          where: {
+            username,
+            path: rel_path,
+          },
+        });
+
+        const item = {
+          deleted: folder.deleted,
+          folder: folder.folder,
+          path: group.rel_path,
+          name: group.rel_name,
+          id: folder.uuid,
+        };
+        req.trash["folders"].push(item);
       } else {
         await createBatchTrashItems(
           group.rel_path,
@@ -402,6 +420,28 @@ router.get("/", verifyToken, async (req, res) => {
           username
         );
       }
+
+      // if (dir === "/") {
+      //   await createBatchTrashItems(
+      //     group.rel_path,
+      //     group.rel_name,
+      //     subFoldersRegExp,
+      //     req,
+      //     device,
+      //     dir,
+      //     username
+      //   );
+      // } else {
+      //   await createBatchTrashItems(
+      //     group.rel_path,
+      //     group.rel_name,
+      //     subFoldersRegExp,
+      //     req,
+      //     device,
+      //     dir,
+      //     username
+      //   );
+      // }
     }
 
     res.status(200).json(req.trash);
