@@ -17,7 +17,7 @@ router.use((req, res, next) => {
 });
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const param = req.query.search;
+    const param = req.query.param;
     const username = req.user.Username;
     const files = await prisma.file.findMany({
       where: {
@@ -43,7 +43,7 @@ router.get("/", verifyToken, async (req, res) => {
     res.status(200).json(data);
   } catch (err) {
     console.log(err);
-    req.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, msg: err });
   }
 });
 
