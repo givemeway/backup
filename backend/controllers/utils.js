@@ -30,12 +30,9 @@ export const getSrcFilePaths = async (prisma, path, username) => {
 
 export const updateVersionedFiles = async (prisma, data) => {
   const { username, srcPath, files } = data;
-  console.log("------------- inside version update-------------");
   const device = srcPath.split("/")[1];
   let dir = srcPath.split("/").slice(2).join("/");
   dir = dir === "" ? "/" : dir;
-  console.log({ device, dir, username });
-  console.log(files);
   const versions = await prisma.fileVersion.findMany({
     where: {
       username,
@@ -43,8 +40,7 @@ export const updateVersionedFiles = async (prisma, data) => {
       device,
     },
   });
-  console.log("---------------- versions identified ---------------------");
-  console.log(versions);
+
   let versionedFiles = [];
   for (const file of versions) {
     const data = {
@@ -55,11 +51,75 @@ export const updateVersionedFiles = async (prisma, data) => {
     };
     versionedFiles.push(data);
   }
-  console.log("---------------- versions identified ---------------------");
-
-  console.log("------------- inside version update-------------");
 
   return versionedFiles;
+};
+
+const getSrcPath = (device, dir) => {
+  let srcPath;
+  if (dir === "/" && device === "/") {
+    srcPath = "/";
+  } else if (dir === "/" && device !== "/") {
+    srcPath = "/" + device;
+  } else {
+    srcPath = "/" + device + "/" + dir;
+  }
+  return srcPath;
+};
+
+const getPath_without_prefixed_slash = (device, dir, filename) => {
+  let path;
+  if (dir === "/") path = device + "/" + file.filename;
+  else path = device + "/" + dir + "/" + file.filename;
+  return path;
+};
+
+export const getRelPath = (path, srcDepth, rename = false) => {
+  let relPath;
+  if (rename) {
+    relPath = path.split("/").slice(srcDepth).join("/");
+    relPath = relPath === "" ? "/" : relPath;
+  } else {
+    relPath = path
+      .split("/")
+      .slice(srcDepth - 1)
+      .join("/");
+  }
+  return relPath;
+};
+
+export const getDstPath = (toPath, relPath) => {
+  let dstPath;
+  if (toPath === "/") {
+    if (relPath === "/") {
+      dstPath = "/";
+    } else {
+      dstPath = "/" + relPath;
+    }
+  } else {
+    if (relPath === "/") {
+      dstPath = toPath;
+    } else {
+      dstPath = toPath + "/" + relPath;
+    }
+  }
+  return dstPath;
+};
+
+const get_dst_device_dir = (dstPath) => {
+  const dst_device = dstPath.split("/")[1];
+  const dst_path = dstPath.split("/").slice(0, -1).join("/");
+  let dst_dir = dstPath.split("/").slice(2, -1).join("/");
+  dst_dir = dst_dir === "" ? "/" : dst_dir;
+  return { dst_device, dst_path, dst_dir };
+};
+
+export const get_src_device_dir = (path) => {
+  const devicePart = path.split("/")[0];
+  const device = devicePart === "" ? "/" : devicePart;
+  const dirPart = path.split("/").slice(1).join("/");
+  const dir = dirPart === "" ? "/" : dirPart;
+  return { device, dir };
 };
 
 export const getDstFilePaths = (files, toPath, srcDepth, rename = false) => {
@@ -67,45 +127,11 @@ export const getDstFilePaths = (files, toPath, srcDepth, rename = false) => {
   for (const file of files) {
     const device = `${file.device}`;
     const dir = file.directory;
-    let srcPath;
-    if (dir === "/" && device === "/") {
-      srcPath = "/";
-    } else if (dir === "/" && device !== "/") {
-      srcPath = "/" + device;
-    } else {
-      srcPath = "/" + device + "/" + dir;
-    }
-    let path;
-    if (dir === "/") path = device + "/" + file.filename;
-    else path = device + "/" + dir + "/" + file.filename;
-    let relPath = "";
-    if (rename) {
-      relPath = path.split("/").slice(srcDepth).join("/");
-      relPath = relPath === "" ? "/" : relPath;
-    } else {
-      relPath = path
-        .split("/")
-        .slice(srcDepth - 1)
-        .join("/");
-    }
-    let dstPath;
-    if (toPath === "/") {
-      if (relPath === "/") {
-        dstPath = "/";
-      } else {
-        dstPath = "/" + relPath;
-      }
-    } else {
-      if (relPath === "/") {
-        dstPath = toPath;
-      } else {
-        dstPath = toPath + "/" + relPath;
-      }
-    }
-    const dst_device = dstPath.split("/")[1];
-    const dst_path = dstPath.split("/").slice(0, -1).join("/");
-    let dst_dir = dstPath.split("/").slice(2, -1).join("/");
-    dst_dir = dst_dir === "" ? "/" : dst_dir;
+    const srcPath = getSrcPath(device, dir);
+    const path = getPath_without_prefixed_slash(device, dir, file.filename);
+    const relPath = getRelPath(path, srcDepth, rename);
+    const dstPath = getDstPath(toPath, relPath);
+    const { dst_device, dst_dir, dst_path } = get_dst_device_dir(dstPath);
     const uuid = uuidV4();
     const dstFileData = {
       ...file,
@@ -125,14 +151,6 @@ export const getDirectoryMap = (files) => {
   let dstFilesObj = {};
   files.forEach((file) => {
     const path = file.path;
-    // let path = "";
-    // if (file.directory === "/" && file.device === "/") {
-    //   path = "/";
-    // } else if (file.directory === "/" && file.device !== "/") {
-    //   path = "/" + file.device;
-    // } else {
-    //   path = "/" + file.device + "/" + file.directory;
-    // }
     if (dstFilesObj.hasOwnProperty(path)) {
       delete file.path;
       delete file.dirID;
