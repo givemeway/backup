@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
 import { updateVersionedFiles } from "./utils.js";
 
-const createPaths = async (prisma, paths, data) => {
+export const createPaths = async (prisma, paths, data) => {
   const { username, device } = data;
 
   let pathsToInsert = [];
@@ -18,7 +18,7 @@ const createPaths = async (prisma, paths, data) => {
     };
     pathsToInsert.push(pathObj);
   }
-
+  console.log(pathsToInsert);
   await prisma.directory.createMany({
     data: pathsToInsert,
     skipDuplicates: true,
@@ -54,7 +54,7 @@ const insertFile = async (prisma, data) => {
   }
 };
 
-const getPathTree = (pathParts) => {
+export const getPathTree = (pathParts) => {
   return pathParts
     .map((part, idx) => [
       part === "" ? "/" : part,

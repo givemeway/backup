@@ -394,13 +394,14 @@ router.get("/", verifyToken, async (req, res) => {
       });
 
       if (fileCount.length === 0) {
+        console.log("rel_path-", rel_path);
         const folder = await prisma.deletedDirectory.findFirst({
           where: {
             username,
             path: rel_path,
           },
         });
-
+        console.log(folder);
         const item = {
           deleted: folder.deleted,
           folder: folder.folder,

@@ -15,40 +15,6 @@ const DUPLICATE = "DUPLICATE";
 
 router.use(csurf({ cookie: true }));
 
-const sqlExecute = (con, query, values) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const [rows, fields] = await con.execute(query, values);
-      resolve(rows);
-    } catch (error) {
-      console.log(error);
-      reject(error);
-    }
-  });
-};
-
-const getFolders = async (con, currentDir, username, devicename) => {
-  const [start, end] = [0, 1000000];
-  let regex_2 = ``;
-  let path = ``;
-  if (devicename === "/") {
-    regex_2 = `^\\.?(/[^/]+)$`;
-  } else if (currentDir === "/") {
-    regex_2 = `^\\.?/${devicename}(/[^/]+)$`;
-  } else {
-    path = `/${devicename}/${currentDir}`;
-    regex_2 = `^\\.?${path}(/[^/]+)$`;
-  }
-  const foldersQuery = `SELECT 
-                        uuid,folder,path,device 
-                        FROM directories.directories 
-                        WHERE username = ?
-                        AND
-                        path REGEXP ? limit ${start},${end};`;
-  const rows = await sqlExecute(con, foldersQuery, [username, regex_2]);
-  return rows;
-};
-
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
