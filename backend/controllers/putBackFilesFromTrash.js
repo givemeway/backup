@@ -1,4 +1,6 @@
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
+import { getData } from "./utils.js";
+const SINGLEFILE = "singleFile";
 
 const copy_files_into_file_table = async (prisma, data) => {
   const { root, username, dir, reg, pg, bg, device } = data;
@@ -198,11 +200,24 @@ export const getPathsToInsert = async (prisma, data, files) => {
 
   if (files.length === 0) {
     const path = createPath(data.device, data.dir);
-    directories = mapDirectory(path);
+    const dirs = await prisma.deletedDirectory.findMany({
+      where: {
+        username,
+        path: {
+          contains: path + "%",
+        },
+      },
+      select: {
+        path: true,
+      },
+    });
+    for (const dir of dirs) {
+      directories = { ...directories, ...mapDirectory(dir.path) };
+    }
   } else {
     files.forEach((file) => {
       const path = createPath(file.device, file.directory);
-      directories = mapDirectory(path);
+      directories = { ...directories, ...mapDirectory(path) };
     });
   }
 
@@ -230,9 +245,7 @@ export const getPathsToInsert = async (prisma, data, files) => {
 
 const copy_dir_into_dir_table = async (prisma, data) => {
   const files = await getBatchDeletedFiles(prisma, data);
-
   const pathsToInsert = await getPathsToInsert(prisma, data, files);
-
   await prisma.directory.createMany({
     data: pathsToInsert,
     skipDuplicates: true,
@@ -448,7 +461,6 @@ const fileTransaction = (data) => async (prisma) => {
 
 const folderTransaction = (data) => async (prisma) => {
   const folders = await copy_dir_into_dir_table(prisma, data);
-
   await copy_files_into_file_table(prisma, data);
   await copy_ver_into_ver_table(prisma, data);
   await delete_version_from_deletedFileVersion_table(prisma, data);
@@ -462,4 +474,53 @@ export const restore_items_from_trash = async (data) => {
 
 export const restore_file_from_trash = async (data) => {
   await prisma.$transaction(fileTransaction(data));
+};
+
+export const restoreItems = async (req, res) => {
+  const items = req.body.items;
+  const username = req.user.Username;
+
+  for (const item of items) {
+    if (item.item !== SINGLEFILE) {
+      if (item?.items) {
+        for (const el of item?.items) {
+          try {
+            const { path, limit } = el;
+            const { begin, end } = limit;
+            const data = getData(path, begin, end, el?.root, username);
+            await restore_items_from_trash(data);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      } else {
+        try {
+          const { path, begin, end } = item;
+          const data = getData(path, begin, end, item?.root, username);
+          await restore_items_from_trash(data);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    } else {
+      const pathPart = item.path.split("/");
+      const device = pathPart[1] === "" ? "/" : pathPart[1];
+      const dirPart = pathPart.slice(2).join("/");
+      const dir = dirPart === "" ? "/" : dirPart;
+      const filename = item.name;
+      let data = {};
+      data.dir = dir;
+      data.device = device;
+      data.username = username;
+      data.filename = filename;
+      data.path = item.path;
+      try {
+        await restore_file_from_trash(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+
+  res.status(200).json("Response Received");
 };

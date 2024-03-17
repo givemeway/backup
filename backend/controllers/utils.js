@@ -67,6 +67,24 @@ const getSrcPath = (device, dir) => {
   return srcPath;
 };
 
+export const getData = (path, begin, end, root, username) => {
+  const dirParts = path.split("/").slice(2).join("/");
+  const device = path.split("/")[1];
+  let dir = dirParts === "" ? "/" : dirParts;
+  dir = dir.replace(/\(/g, "\\(");
+  dir = dir.replace(/\)/g, "\\)");
+  const regexp = `^${dir}(/[^/]+)*$`;
+  let data = {};
+  data.root = root;
+  data.dir = dir;
+  data.device = device;
+  data.username = username;
+  data.reg = regexp;
+  data.pg = end;
+  data.bg = begin;
+  return data;
+};
+
 const getPath_without_prefixed_slash = (device, dir, filename) => {
   let path;
   if (dir === "/") path = device + "/" + file.filename;

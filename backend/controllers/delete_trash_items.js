@@ -14,6 +14,7 @@ import {
   getDeletedFiles,
   getPathsToInsert,
 } from "./putBackFilesFromTrash.js";
+import { getData } from "./utils.js";
 dotenv.config();
 const SINGLEFILE = "singleFile";
 const BUCKET = process.env.BUCKET;
@@ -74,24 +75,6 @@ const tagDuplicates = (files) => {
   }
   // return Object.entries(fileData).map(([k, v]) => ({ [k]: v }));
   return fileData;
-};
-
-const getData = (path, begin, end, root, username) => {
-  const dirParts = path.split("/").slice(2).join("/");
-  const device = path.split("/")[1];
-  let dir = dirParts === "" ? "/" : dirParts;
-  dir = dir.replace(/\(/g, "\\(");
-  dir = dir.replace(/\)/g, "\\)");
-  const regexp = `^${dir}(/[^/]+)*$`;
-  let data = {};
-  data.root = root;
-  data.dir = dir;
-  data.device = device;
-  data.username = username;
-  data.reg = regexp;
-  data.pg = end;
-  data.bg = begin;
-  return data;
 };
 
 const findCommonFiles = (files, allfiles) => {
@@ -173,22 +156,47 @@ const get_DB_rows_s3_files_to_delete = (rows) => {
   return { s3Files };
 };
 
+const remove_emtpy_folder = async (prisma, data) => {
+  const { username, device, dir } = data;
+  if (dir === "/") {
+    await prisma.deletedDirectory.deleteMany({
+      where: {
+        username,
+        device,
+      },
+    });
+  } else {
+    const path = "/" + device + "/" + dir;
+    await prisma.deletedDirectory.deleteMany({
+      where: {
+        username: data.username,
+        path: {
+          contains: path + "%",
+        },
+      },
+    });
+  }
+};
+
 const transaction = (data) => async (prisma) => {
   const files = await getBatchDeletedFiles(prisma, data);
-  const all_files = await getDeletedFiles(prisma, data);
-  const all_files_tag = tagDuplicates(all_files);
-  const files_tag = tagDuplicates(files);
-  const commonFiles = findCommonFiles(files_tag, all_files_tag);
-  const { s3Files } = get_DB_rows_s3_files_to_delete(commonFiles);
-  await deleteS3Objects(data.username, s3Files);
-  const folders = await getPathsToInsert(prisma, data, files);
-  await delete_version_from_deletedFileVersion_table(prisma, data);
-  await delete_files_from_deletedFile_table(prisma, data);
-  await delete_dir_from_deletedDir_table(prisma, folders);
+  if (files.length > 0) {
+    const all_files = await getDeletedFiles(prisma, data);
+    const all_files_tag = tagDuplicates(all_files);
+    const files_tag = tagDuplicates(files);
+    const commonFiles = findCommonFiles(files_tag, all_files_tag);
+    const { s3Files } = get_DB_rows_s3_files_to_delete(commonFiles);
+    await deleteS3Objects(data.username, s3Files);
+    const folders = await getPathsToInsert(prisma, data, files);
+    await delete_version_from_deletedFileVersion_table(prisma, data);
+    await delete_files_from_deletedFile_table(prisma, data);
+    await delete_dir_from_deletedDir_table(prisma, folders);
+  } else {
+    await remove_emtpy_folder(prisma, data);
+  }
 };
 
 export const deleteTrashItems = async (req, res) => {
-  console.log(req.body.items);
   const items = req.body.items;
   const username = req.user.Username;
 
@@ -260,7 +268,6 @@ const deleteFileTransaction = (data) => async (prisma) => {
     pathTree,
     data.username
   );
-  console.log(folders);
   await delete_file_ver_from_deletedFileVersion_table(prisma, data);
   await delete_file_from_deletedFile_table(prisma, data);
   await delete_dir_from_deletedDir_table(prisma, folders);

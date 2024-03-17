@@ -97,8 +97,6 @@ const browseTransferData_promise = async (t, k, nav, username) => {
 export const getFilesFoldersFromShareID = async (req, res, next) => {
   const { t, k, id, nav, nav_tracking } = req.query;
   console.log("Request-->", nav);
-  let filesConn;
-  let foldersConn;
   let files = [];
   let directories = [];
   let home;
@@ -119,10 +117,15 @@ export const getFilesFoldersFromShareID = async (req, res, next) => {
           username,
         },
       });
-      files = await getFiles(folderPathData, username, nav, t);
-      directories = await getFolders(folderPathData, username, nav, t);
-      home = folderPathData.folder;
-      path = folderPathData.path;
+      if (folderPathData !== null) {
+        files = await getFiles(folderPathData, username, nav, t);
+        directories = await getFolders(folderPathData, username, nav, t);
+        home = folderPathData.folder;
+        path = folderPathData.path;
+      } else {
+        home = "";
+        path = "";
+      }
     } else {
       if (nav_tracking == 1) {
         // await browseTransferData(req, res, next);
