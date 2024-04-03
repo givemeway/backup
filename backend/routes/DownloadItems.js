@@ -8,45 +8,10 @@ import { verifyToken } from "../auth/auth.js";
 import { Worker } from "node:worker_threads";
 import { Readable } from "node:stream";
 import { DownloadZip } from "../models/mongodb.js";
-import releaseConnection from "../controllers/ReleaseConnection.js";
-import { pool } from "../server.js";
 import { Prisma, prisma, prismaUser } from "../config/prismaDBConfig.js";
 await dotenv.config();
 
 router.use(csrf({ cookie: true }));
-const fileQuery = `SELECT filename,directory,device,salt,iv,size FROM files where uuid=?`;
-const filesInSubDirectories = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
-const filesInCurrentDirectory = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE  username = ? AND device = ? AND directory = ?`;
-const filesInDevice = `SELECT uuid,filename,salt,iv,directory,size FROM  files where username = ? AND device = ?`;
-const encQuery = `SELECT enc FROM customers.users WHERE username = ?`;
-
-const root = process.env.VARIABLE;
-
-const sqlExecute = async (req, res) => {
-  try {
-    // const con = req.headers.connection;
-    const con = req.db;
-    const [rows] = await con.execute(req.headers.query, [
-      ...req.headers.queryValues,
-    ]);
-    req.headers.queryStatus = rows;
-    req.headers.query_success = true;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const sqlExecute_promise = (con, query, values) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const [rows] = await con.execute(query, values);
-      resolve(rows);
-    } catch (error) {
-      console.log(error);
-      reject(error);
-    }
-  });
-};
 
 const getFilesInDirectory_promise = async (req, res) => {
   return new Promise(async (resolve, reject) => {
@@ -56,8 +21,6 @@ const getFilesInDirectory_promise = async (req, res) => {
       const devicename = req.headers.devicename;
       req.headers.data = [];
       if (currentdirectory === "/") {
-        // const val = [req.user.Username, devicename];
-        // const rows = await sqlExecute_promise(req.db, filesInDevice, val);
         const rows = await prisma.file.findMany({
           where: {
             username,
@@ -67,20 +30,14 @@ const getFilesInDirectory_promise = async (req, res) => {
 
         resolve(rows);
       } else {
-        // const regex_other_files = `^${currentdirectory}(/[^/]+)*$`;
-        // const val = [username, devicename, regex_other_files];
-        // const filesInSubDirectories = `SELECT uuid,filename,salt,iv,directory,size FROM files WHERE username = ? AND device = ? AND directory REGEXP ?`;
+        const regex_other_files = `^${currentdirectory}(/[^/]+)*$`;
+
         const rows = await prisma.$queryRaw(Prisma.sql`
           SELECT uuid,filename,salt,iv,directory,size
           FROM public."File" 
           WHERE username = ${username}
           AND device = ${devicename}
           AND directory ~ ${regex_other_files};`);
-        // const rows = await sqlExecute_promise(
-        //   req.db,
-        //   filesInSubDirectories,
-        //   val
-        // );
         resolve(rows);
       }
     } catch (err) {
@@ -88,29 +45,6 @@ const getFilesInDirectory_promise = async (req, res) => {
       reject(err);
     }
   });
-};
-
-const getFilesInDirectory = async (req, res) => {
-  const currentdirectory = req.headers.currentdirectory;
-  const username = req.headers.username;
-  const devicename = req.headers.devicename;
-  req.headers.data = [];
-  if (currentdirectory === "/") {
-    req.headers.query = filesInDevice;
-    req.headers.queryValues = [username, devicename];
-    await sqlExecute(req, res);
-    req.headers.data.push(...req.headers.queryStatus);
-  } else {
-    const regex_other_files = `^${currentdirectory}(/[^/]+)+$`;
-    req.headers.query = filesInSubDirectories;
-    req.headers.queryValues = [username, devicename, regex_other_files];
-    await sqlExecute(req, res);
-    req.headers.data.push(...req.headers.queryStatus);
-    req.headers.query = filesInCurrentDirectory;
-    req.headers.queryValues = [username, devicename, currentdirectory];
-    await sqlExecute(req, res);
-    req.headers.data.push(...req.headers.queryStatus);
-  }
 };
 
 router.use((req, res, next) => {
@@ -139,6 +73,7 @@ const getFilesFoldersFromDownloadID = async (req, res, next) => {
         .json({ success: false, msg: "Download URL Expired" });
     req.body.files = share.files.map((file) => ({
       id: file.uuid,
+      path: file.path,
     }));
     req.body.directories = share.folders.map((folder) => ({
       folder: folder.folder,
@@ -155,8 +90,6 @@ const extractFilesInforFromDB = async (req, res, next) => {
   req.headers.username = username;
   const folders = req.body.directories;
   const files = req.body.files;
-  console.log(folders);
-  console.log(files);
   req.files = [];
   let totalSize = 0;
   for (let i = 0; i < folders.length; i++) {
@@ -165,21 +98,16 @@ const extractFilesInforFromDB = async (req, res, next) => {
     const dirParts = folders[i].path.split("/").slice(2).join("/");
     const dir = dirParts === "" ? "/" : dirParts;
     req.headers.currentdirectory = dir;
-    // await getFilesInDirectory(req, res);
-    // const dirFiles = req.headers.data;
     const dirFiles = await getFilesInDirectory_promise(req, res);
     for (let j = 0; j < dirFiles.length; j++) {
       const { filename, salt, iv, directory, uuid, size } = dirFiles[j];
       totalSize += parseInt(size);
-      // const filePath = path.join(root, username, device, directory, filename);
-      const filePath = path.join(root, username, uuid);
       const actualPath = path.join(device, directory);
       const fileData = {
         key: `${username}/${uuid}`,
         filename,
         salt,
         iv,
-        path: filePath,
         relativePath:
           dir === "/"
             ? actualPath
@@ -191,21 +119,30 @@ const extractFilesInforFromDB = async (req, res, next) => {
 
   for (let i = 0; i < files.length; i++) {
     const uuid = files[i].id;
-    req.headers.query = fileQuery;
-    req.headers.queryValues = [uuid];
-    await sqlExecute(req, res);
-    const { salt, iv, device, filename, directory, size } =
-      req.headers.queryStatus[0];
-    totalSize += size;
-    // const filePath = path.join(root, username, device, directory, filename);
-    const filePath = path.join(root, username, uuid);
+    const urlParam = new URLSearchParams(files[i].path);
+    const directory = urlParam.get("dir");
+    const filename = urlParam.get("file");
+    const device = urlParam.get("device");
+    const fileData = await prisma.file.findUnique({
+      where: {
+        username_device_directory_filename: {
+          username,
+          device,
+          directory,
+          filename,
+        },
+      },
+    });
+
+    const { salt, iv, size } = fileData;
+
+    totalSize += parseInt(size);
 
     req.files.push({
       key: `${username}/${uuid}`,
       filename,
       salt,
       iv,
-      path: filePath,
       relativePath: "",
     });
   }

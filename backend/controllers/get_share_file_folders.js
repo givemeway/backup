@@ -1,17 +1,18 @@
 import { Prisma, prisma } from "../config/prismaDBConfig.js";
 import { Transfer } from "../models/mongodb.js";
 
-const getFiles = async (folderdata, username, nav, type) => {
-  const { path, device } = folderdata;
+const getFiles = async (params) => {
+  const { folderPathData, username, nav, skip, take, t } = params;
+  const { path, device } = folderPathData;
   const dirPart = path.split("/").slice(2).join("/");
   let currentDir = dirPart === "" ? "/" : dirPart;
   const curNavPath = nav.split("/").slice(1).join("/");
-  if (nav !== "h" && type !== "t") {
+  if (nav !== "h" && t !== "t") {
     currentDir =
       currentDir === "/" ? curNavPath : currentDir + "/" + curNavPath;
   }
-  const [start, end] = [0, 10000];
-  const files = await prisma.file.findMany({
+  // const [start, end] = [0, 10000];
+  const filesQuery = prisma.file.findMany({
     where: {
       username,
       device,
@@ -20,61 +21,66 @@ const getFiles = async (folderdata, username, nav, type) => {
     orderBy: {
       filename: "asc",
     },
-    take: end,
-    skip: start,
+    take: parseInt(take),
+    skip: parseInt(skip),
   });
-  return files;
+
+  const totalQuery = prisma.file.count({
+    where: {
+      username,
+      device,
+      directory: currentDir,
+    },
+  });
+  return await prisma.$transaction([totalQuery, filesQuery]);
 };
 
-const getFolders = async (folderdata, username, nav, type) => {
-  let { path, device } = folderdata;
-  const [start, end] = [0, 1000000];
+const getFolders = async (params) => {
+  const { folderPathData, username, nav, skip, take, t } = params;
+  let { path, device } = folderPathData;
+  // const [start, end] = [0, 1000000];
   let regex = ``;
   if (device === "/") {
     regex = `^(/[^/]+)$`;
   } else if (path === "/") {
     regex = `^/${device}(/[^/]+)$`;
   } else {
-    if (nav !== "h" && type !== "t") {
+    if (nav !== "h" && t !== "t") {
       path = path + "/" + nav.split("/").slice(1).join("/");
     }
 
     regex = `^${path}(/[^/]+)$`;
   }
-  const folders = await prisma.$queryRaw(Prisma.sql`
+  const foldersQuery = prisma.$queryRaw(Prisma.sql`
                     SELECT uuid,folder,path,created_at
                     FROM public."Directory"
                     WHERE username = ${username}
                     AND path ~ ${regex}
                     ORDER BY path
-                    LIMIT ${end}
-                    OFFSET ${start};`);
-  return folders;
+                    LIMIT ${parseInt(take)}
+                    OFFSET ${parseInt(skip)};`);
+  const totalQuery = prisma.$queryRaw(Prisma.sql`
+                    SELECT COUNT(*) FROM  public."Directory" 
+                    WHERE username = ${username}
+                    AND path ~ ${regex};`);
+  return await prisma.$transaction([totalQuery, foldersQuery]);
 };
 
-const sqlExecute = (con, query, val) => {
+const browseTransferData_promise = async (params) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const [rows] = await con.execute(query, val);
-      resolve(rows);
-    } catch (err) {
-      console.error(err);
-      reject(err);
-    }
-  });
-};
+      const { k, username } = params;
 
-const browseTransferData_promise = async (t, k, nav, username) => {
-  return new Promise(async (resolve, reject) => {
-    try {
       const folderPathData = await prisma.directory.findFirst({
         where: {
           username,
           uuid: k,
         },
       });
-      const files = await getFiles(folderPathData, username, nav, t);
-      const directories = await getFolders(folderPathData, username, nav, t);
+      const data = { ...params, folderPathData };
+
+      const [fileTotal, files] = await getFiles(data);
+      const [directoryTotal, directories] = await getFolders(data);
       let dir;
       if (directories.length > 0) {
         dir = directories[0].path.split("/").slice(0, -1).join("/");
@@ -87,6 +93,7 @@ const browseTransferData_promise = async (t, k, nav, username) => {
         directories_t: directories,
         home_t: home,
         path_t: path,
+        total_t: fileTotal + directoryTotal,
       });
     } catch (err) {
       reject({ success: false, msg: err });
@@ -95,12 +102,13 @@ const browseTransferData_promise = async (t, k, nav, username) => {
 };
 
 export const getFilesFoldersFromShareID = async (req, res, next) => {
-  const { t, k, id, nav, nav_tracking } = req.query;
+  const { t, k, id, nav, nav_tracking, skip, take } = req.query;
   console.log("Request-->", nav);
   let files = [];
   let directories = [];
   let home;
   let path;
+  let total = 0;
   try {
     if (t === "fi") {
       files = await prisma.file.findMany({
@@ -118,8 +126,13 @@ export const getFilesFoldersFromShareID = async (req, res, next) => {
         },
       });
       if (folderPathData !== null) {
-        files = await getFiles(folderPathData, username, nav, t);
-        directories = await getFolders(folderPathData, username, nav, t);
+        const params = { folderPathData, username, nav, t, skip, take };
+        const [filetotal, page_files] = await getFiles(params);
+        files = page_files;
+        total += filetotal;
+        const [directoryTotal, page_directories] = await getFolders(params);
+        directories = page_directories;
+        total += parseInt(directoryTotal[0].count);
         home = folderPathData.folder;
         path = folderPathData.path;
       } else {
@@ -130,12 +143,14 @@ export const getFilesFoldersFromShareID = async (req, res, next) => {
       if (nav_tracking == 1) {
         // await browseTransferData(req, res, next);
         const username = req.user.Username;
-        const { files_t, directories_t, home_t, path_t } =
-          await browseTransferData_promise(t, k, nav, username);
+        const params = { t, k, nav, username, skip, take };
+        const { files_t, directories_t, home_t, path_t, total_t } =
+          await browseTransferData_promise(params);
         files = files_t;
         directories = directories_t;
         home = home_t;
         path = path_t;
+        total = total_t;
       } else {
         const share = await Transfer.findById({ _id: id }).exec();
         const db_files = Object.fromEntries(share.files);
@@ -170,7 +185,9 @@ export const getFilesFoldersFromShareID = async (req, res, next) => {
       )
     );
 
-    res.status(200).json({ success: true, home, path, files, directories });
+    res
+      .status(200)
+      .json({ success: true, home, path, files, directories, total });
     files = [];
     directories = [];
   }

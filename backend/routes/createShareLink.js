@@ -2,27 +2,12 @@ import express from "express";
 const router = express.Router();
 import csrf from "csurf";
 
-import { frontEndDomain, origin, serverDomain } from "../config/config.js";
+import { frontEndDomain, origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { Transfer, Share } from "../models/mongodb.js";
-import { createConnection } from "../controllers/createConnection.js";
-import releaseConnection from "../controllers/ReleaseConnection.js";
+import { prismaUser } from "../config/prismaDBConfig.js";
 
 router.use(csrf({ cookie: true }));
-
-const sqlExecute = async (req, res, next) => {
-  try {
-    const con = req.headers.connection;
-    const [rows] = await con.execute(req.headers.query, [
-      ...req.headers.queryValues,
-    ]);
-    req.headers.queryStatus = rows;
-    req.headers.query_success = true;
-  } catch (error) {
-    res.status(500).json(error.message);
-    res.end();
-  }
-};
 
 router.use("/", (req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
@@ -31,48 +16,32 @@ router.use("/", (req, res, next) => {
   next();
 });
 
-const getShareLink = async (req, res, next) => {
-  const folderQuery = `SELECT folder,path,device from data.directories WHERE uuid = ?;`;
-  const fileQuery = `SELECT directory,device,filename from data.files WHERE origin = ?;`;
-  const shareType = req.query.type;
-  const uuid = req.query.k;
-  if (shareType === "fi") {
-    await sqlExecute(req, res, next);
-    const data = req.headers.queryStatus;
-    res
-      .status(200)
-      .json({ url: `https://localhost:3001/app/sh/sh?k=${uuid}&dl=0` });
-  } else if (shareType === "fo") {
-    res
-      .status(200)
-      .json({ url: `https://localhost:3001/app/sh/sh?k=${uuid}&dl=0` });
-  }
-};
-
 const createShareLink = async (req, res) => {
   const type = req.query.t;
   const folders = req.body.directories;
   const files = req.body.files;
   const owner = req.user.Username;
   console.log(type, folders, files, owner);
-  // const mapFiles = files.map((file) => ({ uuid: file.id }));
   let mapFiles = {};
   files.forEach((file) => (mapFiles[file.id] = file.file));
-  // const mapFolders = folders.map((folder) => ({ uuid: folder.uuid }));
   let mapFolders = {};
   folders.forEach((folder) => (mapFolders[folder.uuid] = folder.folder));
-  const userDBCon = await createConnection("customers");
   let fullname;
   try {
-    const query = `SELECT first_name, last_name from customers.users where username=?;`;
-    const val = [owner];
-    const [rows] = await userDBCon.execute(query, val);
-    const { first_name, last_name } = rows[0];
+    const user = await prismaUser.user.findUnique({
+      where: {
+        username: owner,
+      },
+      select: {
+        first_name: true,
+        last_name: true,
+      },
+    });
+    const { first_name, last_name } = user;
     fullname = `${first_name} ${last_name}`;
-    await userDBCon.end();
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: false, msg: err });
+    return res.status(500).json({ success: false, msg: err });
   }
 
   let obj = {
@@ -110,7 +79,7 @@ const createShareLink = async (req, res) => {
       }
     } catch (err) {
       console.log(err);
-      res.status(500).json({ success: false, msg: err });
+      return res.status(500).json({ success: false, msg: err });
     }
   } else if (type === "fo") {
     try {
@@ -137,7 +106,7 @@ const createShareLink = async (req, res) => {
       }
     } catch (err) {
       console.log(err);
-      res.status(500).json({ success: false, msg: err });
+      return res.status(500).json({ success: false, msg: err });
     }
   } else {
     try {
@@ -148,11 +117,11 @@ const createShareLink = async (req, res) => {
       res.status(200).json(success_msg);
     } catch (err) {
       console.log(err);
-      res.status(500).json({ success: false, msg: err });
+      return res.status(500).json({ success: false, msg: err });
     }
   }
 };
 
-router.post("/", verifyToken, createShareLink, releaseConnection);
+router.post("/", verifyToken, createShareLink);
 
 export { router as createShare };

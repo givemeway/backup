@@ -14,7 +14,7 @@ import {
   getDeletedFiles,
   getPathsToInsert,
 } from "./putBackFilesFromTrash.js";
-import { getData } from "./utils.js";
+import { getData, prismaOpts } from "./utils.js";
 dotenv.config();
 const SINGLEFILE = "singleFile";
 const BUCKET = process.env.BUCKET;
@@ -196,6 +196,18 @@ const transaction = (data) => async (prisma) => {
   }
 };
 
+const deleteFileTransaction = (data) => async (prisma) => {
+  const pathTree = create_all_possible_paths_of_a_dir(data.path);
+  const folders = await get_all_possible_paths_of_a_dir(
+    prisma,
+    pathTree,
+    data.username
+  );
+  await delete_file_ver_from_deletedFileVersion_table(prisma, data);
+  await delete_file_from_deletedFile_table(prisma, data);
+  await delete_dir_from_deletedDir_table(prisma, folders);
+};
+
 export const deleteTrashItems = async (req, res) => {
   const items = req.body.items;
   const username = req.user.Username;
@@ -209,7 +221,7 @@ export const deleteTrashItems = async (req, res) => {
               const { path, limit } = el;
               const { begin, end } = limit;
               const data = getData(path, begin, end, el?.root, username);
-              await prisma.$transaction(transaction(data));
+              await prisma.$transaction(transaction(data), prismaOpts);
             } catch (err) {
               console.error(err);
               break;
@@ -219,7 +231,7 @@ export const deleteTrashItems = async (req, res) => {
           try {
             const { path, begin, end } = item;
             const data = getData(path, begin, end, item?.root, username);
-            await prisma.$transaction(transaction(data));
+            await prisma.$transaction(transaction(data), prismaOpts);
           } catch (err) {
             console.error(err);
             break;
@@ -239,7 +251,7 @@ export const deleteTrashItems = async (req, res) => {
             path: item.path,
           };
 
-          await prisma.$transaction(deleteFileTransaction(data));
+          await prisma.$transaction(deleteFileTransaction(data), prismaOpts);
 
           const duplicateExist = await prisma.deletedFile.findFirst({
             where: { username, uuid: item.id },
@@ -259,16 +271,4 @@ export const deleteTrashItems = async (req, res) => {
     console.error(err);
     res.status(500).json({ success: false, msg: err });
   }
-};
-
-const deleteFileTransaction = (data) => async (prisma) => {
-  const pathTree = create_all_possible_paths_of_a_dir(data.path);
-  const folders = await get_all_possible_paths_of_a_dir(
-    prisma,
-    pathTree,
-    data.username
-  );
-  await delete_file_ver_from_deletedFileVersion_table(prisma, data);
-  await delete_file_from_deletedFile_table(prisma, data);
-  await delete_dir_from_deletedDir_table(prisma, folders);
 };

@@ -1,29 +1,10 @@
 import express from "express";
 const router = express.Router();
 import { v4 as uuidv4 } from "uuid";
-import { pool } from "../server.js";
 import { origin } from "../config/config.js";
 import csrf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { prisma } from "../config/prismaDBConfig.js";
-
-const ER_DUP_ENTRY = 1062;
-
-const sql_execute = (con, query, values) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await con.beginTransaction();
-      await con.query(query, values);
-      await con.commit();
-      await con.release();
-      resolve();
-    } catch (err) {
-      await con.rollback();
-      console.error(err);
-      reject(err);
-    }
-  });
-};
 
 router.use(csrf({ cookie: true }));
 
@@ -49,11 +30,8 @@ router.post("/", verifyToken, async (req, res, next) => {
     path = subpath.split("home").slice(1).join("/") + "/" + folder;
     device = subpath.split("home")[1].split("/")[1];
   }
-  const query = `INSERT INTO directories.directories 
-                 VALUES(?,?,?,?,?,NOW())`;
+
   try {
-    // const con = await pool["directories"].getConnection();
-    // const values = [uuidv4(), username, device, folder, path];
     await prisma.directory.create({
       data: {
         uuid: uuidv4(),
@@ -64,7 +42,6 @@ router.post("/", verifyToken, async (req, res, next) => {
         created_at: new Date().toISOString(),
       },
     });
-    // await sql_execute(con, query, values);
     success = true;
     status = 200;
     msg = `Folder ${folder} created!`;

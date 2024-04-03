@@ -42,6 +42,7 @@ const shareSchema = new Schema({
 const fileDownloadSchema = new Schema({
   uuid: String,
   file: String,
+  path: String,
 });
 
 const folderDownloadSchema = new Schema({

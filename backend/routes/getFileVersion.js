@@ -2,7 +2,6 @@ import express from "express";
 import { origin } from "../config/config.js";
 import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
-import { pool } from "../server.js";
 import { prisma } from "../config/prismaDBConfig.js";
 const router = express.Router();
 

@@ -27,18 +27,30 @@ router.post("*", verifyToken, async (req, res) => {
     dir = dir.replace(/\)/g, "\\)");
     dir = dir.replace(/\(/g, "\\(");
     let rows = [];
+    console.log(dir);
+    console.log(device, begin, end);
     if (item === bulk) {
       const regexp = `^${dir}(/[^/]+)*$`;
-
-      rows = await prisma.$queryRaw(Prisma.sql`
-                            SELECT filename,deletion_date,device,directory,uuid
-                            FROM public."DeletedFile"
-                            WHERE username = ${username}
-                            AND device = ${device}
-                            AND directory ~ ${regexp}
-                            ORDER BY directory
-                            LIMIT ${parseInt(end)}
-                            OFFSET ${parseInt(begin)};`);
+      if (dir === "/") {
+        rows = await prisma.$queryRaw(Prisma.sql`
+                    SELECT filename,deletion_date,device,directory,uuid
+                    FROM public."DeletedFile"
+                    WHERE username = ${username}
+                    AND device = ${device}
+                    ORDER BY directory
+                    LIMIT ${parseInt(end)}
+                    OFFSET ${parseInt(begin)};`);
+      } else {
+        rows = await prisma.$queryRaw(Prisma.sql`
+                              SELECT filename,deletion_date,device,directory,uuid
+                              FROM public."DeletedFile"
+                              WHERE username = ${username}
+                              AND device = ${device}
+                              AND directory ~ ${regexp}
+                              ORDER BY directory
+                              LIMIT ${parseInt(end)}
+                              OFFSET ${parseInt(begin)};`);
+      }
     } else if (item === singleFile) {
       rows = await prisma.$queryRaw(Prisma.sql`
                             SELECT filename,deletion_date,device,directory,uuid

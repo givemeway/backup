@@ -16,22 +16,17 @@ import { searchFiles } from "./routes/searchItems.js";
 import { csrftoken } from "./routes/getCSRFToken.js";
 import { deleteItems } from "./routes/deleteItems.js";
 import { downloadItems } from "./routes/DownloadItems.js";
-import { moveItems } from "./routes/MoveItems.js";
 import { copyItems } from "./routes/CopyItems.js";
 import { createShare } from "./routes/createShareLink.js";
 import { renameItem } from "./routes/RenameItem.js";
 import { getTrash } from "./routes/getTrash.js";
 import { getTrashBatch } from "./routes/getTrashBatch.js";
-import { getTrashTotal } from "./routes/getTrashTotal.js";
 import { restoreTrashItems } from "./routes/RestoreItemsFromTrash.js";
-import { emptyTrash } from "./routes/EmptyTrash.js";
 import { getSharedLinks } from "./routes/getSharedItems.js";
+import { getPhotos } from "./routes/getPhotos.js";
 import { validateShare } from "./routes/ValidateShare.js";
-import DBConfig from "./config/DBConfig.js";
-import mysql from "mysql2/promise";
-import { getConnection } from "./controllers/getConnection.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 
 import { Server } from "socket.io";
 
@@ -50,6 +45,7 @@ import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
 import { origin } from "./config/config.js";
 import { createFolder } from "./routes/createFolder.js";
 import { getFileVersion } from "./routes/getFileVersion.js";
+import { PhotoPreviewURL } from "./routes/getPhotoPreviewURL.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -74,26 +70,15 @@ app.use(cookieParser());
 // import csrf from "csurf";
 // router.use(csrf({ cookie: true }));
 
-const createPoolConnection = async (config) => {
-  return mysql.createPool(config);
-};
-
-const pool = {};
-try {
-  for (const [key, value] of Object.entries(DBConfig)) {
-    pool[key] = await createPoolConnection(value);
-  }
-} catch (err) {
-  console.error(err);
-}
 // https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript
 let s3Client;
 try {
   s3Client = new S3Client({
-    region: process.env.REGION,
+    // region: process.env.REGION,
+    endpoint: process.env.ENDPOINT_E2,
     credentials: {
-      secretAccessKey: process.env.SECRETKEY,
-      accessKeyId: process.env.ACCESSKEY,
+      secretAccessKey: process.env.SECRETKEY_E2,
+      accessKeyId: process.env.ACCESSKEY_E2,
     },
   });
 } catch (err) {
@@ -101,39 +86,34 @@ try {
 }
 
 try {
-  app.use("/app/login", getConnection("customers"), login);
+  app.use("/app/login", login);
   app.use("/app/receiveFiles", receiveFiles);
-  app.use("/app/signup", getConnection("customers"), signup);
-  app.use("/app/browseFolder", getConnection("files"), getFilesSubfolders);
-  app.use("/app/getSubFolders", getConnection("directories"), subFolders);
-  app.use(
-    "/app/getCurrentDirFiles",
-    getConnection("files"),
-    getCurrentDirFiles
-  );
-  app.use("/app/downloadFile", getConnection("files"), downloadFile);
-  app.use("/app/search", getConnection("files"), searchFiles);
+  app.use("/app/signup", signup);
+  app.use("/app/browseFolder", getFilesSubfolders);
+  app.use("/app/getSubFolders", subFolders);
+  app.use("/app/getCurrentDirFiles", getCurrentDirFiles);
+  app.use("/app/downloadFile", downloadFile);
+  app.use("/app/search", searchFiles);
   app.use("/app/csrftoken", csrftoken);
-  app.use("/app/delete", getConnection("files"), deleteItems);
-  app.use("/app/downloadItems", getConnection("files"), downloadItems);
-  app.use("/app/createShare", getConnection("customers"), createShare);
-  app.use("/app/sh", getConnection("files"), share);
-  app.use("/app/sh/validate", getConnection("files"), validateShare);
-  app.use("/app/moveItems", getConnection("files"), moveItems);
-  app.use("/app/v2/moveItems", getConnection("files"), moveItemsV2);
-  app.use("/app/copyItems", getConnection("files"), copyItems);
-  app.use("/app/renameItem", getConnection("files"), renameItem);
-  app.use("/app/trash", getConnection("deleted_files"), getTrash);
-  app.use("/app/trashBatch", getConnection("deleted_files"), getTrashBatch);
-  app.use("/app/trashTotal", getConnection("deleted_files"), getTrashTotal);
+  app.use("/app/delete", deleteItems);
+  app.use("/app/downloadItems", downloadItems);
+  app.use("/app/createShare", createShare);
+  app.use("/app/sh", share);
+  app.use("/app/sh/validate", validateShare);
+  app.use("/app/v2/moveItems", moveItemsV2);
+  app.use("/app/copyItems", copyItems);
+  app.use("/app/renameItem", renameItem);
+  app.use("/app/trash", getTrash);
+  app.use("/app/trashBatch", getTrashBatch);
   app.use("/app/restoreTrashItems", restoreTrashItems);
   app.use("/app/get_download_zip", createDownloadURL);
   app.use("/app/getSharedLinks", getSharedLinks);
   app.use("/app/validateusername", validateUsername);
-  app.use("/app/emptyTrash", emptyTrash);
   app.use("/app/deleteTrashItems", deleteTrashItems);
   app.use("/app/createFolder", createFolder);
   app.use("/app/getFileVersion", getFileVersion);
+  app.use("/app/getPhotos", getPhotos);
+  app.use("/app/photopreview", PhotoPreviewURL);
 } catch (err) {
   console.log(err);
 }
@@ -186,4 +166,4 @@ socketIO.on("connection", (socket) => {
   });
 });
 
-export { pool, s3Client, socketIO };
+export { s3Client, socketIO };

@@ -19,11 +19,12 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const param = req.query.param;
     const username = req.user.Username;
+    console.log("param-->", param);
     const files = await prisma.file.findMany({
       where: {
         username,
         filename: {
-          search: param,
+          contains: param,
         },
       },
     });
@@ -32,14 +33,18 @@ router.get("/", verifyToken, async (req, res) => {
       where: {
         username,
         folder: {
-          search: param,
+          contains: param,
         },
       },
     });
     let data = {};
     data["folders"] = folders;
     data["files"] = files;
-    console.log(data);
+    data.files = data.files.map((file) => ({
+      ...file,
+      size: parseInt(file.size),
+    }));
+    // console.log(data);
     res.status(200).json(data);
   } catch (err) {
     console.log(err);

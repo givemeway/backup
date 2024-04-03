@@ -13,10 +13,11 @@ const BUCKET = process.env.BUCKET;
 let s3Client;
 try {
   s3Client = new S3Client({
-    region: process.env.REGION,
+    // region: process.env.REGION,
+    endpoint: process.env.ENDPOINT_E2,
     credentials: {
-      secretAccessKey: process.env.SECRETKEY,
-      accessKeyId: process.env.ACCESSKEY,
+      secretAccessKey: process.env.SECRETKEY_E2,
+      accessKeyId: process.env.ACCESSKEY_E2,
     },
   });
 } catch (err) {

@@ -1,6 +1,12 @@
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
 import { v4 as uuidV4 } from "uuid";
 
+export const prismaOpts = {
+  maxWait: 10000,
+  timeout: 10000,
+  isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+};
+
 export const getSrcFilePaths = async (prisma, path, username) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -87,8 +93,8 @@ export const getData = (path, begin, end, root, username) => {
 
 const getPath_without_prefixed_slash = (device, dir, filename) => {
   let path;
-  if (dir === "/") path = device + "/" + file.filename;
-  else path = device + "/" + dir + "/" + file.filename;
+  if (dir === "/") path = device + "/" + filename;
+  else path = device + "/" + dir + "/" + filename;
   return path;
 };
 

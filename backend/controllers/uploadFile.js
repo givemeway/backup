@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 await dotenv.config();
 const router = express.Router();
 import { Upload } from "@aws-sdk/lib-storage";
-import { pool, s3Client } from "../server.js";
+import { s3Client } from "../server.js";
 import { PassThrough } from "stream";
 import { v4 as uuidv4 } from "uuid";
 import { socketIO as io } from "../server.js";

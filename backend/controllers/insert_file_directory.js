@@ -18,7 +18,6 @@ export const createPaths = async (prisma, paths, data) => {
     };
     pathsToInsert.push(pathObj);
   }
-  console.log(pathsToInsert);
   await prisma.directory.createMany({
     data: pathsToInsert,
     skipDuplicates: true,

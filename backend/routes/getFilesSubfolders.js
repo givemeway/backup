@@ -2,62 +2,13 @@ import express from "express";
 import csrf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { origin } from "../config/config.js";
-import mimetype from "mime-types";
-import { imageTypes } from "../utils/utils.js";
-import { thumbnailMicroservice } from "../config/config.js";
-import axios from "axios";
-import { pool } from "../server.js";
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
-
-const headers = {
-  headers: { "Content-Type": "application/json" },
-};
+import { getSignedURls } from "../controllers/getSignedURLs.js";
 
 const router = express.Router();
 router.use(csrf({ cookie: true }));
 
-const getSignedURls = async (files, username) => {
-  const images = files.filter((file) => {
-    const mime = mimetype.lookup(file.filename);
-    if (mime) {
-      const ext = mime.split("/")[1].toUpperCase();
-      return imageTypes.hasOwnProperty(ext);
-    }
-    return false;
-  });
-
-  const dataFiles = files.filter((file) => {
-    const mime = mimetype.lookup(file.filename);
-
-    if (mime) {
-      const ext = mime.split("/")[1].toUpperCase();
-      return !imageTypes.hasOwnProperty(ext);
-    }
-    return true;
-  });
-
-  for (let i = 0; i < images.length; i++) {
-    try {
-      const url =
-        thumbnailMicroservice +
-        images[i].uuid +
-        "_32w" +
-        `&username=${username}`;
-
-      const response = await axios.get(url, headers);
-      images[i].signedURL = response.data.url_thumb;
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  let allFiles = [];
-  allFiles = [...images, ...dataFiles];
-
-  return allFiles;
-};
-
 const getFiles = async (req, res, next) => {
-  let con;
   try {
     const { d, dir, sort, start, page } = req.query;
     console.log("files-->", start, page);
@@ -65,20 +16,32 @@ const getFiles = async (req, res, next) => {
     const currentDir = dir;
     const username = req.user.Username;
     const devicename = d;
-    const rows = await prisma.file.findMany({
-      where: {
-        username,
-        device: devicename,
-        directory: currentDir,
-      },
-      skip: parseInt(start),
-      take: parseInt(page),
-      orderBy: {
-        directory: "asc",
-      },
-    });
 
+    const [count, rows] = await prisma.$transaction([
+      prisma.file.count({
+        where: {
+          username,
+          device: devicename,
+          directory: currentDir,
+        },
+      }),
+      prisma.file.findMany({
+        where: {
+          username,
+          device: devicename,
+          directory: currentDir,
+        },
+        skip: parseInt(start),
+        take: parseInt(page),
+        orderBy: {
+          directory: "asc",
+        },
+      }),
+    ]);
+
+    console.log(count);
     req.data = {};
+    req.data["total"] = parseInt(count);
     const updatedFiles = await getSignedURls(rows, username);
     req.data["files"] = updatedFiles;
     next();
@@ -89,7 +52,6 @@ const getFiles = async (req, res, next) => {
 };
 
 const getFolders = async (req, res) => {
-  let con;
   try {
     const { d, dir, sort, start, page } = req.query;
     console.log("folder->", start, page);
@@ -115,14 +77,24 @@ const getFolders = async (req, res) => {
       regex = `^${path}(/[^/]+)$`;
     }
 
-    let rows = await prisma.$queryRaw(Prisma.sql`SELECT 
+    const [rows, count] = await prisma.$transaction([
+      prisma.$queryRaw(Prisma.sql`SELECT 
                         uuid,folder,path,created_at,device 
                         FROM public."Directory" 
                         WHERE username = ${username}
                         AND
                         path ~ ${regex} 
                         ORDER BY folder ASC
-                        LIMIT ${parseInt(page)} OFFSET ${parseInt(start)}`);
+                        LIMIT ${parseInt(page)} OFFSET ${parseInt(start)}`),
+      prisma.$queryRaw(Prisma.sql`SELECT 
+                    COUNT(*)
+                    FROM public."Directory" 
+                    WHERE username = ${username}
+                    AND
+                    path ~ ${regex};`),
+    ]);
+
+    req.data.total += parseInt(count[0].count);
     req.data["folders"] = rows;
 
     const data = JSON.stringify(req.data, (key, value) =>
@@ -136,6 +108,7 @@ const getFolders = async (req, res) => {
 };
 
 router.use((req, res, next) => {
+  console.log("pre-flight");
   res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(

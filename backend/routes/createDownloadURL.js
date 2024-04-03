@@ -19,7 +19,11 @@ const get_download_url = async (req, res) => {
   const folders = req.body.directories;
   const files = req.body.files;
   const owner = req.user.Username;
-  const mapFiles = files.map((file) => ({ file: file.file, uuid: file.id }));
+  const mapFiles = files.map((file) => ({
+    file: file.file,
+    uuid: file.id,
+    path: file.path,
+  }));
   const mapFolders = folders.map((folder) => ({
     folder: folder.folder,
     path: folder.path,

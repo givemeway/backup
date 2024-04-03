@@ -4,6 +4,7 @@ const SINGLEFILE = "singleFile";
 
 const copy_files_into_file_table = async (prisma, data) => {
   const { root, username, dir, reg, pg, bg, device } = data;
+
   if (root) {
     await prisma.$executeRaw(Prisma.sql`
               INSERT INTO public."File"
@@ -18,18 +19,32 @@ const copy_files_into_file_table = async (prisma, data) => {
               LIMIT ${pg}
               OFFSET ${bg};`);
   } else {
-    await prisma.$executeRaw(Prisma.sql`
+    if (dir === "/") {
+      await prisma.$executeRaw(Prisma.sql`
               INSERT INTO public."File"
               SELECT username,device,directory,uuid,origin,filename,last_modified,
                   hashvalue,enc_hashvalue,versions,size,salt,iv,"dirID"
               FROM public."DeletedFile"
               WHERE username = ${username}
               AND device = ${device}
-              AND directory ~ ${reg}
               AND deletion_type = 'folder'
               ORDER BY directory
               LIMIT ${pg}
               OFFSET ${bg};`);
+    } else {
+      await prisma.$executeRaw(Prisma.sql`
+                INSERT INTO public."File"
+                SELECT username,device,directory,uuid,origin,filename,last_modified,
+                    hashvalue,enc_hashvalue,versions,size,salt,iv,"dirID"
+                FROM public."DeletedFile"
+                WHERE username = ${username}
+                AND device = ${device}
+                AND directory ~ ${reg}
+                AND deletion_type = 'folder'
+                ORDER BY directory
+                LIMIT ${pg}
+                OFFSET ${bg};`);
+    }
   }
 };
 
@@ -47,16 +62,28 @@ const copy_ver_into_ver_table = async (prisma, data) => {
               AND deletion_type = 'folder'
               ORDER BY directory;`);
   } else {
-    await prisma.$executeRaw(Prisma.sql`
-              INSERT INTO public."FileVersion"
-              SELECT username,device,directory,uuid,origin,filename,last_modified,
-                  hashvalue,enc_hashvalue,versions,size,salt,iv
-              FROM public."DeletedFileVersion"
-              WHERE username = ${username}
-              AND device = ${device}
-              AND directory ~ ${reg}
-              AND deletion_type = 'folder'
-              ORDER BY directory;`);
+    if (dir === "/") {
+      await prisma.$executeRaw(Prisma.sql`
+      INSERT INTO public."FileVersion"
+      SELECT username,device,directory,uuid,origin,filename,last_modified,
+          hashvalue,enc_hashvalue,versions,size,salt,iv
+      FROM public."DeletedFileVersion"
+      WHERE username = ${username}
+      AND device = ${device}
+      AND deletion_type = 'folder'
+      ORDER BY directory;`);
+    } else {
+      await prisma.$executeRaw(Prisma.sql`
+                INSERT INTO public."FileVersion"
+                SELECT username,device,directory,uuid,origin,filename,last_modified,
+                    hashvalue,enc_hashvalue,versions,size,salt,iv
+                FROM public."DeletedFileVersion"
+                WHERE username = ${username}
+                AND device = ${device}
+                AND directory ~ ${reg}
+                AND deletion_type = 'folder'
+                ORDER BY directory;`);
+    }
   }
 };
 
@@ -82,6 +109,7 @@ export const getDeletedFiles = async (prisma, data) => {
 
 export const getBatchDeletedFiles = async (prisma, data) => {
   const { root, username, dir, reg, pg, bg, device } = data;
+  console.log(data);
   let files = [];
   if (root) {
     files = await prisma.deletedFile.findMany({
@@ -102,25 +130,44 @@ export const getBatchDeletedFiles = async (prisma, data) => {
       relationLoadStrategy: "join",
     });
   } else {
-    files = await prisma.deletedFile.findMany({
-      where: {
-        username,
-        device,
-        directory: {
-          contains: dir + "%",
+    if (dir === "/") {
+      files = await prisma.deletedFile.findMany({
+        where: {
+          username,
+          device,
+          deletion_type: "folder",
         },
-        deletion_type: "folder",
-      },
-      orderBy: {
-        directory: "asc",
-      },
-      skip: bg,
-      take: pg,
-      include: {
-        deletedFileVersions: true,
-      },
-      relationLoadStrategy: "join",
-    });
+        orderBy: {
+          directory: "asc",
+        },
+        skip: bg,
+        take: pg,
+        include: {
+          deletedFileVersions: true,
+        },
+        relationLoadStrategy: "join",
+      });
+    } else {
+      files = await prisma.deletedFile.findMany({
+        where: {
+          username,
+          device,
+          directory: {
+            contains: dir + "%",
+          },
+          deletion_type: "folder",
+        },
+        orderBy: {
+          directory: "asc",
+        },
+        skip: bg,
+        take: pg,
+        include: {
+          deletedFileVersions: true,
+        },
+        relationLoadStrategy: "join",
+      });
+    }
   }
   return files;
 };
@@ -272,7 +319,22 @@ export const delete_files_from_deletedFile_table = async (prisma, data) => {
           DELETE FROM public."DeletedFile"
           WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
   } else {
-    await prisma.$executeRaw(Prisma.sql`
+    if (dir === "/") {
+      await prisma.$executeRaw(Prisma.sql`
+            WITH deleted_rows AS (
+              SELECT ctid
+              FROM public."DeletedFile"
+              WHERE username = ${username}
+              AND device = ${device}
+              AND deletion_type = 'folder'
+              ORDER BY directory
+              LIMIT ${pg}
+              OFFSET ${bg}
+              )
+          DELETE FROM public."DeletedFile"
+          WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
+    } else {
+      await prisma.$executeRaw(Prisma.sql`
             WITH deleted_rows AS (
               SELECT ctid
               FROM public."DeletedFile"
@@ -286,6 +348,7 @@ export const delete_files_from_deletedFile_table = async (prisma, data) => {
               )
           DELETE FROM public."DeletedFile"
           WHERE ctid IN (SELECT ctid FROM deleted_rows);`);
+    }
   }
 };
 
@@ -312,22 +375,51 @@ const get_root_files_in_directory = async (prisma, data) => {
 
 const get_all_files_in_directory = async (prisma, data) => {
   const { username, dir, pg, bg, device } = data;
-
-  return await prisma.deletedFile.findMany({
-    where: {
-      username,
-      device,
-      directory: {
-        contains: dir + "%",
+  let files = [];
+  if (dir === "/") {
+    if (bg && pg) {
+      files = await prisma.deletedFile.findMany({
+        where: {
+          username,
+          device,
+        },
+        skip: bg,
+        take: pg,
+        include: {
+          deletedFileVersions: true,
+        },
+        relationLoadStrategy: "join",
+      });
+    } else {
+      files = await prisma.deletedFile.findMany({
+        where: {
+          username,
+          device,
+        },
+        include: {
+          deletedFileVersions: true,
+        },
+        relationLoadStrategy: "join",
+      });
+    }
+  } else {
+    files = await prisma.deletedFile.findMany({
+      where: {
+        username,
+        device,
+        directory: {
+          contains: dir + "%",
+        },
       },
-    },
-    skip: bg,
-    take: pg,
-    include: {
-      deletedFileVersions: true,
-    },
-    relationLoadStrategy: "join",
-  });
+      skip: bg,
+      take: pg,
+      include: {
+        deletedFileVersions: true,
+      },
+      relationLoadStrategy: "join",
+    });
+  }
+  return files;
 };
 
 const delete_file_versions = async (prisma, files) => {
@@ -365,17 +457,30 @@ export const delete_dir_from_deletedDir_table = async (prisma, folders) => {
     let dir = folder.path.split("/").slice(2).join("/");
     dir = dir === "" ? "/" : dir;
     const regex = `^${dir}(/[^/]+)*$`;
-    await prisma.$executeRaw(Prisma.sql`
-      DELETE FROM public."DeletedDirectory"
-      WHERE username = ${folder.username}
-      AND device = ${folder.device}
-      AND path = ${folder.path}
-      AND folder = ${folder.folder}
-      AND NOT EXISTS ( 
-        SELECT 1 FROM public."DeletedFile"
+    if (dir === "/") {
+      await prisma.$executeRaw(Prisma.sql`
+        DELETE FROM public."DeletedDirectory"
         WHERE username = ${folder.username}
         AND device = ${folder.device}
-        AND directory ~ ${regex});`);
+        AND path = ${folder.path}
+        AND folder = ${folder.folder}
+        AND NOT EXISTS ( 
+          SELECT 1 FROM public."DeletedFile"
+          WHERE username = ${folder.username}
+          AND device = ${folder.device});`);
+    } else {
+      await prisma.$executeRaw(Prisma.sql`
+        DELETE FROM public."DeletedDirectory"
+        WHERE username = ${folder.username}
+        AND device = ${folder.device}
+        AND path = ${folder.path}
+        AND folder = ${folder.folder}
+        AND NOT EXISTS ( 
+          SELECT 1 FROM public."DeletedFile"
+          WHERE username = ${folder.username}
+          AND device = ${folder.device}
+          AND directory ~ ${regex});`);
+    }
   }
 };
 

@@ -59,12 +59,6 @@ const update_file_directory_DB = async (req, res, next) => {
   req.uuid = uuid;
   req.username = username;
   let path;
-  // if (directory !== "/") {
-  //   path = "/" + device + "/" + directory;
-  // } else {
-  //   path = "/" + device;
-  // }
-
   if (directory === "/" && device === "/") {
     path = "/";
   } else if (device !== "/" && directory === "/") {
@@ -130,8 +124,7 @@ const triggerImageProcessingMS = async (req, res) => {
 
   try {
     const mime = mimetype.lookup(req.name);
-
-    if (mime instanceof String) {
+    if (typeof mime === "string") {
       const ext = mime.split("/")[1].toUpperCase();
 
       if (imageTypes.hasOwnProperty(ext)) {
