@@ -22,10 +22,11 @@ const dstBucket = process.env.BUCKET_PROCESSED_IMAGES;
 
 try {
   s3Client = new S3Client({
-    region: process.env.REGION,
+    // region: process.env.REGION,
+    endpoint: process.env.ENDPOINT_E2,
     credentials: {
-      accessKeyId: process.env.ACCESSKEY,
-      secretAccessKey: process.env.SECRETKEY,
+      accessKeyId: process.env.ACCESSKEY_E2,
+      secretAccessKey: process.env.SECRETKEY_E2,
     },
   });
 } catch (err) {
@@ -91,10 +92,14 @@ const getObject = async (id, username, Bucket) => {
         where: { username },
         select: { enc: true },
       });
-      const { salt, iv } = file;
-      const { enc } = user;
-      const input = (await s3Client.send(getCommand)).Body;
-      resolve(await decryptFile(input, salt, iv, enc));
+      if (file !== null) {
+        const { salt, iv } = file;
+        const { enc } = user;
+        const input = (await s3Client.send(getCommand)).Body;
+        resolve(await decryptFile(input, salt, iv, enc));
+      } else {
+        reject("FILENOTFOUND");
+      }
     } catch (err) {
       reject(err);
     }
@@ -103,7 +108,7 @@ const getObject = async (id, username, Bucket) => {
 
 const putObject = (Key, Bucket, Body) => {
   return new Promise(async (resolve, reject) => {
-    console.log(Key);
+    // console.log(Key);
     const upload = new Upload({
       client: s3Client,
       params: {
@@ -132,39 +137,74 @@ const putObject = (Key, Bucket, Body) => {
   });
 };
 
-const process_and_upload_images = async (message) => {
-  const value = JSON.parse(message.value);
-  console.log(value);
-  const pipeline = sharp();
+const process_and_upload_images = (message) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const value = JSON.parse(message.value);
+      // console.log(value);
+      const pipeline = sharp();
 
-  const input = await getObject(value.id, value.username, sourceBucket);
-  const output1 = new PassThrough();
-  const output2 = new PassThrough();
-  const output3 = new PassThrough();
-  const output4 = new PassThrough();
+      const input = await getObject(value.id, value.username, sourceBucket);
+      const output1 = new PassThrough();
+      const output2 = new PassThrough();
+      const output3 = new PassThrough();
+      const output4 = new PassThrough();
+      const output5 = new PassThrough();
+      const output6 = new PassThrough();
 
-  pipeline.clone().resize(32, 32, { fit: "cover" }).pipe(output1);
-  pipeline.clone().resize(64, 64, { fit: "cover" }).pipe(output2);
-  pipeline.clone().resize(128, 128, { fit: "cover" }).pipe(output3);
-  pipeline.clone().resize(256, 256, { fit: "cover" }).pipe(output4);
+      pipeline
+        .clone()
+        .resize(32, null, { fit: "contain", background: "white" })
+        .pipe(output1);
+      pipeline
+        .clone()
+        .resize(640, null, { fit: "contain", background: "white" })
+        .pipe(output2);
+      pipeline
+        .clone()
+        .resize(900, null, { fit: "contain", background: "white" })
+        .pipe(output3);
+      pipeline
+        .clone()
+        .resize(256, null, { fit: "contain", background: "white" })
+        .pipe(output4);
+      pipeline
+        .clone()
+        .resize(1280, null, { fit: "contain", background: "white" })
+        .pipe(output5);
+      pipeline
+        .clone()
+        .resize(2048, null, { fit: "contain", background: "white" })
+        .pipe(output6);
 
-  input.pipe(pipeline);
-  const Key = `${value.username}/${value.id}`;
-  const key_32w = `${Key}_32w`;
-  const key_64w = `${Key}_64w`;
-  const key_128w = `${Key}_128w`;
-  const key_256w = `${Key}_256w`;
-  try {
-    const promises = [];
-    promises.push(putObject(key_32w, dstBucket, output1));
-    promises.push(putObject(key_64w, dstBucket, output2));
-    promises.push(putObject(key_128w, dstBucket, output3));
-    promises.push(putObject(key_256w, dstBucket, output4));
+      input.pipe(pipeline);
+      const Key = `${value.username}/${value.id}`;
+      const key_32w = `${Key}_32w`;
+      const key_640w = `${Key}_640w`;
+      const key_900w = `${Key}_900w`;
+      const key_256w = `${Key}_256w`;
+      const key_1280w = `${Key}_1280w`;
+      const key_2048w = `${Key}_2048w`;
 
-    await Promise.all(promises);
-  } catch (err) {
-    console.log(err);
-  }
+      const promises = [];
+      promises.push(putObject(key_32w, dstBucket, output1));
+      promises.push(putObject(key_640w, dstBucket, output2));
+      promises.push(putObject(key_900w, dstBucket, output3));
+      promises.push(putObject(key_256w, dstBucket, output4));
+      promises.push(putObject(key_1280w, dstBucket, output5));
+      promises.push(putObject(key_2048w, dstBucket, output6));
+
+      await Promise.all(promises);
+      resolve();
+    } catch (err) {
+      console.log(err);
+      if (err === "FILENOTFOUND") {
+        resolve();
+      } else {
+        reject(err);
+      }
+    }
+  });
 };
 
 export const initiKafkaConsunmer = async () => {

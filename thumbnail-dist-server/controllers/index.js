@@ -4,10 +4,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const s3client = new S3Client({
-  region: process.env.REGION,
+  // region: process.env.REGION,
+  endpoint: process.env.ENDPOINT_E2,
   credentials: {
-    accessKeyId: process.env.ACCESSKEY,
-    secretAccessKey: process.env.SECRETKEY,
+    accessKeyId: process.env.ACCESSKEY_E2,
+    secretAccessKey: process.env.SECRETKEY_E2,
   },
 });
 
@@ -19,6 +20,6 @@ export const getSignedURL = async (req, res) => {
     Bucket: process.env.BUCKET,
     Key,
   });
-  const url_thumb = await getSignedUrl(s3client, command, { expiresIn: 3600 });
-  res.status(200).json({ url_thumb });
+  const signedURL = await getSignedUrl(s3client, command, { expiresIn: 3600 });
+  res.status(200).json(signedURL);
 };
