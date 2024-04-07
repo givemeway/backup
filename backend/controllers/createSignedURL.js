@@ -22,6 +22,7 @@ const getSignedURL = async (uuid, username, widths = ["32w"]) =>
       }
       resolve(signedURLs);
     } catch (err) {
+      console.err(err);
       reject(err);
     }
   });
@@ -54,6 +55,7 @@ export const createSignedURL = async (req, res) => {
     if (dir !== null) {
       uuid = dir.files[0]?.uuid;
     } else {
+      console.log("image not found");
       return res.status(404).json("Image not found");
     }
     const widths = ["640w", "900w", "1280w", "2048w"];

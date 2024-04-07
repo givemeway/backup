@@ -3,8 +3,9 @@ import cookie from "cookie";
 import { domain } from "../config/config.js";
 import { JWT_SECRET } from "../config/config.js";
 import { createHash } from "node:crypto";
+import { prismaUser as prisma } from "../config/prismaDBConfig.js";
 
-const validateUserDetails = (prisma) => async (req, res) => {
+const validateUserDetails = async (req, res) => {
   let encodedString = req.headers.authorization;
   let extractedUsernamePassword;
   let username;
@@ -26,16 +27,22 @@ const validateUserDetails = (prisma) => async (req, res) => {
           username: true,
           first_name: true,
           last_name: true,
+          id: true,
+          email: true,
         },
       });
 
       if (returnedUser !== null) {
+        const { username, first_name, last_name, id, email } = returnedUser;
         const payload = {
-          Username: returnedUser.username,
-          fullName: returnedUser.first_name + returnedUser.last_name,
+          Username: username,
+          first: first_name,
+          last: last_name,
+          userID: id,
+          email,
         };
-        console.log(payload);
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: 86400 });
+
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", token, {
@@ -47,6 +54,7 @@ const validateUserDetails = (prisma) => async (req, res) => {
             expires: new Date(Date.now() + 864000),
           })
         );
+
         res.status(200).json({ success: true, msg: "login success" });
       } else {
         console.log("incorrect");

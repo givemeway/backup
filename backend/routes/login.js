@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 import { validateUserDetails } from "../controllers/validateUserDetails.js";
 import { origin } from "../config/config.js";
-import { prismaUser } from "../config/prismaDBConfig.js";
 import dotenv from "dotenv";
 await dotenv.config();
 import csrf from "csurf";
@@ -21,6 +20,6 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/", validateUserDetails(prismaUser));
+router.post("/", validateUserDetails);
 
 export { router as login };

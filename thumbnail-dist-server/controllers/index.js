@@ -13,13 +13,19 @@ const s3client = new S3Client({
 });
 
 export const getSignedURL = async (req, res) => {
-  const { key, username } = req.query;
-  //   const username = req.user.Username;
-  const Key = `${username}/${key}`;
-  const command = new GetObjectCommand({
-    Bucket: process.env.BUCKET,
-    Key,
-  });
-  const signedURL = await getSignedUrl(s3client, command, { expiresIn: 3600 });
-  res.status(200).json(signedURL);
+  try {
+    const { key, username } = req.query;
+    const Key = `${username}/${key}`;
+    const command = new GetObjectCommand({
+      Bucket: process.env.BUCKET,
+      Key,
+    });
+    const signedURL = await getSignedUrl(s3client, command, {
+      expiresIn: 3600,
+    });
+    res.status(200).json(signedURL);
+  } catch (err) {
+    console.log(err);
+    res.status(404).json("Key Not found");
+  }
 };

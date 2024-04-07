@@ -46,6 +46,8 @@ import { origin } from "./config/config.js";
 import { createFolder } from "./routes/createFolder.js";
 import { getFileVersion } from "./routes/getFileVersion.js";
 import { PhotoPreviewURL } from "./routes/getPhotoPreviewURL.js";
+import { verifySession } from "./routes/verifySession.js";
+import { Logout } from "./routes/logout.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -114,6 +116,8 @@ try {
   app.use("/app/getFileVersion", getFileVersion);
   app.use("/app/getPhotos", getPhotos);
   app.use("/app/photopreview", PhotoPreviewURL);
+  app.use("/app/verifySession", verifySession);
+  app.use("/app/logout", Logout);
 } catch (err) {
   console.log(err);
 }
