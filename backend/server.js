@@ -48,6 +48,7 @@ import { getFileVersion } from "./routes/getFileVersion.js";
 import { PhotoPreviewURL } from "./routes/getPhotoPreviewURL.js";
 import { verifySession } from "./routes/verifySession.js";
 import { Logout } from "./routes/logout.js";
+import { DeleteShare } from "./routes/deleteShares.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -88,9 +89,9 @@ try {
 }
 
 try {
-  app.use("/app/login", login);
+  app.use("/app/user/login", login);
   app.use("/app/receiveFiles", receiveFiles);
-  app.use("/app/signup", signup);
+  app.use("/app/user/signup", signup);
   app.use("/app/browseFolder", getFilesSubfolders);
   app.use("/app/getSubFolders", subFolders);
   app.use("/app/getCurrentDirFiles", getCurrentDirFiles);
@@ -109,15 +110,16 @@ try {
   app.use("/app/trashBatch", getTrashBatch);
   app.use("/app/restoreTrashItems", restoreTrashItems);
   app.use("/app/get_download_zip", createDownloadURL);
-  app.use("/app/getSharedLinks", getSharedLinks);
-  app.use("/app/validateusername", validateUsername);
+  app.use("/app/sh/getSharedLinks", getSharedLinks);
+  app.use("/app/sh/deleteShare", DeleteShare);
+  app.use("/app/user/validateusername", validateUsername);
   app.use("/app/deleteTrashItems", deleteTrashItems);
   app.use("/app/createFolder", createFolder);
   app.use("/app/getFileVersion", getFileVersion);
   app.use("/app/getPhotos", getPhotos);
   app.use("/app/photopreview", PhotoPreviewURL);
-  app.use("/app/verifySession", verifySession);
-  app.use("/app/logout", Logout);
+  app.use("/app/user/verifySession", verifySession);
+  app.use("/app/user/logout", Logout);
 } catch (err) {
   console.log(err);
 }
