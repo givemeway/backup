@@ -134,6 +134,10 @@ const config = {
         "fromEnvVar": null,
         "value": "windows",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-1.1.x"
       }
     ],
     "previewFeatures": [],
@@ -159,8 +163,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\r\n  provider = \"prisma-client-js\"\r\n  output = \"../DB/prisma-client/users\"\r\n}\r\n\r\ndatasource db {\r\n  provider = \"postgresql\"\r\n  url      = env(\"DATABASE_URL_USER\")\r\n}\r\n\r\n\r\nmodel User {\r\n  id Int @id @default(autoincrement())\r\n  username String @unique @db.VarChar(70)\r\n  email String @db.VarChar(255)\r\n  password String @db.VarChar(255)\r\n  first_name String @db.VarChar(70)\r\n  last_name String @db.VarChar(70)\r\n  phone String @db.VarChar(20)\r\n  enc String @db.VarChar(64)\r\n\r\n}",
-  "inlineSchemaHash": "4d3d4c94b41b28bc8324899f81d8759042521a4170dcbb9ef359913c1f6bd197",
+  "inlineSchema": "generator client {\r\n  provider = \"prisma-client-js\"\r\n  output = \"../DB/prisma-client/users\"\r\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\"]\r\n}\r\n\r\ndatasource db {\r\n  provider = \"postgresql\"\r\n  url      = env(\"DATABASE_URL_USER\")\r\n}\r\n\r\n\r\nmodel User {\r\n  id Int @id @default(autoincrement())\r\n  username String @unique @db.VarChar(70)\r\n  email String @db.VarChar(255)\r\n  password String @db.VarChar(255)\r\n  first_name String @db.VarChar(70)\r\n  last_name String @db.VarChar(70)\r\n  phone String @db.VarChar(20)\r\n  enc String @db.VarChar(64)\r\n\r\n}",
+  "inlineSchemaHash": "4e8698bdc48b1ea88585a63b7b7d9676465d409c9f56964dc9a5c9b70964199d",
   "copyEngine": true
 }
 config.dirname = '/'
