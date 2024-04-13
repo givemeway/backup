@@ -42,6 +42,7 @@ const validateUserDetails = async (req, res) => {
           email,
         };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: 86400 });
+        const expiresInTimeStamp = Date.now() + 24 * 60 * 60 * 1000;
 
         res.setHeader(
           "Set-Cookie",
@@ -52,7 +53,7 @@ const validateUserDetails = async (req, res) => {
             path: "/",
             domain: domain,
             // expires: new Date(Date.now() + 864000),
-            expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+            expires: new Date(expiresInTimeStamp),
           })
         );
 
