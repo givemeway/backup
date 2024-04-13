@@ -27,7 +27,7 @@ import { getPhotos } from "./routes/getPhotos.js";
 import { validateShare } from "./routes/ValidateShare.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client } from "@aws-sdk/client-s3";
-import { cookieOpts } from "./config/config.js";
+import { cookieOpts, csrfCookieOpts } from "./config/config.js";
 import cors from "cors";
 
 import { Server } from "socket.io";
@@ -73,7 +73,7 @@ app.use(bodyparser.json({ limit: "50mb" }));
 app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(cors(corsOpts));
-app.use(csrf({ cookie: true }));
+app.use(csrf({ cookie: csrfCookieOpts }));
 // app.use((req, res, next) => {
 //   res.header("Access-Control-Allow-Origin", origin);
 //   res.header("Access-Control-Allow-Credentials", "true");

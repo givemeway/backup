@@ -31,6 +31,15 @@ export const cookieOpts = {
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
 };
 
+export const csrfCookieOpts = {
+  secure: false,
+  httpOnly: false,
+  // sameSite: "none",
+  path: "/",
+  domain: domain,
+  // expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+};
+
 export const {
   PORT,
   API_BASE_URL,
