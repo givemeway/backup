@@ -14,6 +14,14 @@ export const serverDomain = "https://backup-8toq.onrender.com";
 export const frontEndDomain = "https://qdrive.netlify.app";
 export const thumbnailMicroservice = "http://localhost:3003/api/v1/preview";
 
+export const corsOpts = {
+  origin: origin,
+  allowedHeaders: "Content-Type,X-CSRF-Token,Authorization,Origin",
+  exposedHeaders: "Set-Cookie",
+  methods: "OPTIONS, GET, POST, PUT, PATCH, DELETE",
+  credentials: true,
+};
+
 export const {
   PORT,
   API_BASE_URL,
