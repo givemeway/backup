@@ -74,14 +74,10 @@ app.use(csrf({ cookie: true }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", [
-    "OPTIONS",
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-  ]);
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
+    return res.status(200).json({});
+  }
   res.setHeader("Access-Control-Allow-Headers", [
     "Content-Type",
     "X-CSRF-Token",
