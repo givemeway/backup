@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
       httpOnly: true,
       sameSite: "none",
       path: "/",
-      domain: "netlify.app",
+      domain: domain,
       expires: new Date(expiresInTimeStamp),
     })
   );
