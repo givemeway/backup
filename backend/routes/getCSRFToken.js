@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
       sameSite: "none",
       path: "/",
       domain: "netlify.app",
-      expires: new Date(Date.now() + 86400),
+      expires: Date.now() + 24 * 60 * 60 * 1000,
     })
   );
   res.status(200).json({ CSRFToken });
