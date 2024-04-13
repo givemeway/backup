@@ -73,7 +73,7 @@ app.use(bodyparser.json({ limit: "50mb" }));
 app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(cors(corsOpts));
-app.use(csrf({ cookie: csrfCookieOpts }));
+app.use(csrf({ cookie: cookieOpts }));
 // app.use((req, res, next) => {
 //   res.header("Access-Control-Allow-Origin", origin);
 //   res.header("Access-Control-Allow-Credentials", "true");
