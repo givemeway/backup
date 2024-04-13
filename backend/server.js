@@ -72,19 +72,18 @@ app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(csrf({ cookie: true }));
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, X-CSRF-Token, Authorization, Origin"
+  );
+  res.header("Access-Control-Expose-Headers", "Set-Cookie");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
   if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
     return res.status(200).json({});
   }
-  res.setHeader("Access-Control-Allow-Headers", [
-    "Content-Type",
-    "X-CSRF-Token",
-    "Authorization",
-    "Origin",
-  ]);
-  res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
 
   next();
 });
