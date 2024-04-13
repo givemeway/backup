@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
-import { cookieOpts, domain } from "../config/config.js";
+import { cookieOpts } from "../config/config.js";
 import { JWT_SECRET } from "../config/config.js";
 import { createHash } from "node:crypto";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
@@ -41,9 +41,7 @@ const validateUserDetails = async (req, res) => {
           userID: id,
           email,
         };
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: 86400 });
-        const expiresInTimeStamp = Date.now() + 24 * 60 * 60 * 1000;
-
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", token, cookieOpts)

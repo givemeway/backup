@@ -27,7 +27,7 @@ import { getPhotos } from "./routes/getPhotos.js";
 import { validateShare } from "./routes/ValidateShare.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client } from "@aws-sdk/client-s3";
-import { cookieOpts, csrfCookieOpts } from "./config/config.js";
+import { cookieOpts } from "./config/config.js";
 import cors from "cors";
 
 import { Server } from "socket.io";
@@ -74,25 +74,6 @@ app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(cors(corsOpts));
 app.use(csrf({ cookie: cookieOpts }));
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", origin);
-//   res.header("Access-Control-Allow-Credentials", "true");
-
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Content-Type, X-CSRF-Token, Authorization, Origin"
-//   );
-//   res.header("Access-Control-Expose-Headers", "Set-Cookie");
-//   res.header(
-//     "Access-Control-Allow-Methods",
-//     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-//   );
-//   if (req.method === "OPTIONS") {
-//     return res.status(200).json({});
-//   }
-
-//   next();
-// });
 
 // https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript
 let s3Client;
