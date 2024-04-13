@@ -72,10 +72,15 @@ app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(csrf({ cookie: true }));
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+  );
+  res.setHeader(
     "Access-Control-Allow-Headers",
+    "Origin",
     "Content-Type,X-CSRF-Token,Authorization"
   );
   res.header("Access-Control-Expose-Headers", "Set-Cookie");
