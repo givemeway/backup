@@ -1,8 +1,13 @@
 import express from "express";
-const router = express.Router();
+import csrf from "csurf";
+import { cookieOpts } from "../config/config.js";
+
 import { createHash, randomFill } from "node:crypto";
 import { Buffer } from "node:buffer";
 import { prismaUser } from "../config/prismaDBConfig.js";
+
+const router = express.Router();
+router.use(csrf({ cookie: cookieOpts }));
 
 const generateEncKey = () => {
   return new Promise((resolve, reject) => {
