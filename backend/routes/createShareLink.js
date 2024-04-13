@@ -1,8 +1,7 @@
 import express from "express";
 const router = express.Router();
-import csrf from "csurf";
 
-import { frontEndDomain, origin } from "../config/config.js";
+import { frontEndDomain } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { Transfer, Share } from "../models/mongodb.js";
 import { prismaUser } from "../config/prismaDBConfig.js";
