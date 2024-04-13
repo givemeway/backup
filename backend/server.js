@@ -74,7 +74,10 @@ app.use(csrf({ cookie: true }));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type,X-CSRF-Token");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type,X-CSRF-Token,Authorization"
+  );
   res.header("Access-Control-Expose-Headers", "Set-Cookie");
 
   next();
