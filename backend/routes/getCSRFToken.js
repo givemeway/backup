@@ -1,6 +1,6 @@
 import express from "express";
 import cookie from "cookie";
-import { domain } from "../config/config";
+import { domain } from "../config/config.js";
 const router = express.Router();
 
 router.get("/", (req, res) => {
