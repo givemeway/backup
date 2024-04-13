@@ -74,16 +74,21 @@ app.use(csrf({ cookie: true }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
+  res.setHeader("Access-Control-Allow-Methods", [
+    "OPTIONS",
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+  ]);
+  res.setHeader("Access-Control-Allow-Headers", [
+    "Content-Type",
+    "X-CSRF-Token",
+    "Authorization",
     "Origin",
-    "Content-Type,X-CSRF-Token,Authorization"
-  );
-  res.header("Access-Control-Expose-Headers", "Set-Cookie");
+  ]);
+  res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
 
   next();
 });
