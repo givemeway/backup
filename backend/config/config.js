@@ -7,7 +7,7 @@ dotenv.config();
 // export const serverDomain = `http://localhost:3001`;
 // export const frontEndDomain = `http://localhost:3000`;
 // export const thumbnailMicroservice = "http://localhost:3003/api/v1/preview";
-export const domain = "netlify.app";
+export const domain = "https://qdrive.netlify.app";
 export const host_url = `http://${domain}`;
 export const origin = "https://qdrive.netlify.app";
 export const serverDomain = "https://backup-8toq.onrender.com";
