@@ -1,19 +1,8 @@
 import express from "express";
 const router = express.Router();
 import { v4 as uuidv4 } from "uuid";
-import { origin } from "../config/config.js";
-import csrf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { prisma } from "../config/prismaDBConfig.js";
-
-router.use(csrf({ cookie: true }));
-
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header("Access-Control-Expose-Headers", "Set-Cookie");
-  next();
-});
 
 router.post("/", verifyToken, async (req, res, next) => {
   const { subpath, folder } = req.query;

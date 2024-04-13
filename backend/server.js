@@ -49,6 +49,7 @@ import { PhotoPreviewURL } from "./routes/getPhotoPreviewURL.js";
 import { verifySession } from "./routes/verifySession.js";
 import { Logout } from "./routes/logout.js";
 import { DeleteShare } from "./routes/deleteShares.js";
+import csrf from "csurf";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -69,9 +70,15 @@ mongoose.Promise = global.Promise;
 app.use(bodyparser.json({ limit: "50mb" }));
 app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
+app.use(csrf({ cookie: true }));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Content-Type,X-CSRF-Token");
+  res.header("Access-Control-Expose-Headers", "Set-Cookie");
 
-// import csrf from "csurf";
-// router.use(csrf({ cookie: true }));
+  next();
+});
 
 // https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript
 let s3Client;

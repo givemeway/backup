@@ -1,21 +1,11 @@
 import express from "express";
 const router = express.Router();
-import csurf from "csurf";
-import { origin } from "../config/config.js";
+
 import { verifyToken } from "../auth/auth.js";
 import { Prisma, prisma } from "../config/prismaDBConfig.js";
 
 const singleFile = "singleFile";
 const bulk = "bulk";
-
-router.use(csurf({ cookie: true }));
-
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
-  next();
-});
 
 router.post("*", verifyToken, async (req, res) => {
   try {

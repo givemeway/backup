@@ -1,12 +1,9 @@
 import express from "express";
-import csrf from "csurf";
 import { verifyToken } from "../auth/auth.js";
-import { origin } from "../config/config.js";
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
 import { getSignedURls } from "../controllers/getSignedURLs.js";
 
 const router = express.Router();
-router.use(csrf({ cookie: true }));
 
 const getFiles = async (req, res, next) => {
   try {
@@ -106,17 +103,6 @@ const getFolders = async (req, res) => {
     res.json(500).json({ success: false, msg: err });
   }
 };
-
-router.use((req, res, next) => {
-  console.log("pre-flight");
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, currentdirectory,sortorder,username,devicename"
-  );
-  next();
-});
 
 router.get("/", verifyToken, getFiles, getFolders);
 

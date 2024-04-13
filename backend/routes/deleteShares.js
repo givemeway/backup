@@ -1,10 +1,7 @@
 import express from "express";
 const router = express.Router();
-import csrf from "csurf";
 import { Transfer, Share } from "../models/mongodb.js";
 import { verifyToken } from "../auth/auth.js";
-
-router.use(csrf({ cookie: true }));
 
 router.delete("/", verifyToken, async (req, res) => {
   const username = req.user.Username;

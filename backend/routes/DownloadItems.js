@@ -9,9 +9,7 @@ import { Worker } from "node:worker_threads";
 import { Readable } from "node:stream";
 import { DownloadZip } from "../models/mongodb.js";
 import { Prisma, prisma, prismaUser } from "../config/prismaDBConfig.js";
-await dotenv.config();
-
-router.use(csrf({ cookie: true }));
+dotenv.config();
 
 const getFilesInDirectory_promise = async (req, res) => {
   return new Promise(async (resolve, reject) => {
@@ -46,17 +44,6 @@ const getFilesInDirectory_promise = async (req, res) => {
     }
   });
 };
-
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.header(
-    "Acess-Control-Expose-Headers",
-    "Content-Disposition,Content-Length"
-  );
-  next();
-});
 
 const getFilesFoldersFromDownloadID = async (req, res, next) => {
   try {

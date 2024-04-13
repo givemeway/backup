@@ -112,7 +112,7 @@ const parseFile = async (req) => {
           });
 
           upload.on("error", (error) => {
-            console.log(error);
+            console.error(error);
             reject(error);
           });
           upload.on("uploaded", (details) => {
@@ -139,7 +139,7 @@ const parseFile = async (req) => {
               resolve(encryptedHash);
             })
             .catch((err) => {
-              console.log(err);
+              console.error(err);
               const payload = {
                 done: "failure",
                 data: err,
@@ -155,12 +155,13 @@ const parseFile = async (req) => {
       const form = formidable(options);
       form.parse(req, (err, fields, files) => {
         if (err) {
-          console.log(err);
+          console.error(err);
           reject(err);
           return;
         }
       });
     } catch (err) {
+      console.error(err);
       reject(err);
     }
   });
@@ -205,7 +206,7 @@ const uploadFile = async (req, res, next) => {
 
     next();
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ success: false, msg: err });
   }
 };

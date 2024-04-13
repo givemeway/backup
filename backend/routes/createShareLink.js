@@ -7,15 +7,6 @@ import { verifyToken } from "../auth/auth.js";
 import { Transfer, Share } from "../models/mongodb.js";
 import { prismaUser } from "../config/prismaDBConfig.js";
 
-router.use(csrf({ cookie: true }));
-
-router.use("/", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
-
 const createShareLink = async (req, res) => {
   const type = req.query.t;
   const folders = req.body.directories;

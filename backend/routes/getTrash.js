@@ -1,6 +1,4 @@
 import express from "express";
-import { origin } from "../config/config.js";
-import csurf from "csurf";
 import { verifyToken } from "../auth/auth.js";
 import { v4 as uuidv4 } from "uuid";
 import { Prisma, prisma } from "../config/prismaDBConfig.js";
@@ -12,15 +10,6 @@ const func = (total, item) => {
   const { count } = item;
   return total + count;
 };
-
-router.use(csurf({ cookie: true }));
-
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
 
 function batchSubFolderFiles(
   req,

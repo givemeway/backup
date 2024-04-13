@@ -1,8 +1,7 @@
 import express from "express";
 import { verifyToken } from "../auth/auth.js";
 import { uploadFile } from "../controllers/uploadFile.js";
-import { origin } from "../config/config.js";
-import csrf from "csurf";
+
 import { socketIO as io } from "../server.js";
 import { initiKafkaProducer } from "../utils/kafka.js";
 import mimetype from "mime-types";
@@ -10,25 +9,6 @@ import { imageTypes } from "../utils/utils.js";
 import { insert_file_and_directory } from "../controllers/insert_file_directory.js";
 import { insert_file_version } from "../controllers/insert_file_version.js";
 const router = express.Router();
-
-// https://www.turing.com/kb/build-secure-rest-api-in-nodejs
-
-// router.use(bodyParser.urlencoded({ extended: true }));
-
-// https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-pool
-// https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relational-databases/connect-your-database-typescript-postgresql
-
-router.use(csrf({ cookie: true }));
-
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type,Content-Disposition,Authorization,devicename,encchunkhash,enc_file_checksum,filemode,filename,dir,username,filestat,totalchunks,currentchunk"
-  );
-  next();
-});
 
 const update_file_directory_DB = async (req, res, next) => {
   const username = req.user.Username;

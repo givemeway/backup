@@ -4,17 +4,6 @@ import express from "express";
 import { JWT_SECRET, domain, origin } from "../config/config.js";
 const router = express.Router();
 
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type,X-CSRF-Token,Authorization"
-  );
-
-  next();
-});
-
 router.get("/", (req, res) => {
   const payload = { email: "", first: "", last: "", userID: "", Username: "" };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: -100 });

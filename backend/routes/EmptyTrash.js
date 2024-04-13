@@ -1,8 +1,6 @@
 import express from "express";
 const router = express.Router();
-import csurf from "csurf";
 import dotenv from "dotenv";
-import { origin } from "../config/config.js";
 import { s3Client } from "../server.js";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { pool } from "../server.js";
@@ -10,17 +8,7 @@ import { verifyToken } from "../auth/auth.js";
 dotenv.config();
 const BUCKET = process.env.BUCKET;
 
-router.use(csurf({ cookie: true }));
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
-
 router.get("/", verifyToken, async (req, res) => {
-  //   get all the items from the trash dB
-  //   delete all the items found in the trash off the s3 bucket
   try {
     const username = req.user.Username;
     const trashItemsQuery = `SELECT uuid FROM deleted_files.files WHERE username = ?`;

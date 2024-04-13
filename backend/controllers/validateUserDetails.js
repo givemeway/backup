@@ -11,7 +11,6 @@ const validateUserDetails = async (req, res) => {
   let username;
   let password;
   const usernametype = req.headers.usernametype;
-  console.log(usernametype);
   try {
     if (typeof encodedString === "string" && typeof usernametype === "string") {
       extractedUsernamePassword = atob(encodedString.split(" ")[1]);

@@ -1,11 +1,9 @@
 import express from "express";
 const router = express.Router();
-import csrf from "csurf";
-import { Prisma, prisma } from "../config/prismaDBConfig.js";
+import { prisma } from "../config/prismaDBConfig.js";
 import { Transfer, Share } from "../models/mongodb.js";
 import { verifyToken } from "../auth/auth.js";
 
-router.use(csrf({ cookie: true }));
 const getShareNames = async (shares) => {
   const items = [];
   for (let share of shares) {

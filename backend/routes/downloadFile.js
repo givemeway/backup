@@ -45,19 +45,6 @@ const file_format = {
   gif: "image/gif",
 };
 
-router.use(csrf({ cookie: true }));
-
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
-  res.header(
-    "Access-Control-Expose-Headers",
-    "Content-Disposition,Content-Length"
-  );
-  next();
-});
-
 router.get("/", verifyToken, async (req, res) => {
   try {
     const username = req.user.Username;

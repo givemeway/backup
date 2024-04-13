@@ -1,20 +1,11 @@
 import express from "express";
 const router = express.Router();
-import csrf from "csurf";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 import { Share, Transfer } from "../models/mongodb.js";
-import { domain, origin } from "../config/config.js";
-
-router.use(csrf({ cookie: true }));
-router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Expose-Headers", "Set-Cookie");
-  res.header("Access-Control-Allow-Methods", "GET");
-  next();
-});
+import { domain } from "../config/config.js";
 
 const validateShare = async (req, res, next) => {
   const { t, k, id } = req.query;
