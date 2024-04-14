@@ -78,6 +78,7 @@ let s3Client;
 try {
   const params = {
     endpoint: process.env.ENDPOINT_E2,
+    region: "in-bn",
     credentials: {
       secretAccessKey: process.env.SECRETKEY_E2,
       accessKeyId: process.env.ACCESSKEY_E2,

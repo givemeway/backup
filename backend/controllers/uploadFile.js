@@ -45,34 +45,6 @@ const generateRandomBytes = (len) => {
   });
 };
 
-const multerInstance = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      const device = req.headers.devicename;
-      const filePath = req.headers.dir;
-      // const userName = req.headers.username;
-      const userName = req.user.Username;
-
-      return cb(null, path.join(`${root}/${userName}`, "/"));
-
-      // return cb(null, path.join(`${root}/${userName}`, device, filePath));
-    },
-    filename: (req, file, cb) => {
-      const fileStat = JSON.parse(req.headers.filestat);
-      let filename = req.headers.filename;
-      if (fileStat.modified === true) {
-        // filename = `${filename}$$$${fileStat.checksum}$$$NA`;
-        req.headers.uuid_new = req.headers.uuid;
-        req.headers.uuid = fileStat.uuid;
-        return cb(null, req.headers.uuid_new);
-      }
-      return cb(null, req.headers.uuid);
-
-      // return cb(null, filename);
-    },
-  }),
-});
-
 const parseFile = async (req) => {
   return new Promise(async (resolve, reject) => {
     try {
