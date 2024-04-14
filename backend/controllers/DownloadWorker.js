@@ -1,6 +1,4 @@
-import path from "node:path";
 import archiver from "archiver";
-import fs from "node:fs";
 import dotenv from "dotenv";
 import { decryptFile } from "../utils/decrypt.js";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
@@ -13,7 +11,7 @@ const BUCKET = process.env.BUCKET;
 let s3Client;
 try {
   s3Client = new S3Client({
-    // region: process.env.REGION,
+    region: process.env.REGION_E2,
     endpoint: process.env.ENDPOINT_E2,
     credentials: {
       secretAccessKey: process.env.SECRETKEY_E2,
@@ -32,15 +30,8 @@ const addFilesToArchive = (file, enc, archive) => {
         Key: file.key,
       });
       const data = await s3Client.send(command);
-      // const inputFile = fs.createReadStream(file.path);
-
       const fileStream = await decryptFile(data.Body, file.salt, file.iv, enc);
-      // inputFile.on("error", (err) => {
-      //   console.error(err);
-      //   reject(err);
-      // });
       fileStream.on("end", () => {
-        // inputFile.destroy();
         resolve();
       });
 
@@ -69,10 +60,8 @@ const archiveDirectoriesAndFiles = async (files, enc, port) => {
   });
   archive.on("warning", function (err) {
     if (err.code === "ENOENT") {
-      // log warning
       console.error(err);
     } else {
-      // throw error
       console.error(err);
     }
   });

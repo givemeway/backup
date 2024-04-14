@@ -85,10 +85,6 @@ try {
     },
   };
   s3Client = new S3Client(params);
-  console.log("*************** params *********************");
-  console.log(params);
-  console.log("*************** params *********************");
-  console.log(s3Client);
 } catch (err) {
   console.error(err);
 }
