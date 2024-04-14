@@ -12,7 +12,8 @@ export const host_url = `http://${domain}`;
 export const origin = "https://qdrive.space";
 export const serverDomain = "https://api.qdrive.space";
 export const frontEndDomain = "https://qdrive.space";
-export const thumbnailMicroservice = "http://localhost:3003/api/v1/preview";
+export const thumbnailMicroservice =
+  "https://imageprocessing-xd2d.onrender.com";
 
 export const corsOpts = {
   origin: origin,
