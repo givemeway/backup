@@ -1,6 +1,8 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../database/prisma-client"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
+
 }
 
 datasource db {
