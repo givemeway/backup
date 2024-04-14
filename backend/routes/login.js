@@ -5,7 +5,7 @@ const router = express.Router();
 
 import { validateUserDetails } from "../controllers/validateUserDetails.js";
 
-// router.use(csrf({ cookie: cookieOpts }));
+router.use(csrf({ cookie: cookieOpts }));
 router.post("/", validateUserDetails);
 
 export { router as login };

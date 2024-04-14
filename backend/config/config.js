@@ -16,7 +16,8 @@ export const thumbnailMicroservice = "http://localhost:3003/api/v1/preview";
 
 export const corsOpts = {
   origin: origin,
-  allowedHeaders: "Content-Type,X-CSRF-Token,Authorization,Origin",
+  allowedHeaders:
+    "Content-Type,X-CSRF-Token,Authorization,Origin,filename,dir,devicename,Content-Disposition,filestat,currentdirectory,start,end,backuptype",
   exposedHeaders: "Set-Cookie",
   methods: "OPTIONS, GET, POST, PUT, PATCH, DELETE",
   credentials: true,
