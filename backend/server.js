@@ -76,16 +76,20 @@ app.use(cors(corsOpts));
 // https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript
 let s3Client;
 try {
-  s3Client = new S3Client({
-    // region: process.env.REGION,
+  const params = {
     endpoint: process.env.ENDPOINT_E2,
     credentials: {
       secretAccessKey: process.env.SECRETKEY_E2,
       accessKeyId: process.env.ACCESSKEY_E2,
     },
-  });
+  };
+  s3Client = new S3Client(params);
+  console.log("*************** params *********************");
+  console.log(params);
+  console.log("*************** params *********************");
+  console.log(s3Client);
 } catch (err) {
-  console.log(err);
+  console.error(err);
 }
 
 try {

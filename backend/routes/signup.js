@@ -7,7 +7,7 @@ import { Buffer } from "node:buffer";
 import { prismaUser } from "../config/prismaDBConfig.js";
 
 const router = express.Router();
-router.use(csrf({ cookie: cookieOpts }));
+// router.use(csrf({ cookie: cookieOpts }));
 
 const generateEncKey = () => {
   return new Promise((resolve, reject) => {
