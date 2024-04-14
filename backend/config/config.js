@@ -6,14 +6,13 @@ dotenv.config();
 // export const origin = `${host_url}:3000`;
 // export const serverDomain = `http://localhost:3001`;
 // export const frontEndDomain = `http://localhost:3000`;
-// export const thumbnailMicroservice = "http://localhost:3003/api/v1/preview";
 export const domain = "qdrive.space";
 export const host_url = `http://${domain}`;
 export const origin = "https://qdrive.space";
 export const serverDomain = "https://api.qdrive.space";
 export const frontEndDomain = "https://qdrive.space";
 export const thumbnailMicroservice =
-  "https://thumbnail-dist-server.onrender.com";
+  "https://thumbnail-dist-server.onrender.com/api/v1/preview";
 
 export const corsOpts = {
   origin: origin,
