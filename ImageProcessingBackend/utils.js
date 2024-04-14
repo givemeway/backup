@@ -22,7 +22,7 @@ const dstBucket = process.env.BUCKET_PROCESSED_IMAGES;
 
 try {
   s3Client = new S3Client({
-    // region: process.env.REGION,
+    region: process.env.REGION_E2,
     endpoint: process.env.ENDPOINT_E2,
     credentials: {
       accessKeyId: process.env.ACCESSKEY_E2,
