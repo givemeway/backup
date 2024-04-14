@@ -51,7 +51,6 @@ import { PhotoPreviewURL } from "./routes/getPhotoPreviewURL.js";
 import { verifySession } from "./routes/verifySession.js";
 import { Logout } from "./routes/logout.js";
 import { DeleteShare } from "./routes/deleteShares.js";
-import csrf from "csurf";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
