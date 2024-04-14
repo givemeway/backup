@@ -22,7 +22,7 @@ const getSignedURL = async (uuid, username, widths = ["32w"]) =>
       }
       resolve(signedURLs);
     } catch (err) {
-      console.err(err);
+      console.error(err);
       reject(err);
     }
   });
