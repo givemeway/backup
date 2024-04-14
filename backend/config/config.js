@@ -13,7 +13,7 @@ export const origin = "https://qdrive.space";
 export const serverDomain = "https://api.qdrive.space";
 export const frontEndDomain = "https://qdrive.space";
 export const thumbnailMicroservice =
-  "https://imageprocessing-xd2d.onrender.com";
+  "https://thumbnail-dist-server.onrender.com";
 
 export const corsOpts = {
   origin: origin,
