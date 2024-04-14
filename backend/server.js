@@ -27,7 +27,6 @@ import { getPhotos } from "./routes/getPhotos.js";
 import { validateShare } from "./routes/ValidateShare.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client } from "@aws-sdk/client-s3";
-import { cookieOpts } from "./config/config.js";
 import cors from "cors";
 
 import { Server } from "socket.io";
@@ -78,7 +77,7 @@ let s3Client;
 try {
   const params = {
     endpoint: process.env.ENDPOINT_E2,
-    region: "in-bn",
+    region: process.env.REGION_E2,
     credentials: {
       secretAccessKey: process.env.SECRETKEY_E2,
       accessKeyId: process.env.ACCESSKEY_E2,

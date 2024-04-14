@@ -25,6 +25,11 @@ try {
 const addFilesToArchive = (file, enc, archive) => {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log({
+        Bucket: BUCKET,
+        Key: file.key,
+        file,
+      });
       const command = new GetObjectCommand({
         Bucket: BUCKET,
         Key: file.key,
@@ -36,6 +41,7 @@ const addFilesToArchive = (file, enc, archive) => {
       });
 
       fileStream.on("error", (err) => {
+        console.error(err);
         reject(err);
       });
 
@@ -44,6 +50,7 @@ const addFilesToArchive = (file, enc, archive) => {
         prefix: file.relativePath,
       });
     } catch (err) {
+      console.error(err);
       reject(err);
     }
   });
