@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 import csrf from "csurf";
 
-import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { DownloadZip } from "../models/mongodb.js";
 

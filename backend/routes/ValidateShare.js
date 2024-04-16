@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 import { Share, Transfer } from "../models/mongodb.js";
-import { domain } from "../config/config.js";
+import { DOMAIN } from "../config/config.js";
 
 const validateShare = async (req, res, next) => {
   const { t, k, id } = req.query;
@@ -40,7 +40,7 @@ const validateShare = async (req, res, next) => {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        domain: domain,
+        domain: DOMAIN,
         expires: new Date(time_start + time_diff),
       };
       res.setHeader("Set-Cookie", cookie.serialize("share", token, opts));

@@ -1,6 +1,5 @@
 import express from "express";
 const router = express.Router();
-import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { decryptFile } from "../utils/decrypt.js";
 import dotenv from "dotenv";
@@ -10,7 +9,6 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "../server.js";
 import { prisma, prismaUser } from "../config/prismaDBConfig.js";
 
-const root = process.env.VARIABLE;
 const BUCKET = process.env.BUCKET;
 
 const file_format = {

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
 import express from "express";
-import { JWT_SECRET, domain, origin } from "../config/config.js";
+import { JWT_SECRET, DOMAIN } from "../config/config.js";
 const router = express.Router();
 
 router.get("/", (req, res) => {
@@ -15,7 +15,7 @@ router.get("/", (req, res) => {
       httpOnly: true,
       sameSite: "none",
       path: "/",
-      domain: domain,
+      domain: DOMAIN,
       expires: new Date(Date.now() + 864000),
     })
   );

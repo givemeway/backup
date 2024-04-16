@@ -2,14 +2,14 @@ import express from "express";
 import csrf from "csurf";
 const router = express.Router();
 
-import { origin } from "../config/config.js";
+import { ORIGIN } from "../config/config.js";
 
 import { prismaUser } from "../config/prismaDBConfig.js";
 
 router.use(csrf({ cookie: true }));
 
 router.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Origin", ORIGIN);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",

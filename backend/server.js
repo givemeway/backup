@@ -43,7 +43,7 @@ import path, { dirname } from "path";
 import { share } from "./routes/share.js";
 import { moveItemsV2 } from "./routes/MoveItemsV2.js";
 import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
-import { corsOpts, origin } from "./config/config.js";
+import { ORIGIN, corsOpts } from "./config/config.js";
 import { createFolder } from "./routes/createFolder.js";
 import { getFileVersion } from "./routes/getFileVersion.js";
 import { PhotoPreviewURL } from "./routes/getPhotoPreviewURL.js";
@@ -160,7 +160,7 @@ server.listen(PORT, (err) => {
   }
 });
 
-const opts = { cors: { origin: origin } };
+const opts = { cors: { origin: ORIGIN } };
 
 const socketIO = new Server(server, opts);
 

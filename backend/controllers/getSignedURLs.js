@@ -1,4 +1,4 @@
-import { thumbnailMicroservice } from "../config/config.js";
+import { THUMBNAIL_MS } from "../config/config.js";
 import { imageTypes } from "../utils/utils.js";
 import mimetype from "mime-types";
 import axios from "axios";
@@ -30,7 +30,7 @@ export const getSignedURls = async (files, username, width = "_32w") => {
   for (let i = 0; i < images.length; i++) {
     try {
       const key = images[i].uuid + width;
-      const url = `${thumbnailMicroservice}?key=${key}&username=${username}`;
+      const url = `${THUMBNAIL_MS}?key=${key}&username=${username}`;
       const response = await axios.get(url, headers);
       images[i].signedURL = response.data;
     } catch (err) {

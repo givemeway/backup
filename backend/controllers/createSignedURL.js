@@ -1,4 +1,4 @@
-import { thumbnailMicroservice } from "../config/config.js";
+import { THUMBNAIL_MS } from "../config/config.js";
 import axios from "axios";
 import { prisma } from "../config/prismaDBConfig.js";
 
@@ -8,7 +8,7 @@ const getSignedURL = async (uuid, username, widths = ["32w"]) =>
       let URLs = [];
       widths.forEach((width) => {
         const key = uuid + "_" + width;
-        const url = `${thumbnailMicroservice}?key=${key}&username=${username}`;
+        const url = `${THUMBNAIL_MS}?key=${key}&username=${username}`;
         URLs.push([url, width]);
       });
       const headers = {
@@ -31,7 +31,8 @@ export const createSignedURL = async (req, res) => {
   try {
     const { path, filename } = req.query;
     const username = req.user.Username;
-    console.log(path, filename);
+    console.log(path);
+    console.log(filename);
     console.log(username);
     const dir = await prisma.directory.findFirst({
       where: {

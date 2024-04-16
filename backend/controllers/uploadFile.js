@@ -1,10 +1,7 @@
-import multer from "multer";
-import express from "express";
-import path from "path";
 import formidable from "formidable";
 import dotenv from "dotenv";
-await dotenv.config();
-const router = express.Router();
+dotenv.config();
+
 import { Upload } from "@aws-sdk/lib-storage";
 import { s3Client } from "../server.js";
 import { PassThrough } from "stream";
@@ -15,10 +12,7 @@ import { encryptFile } from "../utils/encrypt.js";
 import mime from "mime-types";
 import { prismaUser } from "../config/prismaDBConfig.js";
 
-const root = process.env.VARIABLE;
 const BUCKET = process.env.BUCKET;
-
-const SIZES = [32, 64, 128, 256, 480, 640, 900];
 
 const arrayBufferToHex = (buffer) => {
   return [...new Uint8Array(buffer)]

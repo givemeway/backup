@@ -3,7 +3,6 @@ const router = express.Router();
 import path from "node:path";
 import csrf from "csurf";
 import dotenv from "dotenv";
-import { origin } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
 import { Worker } from "node:worker_threads";
 import { Readable } from "node:stream";
