@@ -5,7 +5,7 @@ import { getSubFolders } from "../controllers/getSubFolders.js";
 const router = express.Router();
 
 const getFolders = async (req, res, next) => {
-  let path = req.headers.path;
+  const path = req.query.path;
   const username = req.user.Username;
   let data = {};
   const rows = await getSubFolders(path, username);
@@ -14,6 +14,6 @@ const getFolders = async (req, res, next) => {
   res.json(data);
 };
 
-router.post("/", verifyToken, getFolders);
+router.get("/", verifyToken, getFolders);
 
 export { router as subFolders };

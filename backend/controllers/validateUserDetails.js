@@ -6,14 +6,6 @@ import { createHash } from "node:crypto";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
 
 const validateUserDetails = async (req, res) => {
-  console.log("------------cookies --------------------------");
-  console.log(req.cookies);
-  console.log("------------cookies --------------------------");
-  console.log("------------X-cSRF-token --------------------------");
-
-  console.log(req.headers["X-CSRF-Token"]);
-  console.log("------------X-cSRF-token --------------------------");
-
   let encodedString = req.headers.authorization;
   let extractedUsernamePassword;
   let username;
@@ -39,6 +31,7 @@ const validateUserDetails = async (req, res) => {
           email: true,
         },
       });
+      console.log(returnedUser);
 
       if (returnedUser !== null) {
         const { username, first_name, last_name, id, email } = returnedUser;
@@ -50,6 +43,8 @@ const validateUserDetails = async (req, res) => {
           email,
         };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+        console.log(token);
+        console.log(cookieOpts);
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", token, cookieOpts)

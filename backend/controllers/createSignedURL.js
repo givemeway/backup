@@ -2,7 +2,7 @@ import { THUMBNAIL_MS } from "../config/config.js";
 import axios from "axios";
 import { prisma } from "../config/prismaDBConfig.js";
 
-const getSignedURL = async (uuid, username, widths = ["32w"]) =>
+export const getSignedURL = async (uuid, username, widths = ["32w"]) =>
   new Promise(async (resolve, reject) => {
     try {
       let URLs = [];

@@ -6,7 +6,6 @@ import axios from "axios";
 const headers = {
   headers: { "Content-Type": "application/json" },
 };
-console.log(THUMBNAIL_MS);
 
 export const getSignedURls = async (files, username, width = "_32w") => {
   const images = files.filter((file) => {

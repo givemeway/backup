@@ -25,11 +25,6 @@ try {
 const addFilesToArchive = (file, enc, archive) => {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log({
-        Bucket: BUCKET,
-        Key: file.key,
-        file,
-      });
       const command = new GetObjectCommand({
         Bucket: BUCKET,
         Key: file.key,

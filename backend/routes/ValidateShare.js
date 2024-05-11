@@ -4,15 +4,21 @@ import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-import { Share, Transfer } from "../models/mongodb.js";
+import { Transfer, FileShare, FolderShare } from "../models/mongodb.js";
 import { DOMAIN } from "../config/config.js";
+import { prisma } from "../config/prismaDBConfig.js";
 
 const validateShare = async (req, res, next) => {
   const { t, k, id } = req.query;
 
   try {
     if (t === "fi" || t === "fo") {
-      const share = await Share.findById({ _id: id }).exec();
+      let share = null;
+      if (t === "fi") {
+        share = await FileShare.findById({ _id: id }).exec();
+      } else if (t === "fo") {
+        share = await FolderShare.findById({ _id: id }).exec();
+      }
       if (!share) {
         res
           .status(404)
@@ -44,9 +50,36 @@ const validateShare = async (req, res, next) => {
         expires: new Date(time_start + time_diff),
       };
       res.setHeader("Set-Cookie", cookie.serialize("share", token, opts));
-      res.status(200).json({ success: true });
+      let name = "";
+      if (t === "fo") {
+        const { folder } = await prisma.directory.findFirst({
+          where: {
+            username: share.owner,
+            uuid: share.uuid,
+          },
+          select: {
+            folder: true,
+          },
+        });
+        name = folder;
+      } else if (t === "fi") {
+        const { filename } = await prisma.file.findFirst({
+          where: {
+            username: share.owner,
+            uuid: share.uuid,
+          },
+          select: {
+            filename: true,
+          },
+        });
+        name = filename;
+      }
+      res.status(200).json({ success: true, sharedBy: share.sharedBy, name });
     } else if (t === "t") {
+      console.log("validate transfer ");
       const share = await Transfer.findById({ _id: id }).exec();
+      const fileCount = Array.from(share.files).length;
+      const folderCount = Array.from(share.folders).length;
       if (!share) {
         return res
           .status(404)
@@ -73,11 +106,15 @@ const validateShare = async (req, res, next) => {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        domain: domain,
+        domain: DOMAIN,
         expires: new Date(time_start + time_diff),
       };
       res.setHeader("Set-Cookie", cookie.serialize("share", token, opts));
-      res.status(200).json({ success: true });
+      res.status(200).json({
+        success: true,
+        sharedBy: share.sharedBy,
+        name: fileCount + folderCount,
+      });
     }
   } catch (err) {
     console.log(err);

@@ -28,6 +28,7 @@ import { validateShare } from "./routes/ValidateShare.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client } from "@aws-sdk/client-s3";
 import cors from "cors";
+import csrf from "csurf";
 
 import { Server } from "socket.io";
 
@@ -43,13 +44,14 @@ import path, { dirname } from "path";
 import { share } from "./routes/share.js";
 import { moveItemsV2 } from "./routes/MoveItemsV2.js";
 import { deleteTrashItems } from "./routes/DeleteTrashItems.js";
-import { ORIGIN, corsOpts } from "./config/config.js";
+import { ORIGIN, cookieOpts, corsOpts } from "./config/config.js";
 import { createFolder } from "./routes/createFolder.js";
 import { getFileVersion } from "./routes/getFileVersion.js";
 import { PhotoPreviewURL } from "./routes/getPhotoPreviewURL.js";
 import { verifySession } from "./routes/verifySession.js";
 import { Logout } from "./routes/logout.js";
 import { DeleteShare } from "./routes/deleteShares.js";
+import { copyShare } from "./routes/copyShare.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -71,6 +73,7 @@ app.use(bodyparser.json({ limit: "50mb" }));
 app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(cors(corsOpts));
+app.use(csrf({ cookie: cookieOpts }));
 
 // https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript
 let s3Client;
@@ -100,7 +103,7 @@ try {
   app.use("/app/csrftoken", csrftoken);
   app.use("/app/delete", deleteItems);
   app.use("/app/downloadItems", downloadItems);
-  app.use("/app/createShare", createShare);
+  app.use("/app/sh/createShare", createShare);
   app.use("/app/sh", share);
   app.use("/app/sh/validate", validateShare);
   app.use("/app/v2/moveItems", moveItemsV2);
@@ -112,6 +115,7 @@ try {
   app.use("/app/get_download_zip", createDownloadURL);
   app.use("/app/sh/getSharedLinks", getSharedLinks);
   app.use("/app/sh/deleteShare", DeleteShare);
+  app.use("/app/sh/copyshare", copyShare);
   app.use("/app/user/validateusername", validateUsername);
   app.use("/app/deleteTrashItems", deleteTrashItems);
   app.use("/app/createFolder", createFolder);
@@ -162,7 +166,7 @@ server.listen(PORT, (err) => {
 
 const opts = { cors: { origin: ORIGIN } };
 
-const socketIO = new Server(server, opts);
+const socketIO = new Server(server, { cors: corsOpts });
 
 socketIO.on("connection", (socket) => {
   console.log("Connected to Client: ", socket.id);

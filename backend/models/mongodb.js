@@ -39,6 +39,34 @@ const shareSchema = new Schema({
   },
 });
 
+const fileShareSchema = new Schema({
+  owner: String,
+  sharedBy: String,
+  sharedWith: { type: Map },
+  password: { type: String, default: "" },
+  item: String,
+  uuid: String,
+  created_at: { type: Date, default: Date.now },
+  expires_at: {
+    type: Date,
+    default: () => Date.now() + 7 * 24 * 60 * 60 * 1000,
+  },
+});
+
+const folderShareSchema = new Schema({
+  owner: String,
+  sharedBy: String,
+  sharedWith: { type: Map },
+  password: { type: String, default: "" },
+  item: String,
+  uuid: String,
+  created_at: { type: Date, default: Date.now },
+  expires_at: {
+    type: Date,
+    default: () => Date.now() + 7 * 24 * 60 * 60 * 1000,
+  },
+});
+
 const fileDownloadSchema = new Schema({
   uuid: String,
   file: String,
@@ -81,7 +109,9 @@ const imageSchema = new Schema({
 
 const Transfer = model("Transfers", transferSchema, "transfers");
 const Share = model("Shares", shareSchema, "shares");
+const FileShare = model("FileShares", fileShareSchema, "fileshares");
+const FolderShare = model("FolderShares", folderShareSchema, "folderShares");
 const DownloadZip = model("Downloads", downloadZipSchema, "downloads");
 const Image = model("Images", imageSchema, "images");
 
-export { Share, Transfer, DownloadZip, Image };
+export { Share, Transfer, DownloadZip, Image, FileShare, FolderShare };

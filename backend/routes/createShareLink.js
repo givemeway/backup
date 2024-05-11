@@ -3,7 +3,7 @@ const router = express.Router();
 
 import { FRONTEND_DOMAIN } from "../config/config.js";
 import { verifyToken } from "../auth/auth.js";
-import { Transfer, Share } from "../models/mongodb.js";
+import { Transfer, FileShare, FolderShare } from "../models/mongodb.js";
 import { prismaUser } from "../config/prismaDBConfig.js";
 
 const createShareLink = async (req, res) => {
@@ -48,7 +48,7 @@ const createShareLink = async (req, res) => {
     try {
       obj.uuid = Object.keys(mapFiles)[0];
       obj.item = "fi";
-      const fi = await Share.findOneAndUpdate(
+      const fi = await FileShare.findOneAndUpdate(
         { uuid: obj.uuid },
         {
           created_at: Date.now(),
@@ -56,7 +56,7 @@ const createShareLink = async (req, res) => {
         }
       );
       if (fi === null) {
-        const data = await Share.create(obj);
+        const data = await FileShare.create(obj);
         success_msg.url = `${FRONTEND_DOMAIN}/sh/fi/${data._id.toString()}/${
           mapFiles[obj.uuid]
         }?k=${obj.uuid}&dl=0`;
@@ -75,7 +75,7 @@ const createShareLink = async (req, res) => {
     try {
       obj.uuid = Object.keys(mapFolders)[0];
       obj.item = "fo";
-      const fo = await Share.findOneAndUpdate(
+      const fo = await FolderShare.findOneAndUpdate(
         { uuid: obj.uuid },
         {
           created_at: Date.now(),
@@ -83,7 +83,7 @@ const createShareLink = async (req, res) => {
         }
       );
       if (fo === null) {
-        const data = await Share.create(obj);
+        const data = await FolderShare.create(obj);
         success_msg.url = `${FRONTEND_DOMAIN}/sh/fo/${data._id.toString()}/h?k=${
           obj.uuid
         }&dl=0`;
