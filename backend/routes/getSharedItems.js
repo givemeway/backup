@@ -79,14 +79,15 @@ router.get("/", verifyToken, async (req, res) => {
     let count = 0;
     let shares = [];
     if (type === "fi") {
-      count = await FileShare.count();
+      count = await FileShare.count({ owner: username });
       const fileShares = await FileShare.find({ owner: username })
         .sort({ created_at: 1 })
         .skip(skip)
         .limit(limit);
       shares = await getShareNames(fileShares);
     } else if (type === "fo") {
-      count = await FolderShare.count();
+      count = await FolderShare.count({ owner: username });
+      console.log(count);
       const folderShares = await FolderShare.find({ owner: username })
         .sort({ created_at: 1 })
         .skip(skip)
@@ -94,7 +95,7 @@ router.get("/", verifyToken, async (req, res) => {
       shares = await getShareNames(folderShares);
       console.log(shares);
     } else if (type === "t") {
-      count = await Transfer.count();
+      count = await Transfer.count({ owner: username });
       const transfers = await Transfer.find({ owner: username })
         .sort({ created_at: 1 })
         .skip(skip)

@@ -20,11 +20,12 @@ router.get("/", verifyToken, async (req, res) => {
       filename: true,
       last_modified: true,
       uuid: true,
+      directory: true,
+      device: true,
     },
   });
 
   const photos_256w = await getSignedURls(photos, username, "_900w");
-
   const allPhotos = [...photos_256w];
   res.status(200).json(allPhotos);
 });

@@ -16,13 +16,13 @@ export const getSignedURL = async (uuid, username, widths = ["32w"]) =>
       };
       let signedURLs = {};
       for (const url of URLs) {
+        console.log(url);
         const response = await axios.get(url[0], headers);
         const signedURL = response.data;
         signedURLs[url[1]] = signedURL;
       }
       resolve(signedURLs);
     } catch (err) {
-      console.error(err);
       reject(err);
     }
   });
@@ -30,10 +30,8 @@ export const getSignedURL = async (uuid, username, widths = ["32w"]) =>
 export const createSignedURL = async (req, res) => {
   try {
     const { path, filename } = req.query;
+    console.log("create Signed URL-->", path, filename);
     const username = req.user.Username;
-    console.log(path);
-    console.log(filename);
-    console.log(username);
     const dir = await prisma.directory.findFirst({
       where: {
         username,
@@ -60,10 +58,13 @@ export const createSignedURL = async (req, res) => {
       return res.status(404).json("Image not found");
     }
     const widths = ["640w", "900w", "1280w", "2048w"];
-    const URLs = await getSignedURL(uuid, username, widths);
-    res.status(200).json(URLs);
+    if (uuid) {
+      const URLs = await getSignedURL(uuid, username, widths);
+      res.status(200).json(URLs);
+    } else {
+      return res.status(404).json("Image not found");
+    }
   } catch (err) {
-    console.log(err);
     res.json(500).json({ err });
   }
 };
