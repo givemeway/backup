@@ -54,8 +54,11 @@ const getShareNames = async (shares) => {
 };
 
 const getNameItem = (t) => {
+  console.log(t);
   const fi = Array.from(t.files);
   const fo = Array.from(t.folders);
+  console.log(fo);
+  console.log(fi);
   if (fo.length > 0) {
     return {
       name: `${fo[0][1]} & ${fo.length - 1 + fi.length} more`,
@@ -96,6 +99,7 @@ router.get("/", verifyToken, async (req, res) => {
       console.log(shares);
     } else if (type === "t") {
       count = await Transfer.count({ owner: username });
+      console.log(count);
       const transfers = await Transfer.find({ owner: username })
         .sort({ created_at: 1 })
         .skip(skip)

@@ -104,6 +104,8 @@ const createShareLink = async (req, res) => {
       obj.folders = mapFolders;
       const data = await Transfer.create(obj);
       success_msg.url = `${FRONTEND_DOMAIN}/sh/t/${data._id.toString()}`;
+      console.log(success_msg);
+      console.log(obj);
       res.status(200).json(success_msg);
     } catch (err) {
       console.log(err);

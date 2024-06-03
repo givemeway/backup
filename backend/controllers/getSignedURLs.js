@@ -34,7 +34,7 @@ export const getSignedURls = async (files, username, width = "_32w") => {
       const response = await axios.get(url, headers);
       images[i].signedURL = response.data;
     } catch (err) {
-      console.error(err);
+      console.log("<<< ", url, " >>>>");
     }
   }
   let allFiles = [];
