@@ -54,20 +54,23 @@ const getShareNames = async (shares) => {
 };
 
 const getNameItem = (t) => {
-  console.log(t);
   const fi = Array.from(t.files);
   const fo = Array.from(t.folders);
-  console.log(fo);
-  console.log(fi);
   if (fo.length > 0) {
     return {
       name: `${fo[0][1]} & ${fo.length - 1 + fi.length} more`,
       item: "t",
       display: "fo",
     };
-  } else {
+  } else if (fi.length > 0) {
     return {
       name: `${fi[0][1]} & ${fi.length - 1} more`,
+      item: "t",
+      display: "fi",
+    };
+  } else {
+    return {
+      name: `0 or more`,
       item: "t",
       display: "fi",
     };
@@ -78,7 +81,6 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const username = req.user.Username;
     const { skip, limit, type } = req.query;
-    console.log(skip, limit, type);
     let count = 0;
     let shares = [];
     if (type === "fi") {
@@ -90,16 +92,13 @@ router.get("/", verifyToken, async (req, res) => {
       shares = await getShareNames(fileShares);
     } else if (type === "fo") {
       count = await FolderShare.count({ owner: username });
-      console.log(count);
       const folderShares = await FolderShare.find({ owner: username })
         .sort({ created_at: 1 })
         .skip(skip)
         .limit(limit);
       shares = await getShareNames(folderShares);
-      console.log(shares);
     } else if (type === "t") {
       count = await Transfer.count({ owner: username });
-      console.log(count);
       const transfers = await Transfer.find({ owner: username })
         .sort({ created_at: 1 })
         .skip(skip)
