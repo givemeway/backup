@@ -46,6 +46,7 @@ const update_file_directory_DB = async (req, res, next) => {
   } else {
     path = "/" + device + "/" + directory;
   }
+  req.filePath = path;
 
   const insertData = {
     username,
@@ -99,7 +100,7 @@ const update_file_directory_DB = async (req, res, next) => {
 
 const triggerImageProcessingMS = async (req, res) => {
   console.log("sent!!!");
-  const payload = { name: req.name, id: req.id };
+  const payload = { name: req.name, id: req.id, path: req.filePath };
   io.to(req.socket_main_id).emit("done", { payload });
 
   try {
@@ -118,9 +119,10 @@ const triggerImageProcessingMS = async (req, res) => {
       }
     }
   } catch (err) {
-    console.error(err);
+    console.log(err);
+    return res.status(500).json(`file ${req.headers.filename} received`);
   }
-  res.status(200).json(`file ${req.headers.filename} received`);
+  return res.status(200).json(`file ${req.headers.filename} received`);
 };
 
 router.post(
