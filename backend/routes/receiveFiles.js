@@ -93,17 +93,15 @@ const update_file_directory_DB = async (req, res, next) => {
     }
     next();
   } catch (err) {
-    console.error(err);
     res.status(500).json(err?.meta);
   }
 };
 
 const triggerImageProcessingMS = async (req, res) => {
-  console.log("sent!!!");
-  const payload = { name: req.name, id: req.id, path: req.filePath };
-  io.to(req.socket_main_id).emit("done", { payload });
-
   try {
+    console.log("sent!!!");
+    const payload = { name: req.name, id: req.id, path: req.filePath };
+    io.to(req.socket_main_id).emit("done", { payload });
     const mime = mimetype.lookup(req.name);
     if (typeof mime === "string") {
       const ext = mime.split("/")[1].toUpperCase();
@@ -118,11 +116,11 @@ const triggerImageProcessingMS = async (req, res) => {
         return res.status(200).json(`file ${req.headers.filename} received`);
       }
     }
+    res.status(200).json(`file ${req.headers.filename} received`);
   } catch (err) {
     console.log(err);
     return res.status(500).json(`file ${req.headers.filename} received`);
   }
-  return res.status(200).json(`file ${req.headers.filename} received`);
 };
 
 router.post(
