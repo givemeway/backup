@@ -13,6 +13,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.get("/api/v1/preview", getSignedURL);
+app.get("/api/v1/wakeupserver", (req, res) => {
+  res.status(200).json({ success: true, msg: "thumbnail server woke up" });
+});
 
 app.listen(PORT, () => [
   console.log(`THUMBNAIL service running on PORT ${PORT}`),
