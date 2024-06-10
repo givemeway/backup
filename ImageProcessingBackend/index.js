@@ -24,11 +24,15 @@ try {
     console.log(error);
   });
 } catch (err) {
-  console.error(err);
+  console.log(err);
 }
 
 server.listen(PORT, () => {
   console.log(`Image Processing SERVER running on PORT ${PORT}`);
+});
+
+app.get("/api/v1/wakeupserver", (req, res) => {
+  res.status(200).json({ success: true, msg: "Kafka listner wokeup" });
 });
 
 process.on("uncaughtException", (error) => {
