@@ -78,7 +78,9 @@ const browseTransferData_promise = async (params) => {
         },
       });
       if (folderPathData === null) {
+        console.log("block 1");
         reject({ success: false, msg: "path not found" });
+        return;
       }
       const data = { ...params, folderPathData };
       const [fileTotal, files] = await getFiles(data);
@@ -102,6 +104,7 @@ const browseTransferData_promise = async (params) => {
       });
     } catch (err) {
       reject({ success: false, msg: err });
+      return;
     }
   });
 };
@@ -186,20 +189,18 @@ export const getFilesFoldersFromShareID = async (req, res, next) => {
         total = files.length + directories.length;
       }
     }
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false, msg: err });
-  } finally {
     files = JSON.parse(
       JSON.stringify(files, (value, key) =>
         typeof key === "bigint" ? parseInt(key) : key
       )
     );
 
-    res
+    return res
       .status(200)
       .json({ success: true, home, path, files, directories, total });
-    files = [];
-    directories = [];
+  } catch (err) {
+    console.log("error block");
+    console.error(err);
+    return res.status(500).json({ success: false, msg: err });
   }
 };
