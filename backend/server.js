@@ -52,6 +52,7 @@ import { verifySession } from "./routes/verifySession.js";
 import { Logout } from "./routes/logout.js";
 import { DeleteShare } from "./routes/deleteShares.js";
 import { copyShare } from "./routes/copyShare.js";
+import { editName } from "./routes/editName.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -124,6 +125,7 @@ try {
   app.use("/app/photopreview", PhotoPreviewURL);
   app.use("/app/user/verifySession", verifySession);
   app.use("/app/user/logout", Logout);
+  app.use("/app/user/editName", editName);
 } catch (err) {
   console.log(err);
 }

@@ -1,15 +1,15 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-// export const DOMAIN = "localhost";
-// export const ORIGIN = "http://localhost:3000";
-// export const SERVER_DOMAIN = `http://localhost:3001`;
-// export const FRONTEND_DOMAIN = `http://localhost:3000`;
-export const DOMAIN = "qdrive.space";
-export const HOST_URL = "https://qdrive.space";
-export const ORIGIN = "https://qdrive.space";
-export const SERVER_DOMAIN = "https://api.qdrive.space";
-export const FRONTEND_DOMAIN = "https://qdrive.space";
+export const DOMAIN = "localhost";
+export const ORIGIN = "http://localhost:3000";
+export const SERVER_DOMAIN = `http://localhost:3001`;
+export const FRONTEND_DOMAIN = `http://localhost:3000`;
+// export const DOMAIN = "qdrive.space";
+// export const HOST_URL = "https://qdrive.space";
+// export const ORIGIN = "https://qdrive.space";
+// export const SERVER_DOMAIN = "https://api.qdrive.space";
+// export const FRONTEND_DOMAIN = "https://qdrive.space";
 
 export const corsOpts = {
   origin: ORIGIN,
