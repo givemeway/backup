@@ -107,11 +107,27 @@ const imageSchema = new Schema({
   uuid_preview_2048w: String,
 });
 
+const passTokenSchema = new Schema({
+  username: String,
+  token: String,
+  created_at: { type: Date, default: Date.now },
+  expires_at: { type: Date, default: () => Date.now() + 15 * 60 * 1000 },
+});
+
 const Transfer = model("Transfers", transferSchema, "transfers");
 const Share = model("Shares", shareSchema, "shares");
 const FileShare = model("FileShares", fileShareSchema, "fileshares");
 const FolderShare = model("FolderShares", folderShareSchema, "folderShares");
 const DownloadZip = model("Downloads", downloadZipSchema, "downloads");
 const Image = model("Images", imageSchema, "images");
+const PassToken = model("PassToken", passTokenSchema, "passToken");
 
-export { Share, Transfer, DownloadZip, Image, FileShare, FolderShare };
+export {
+  Share,
+  Transfer,
+  DownloadZip,
+  Image,
+  FileShare,
+  FolderShare,
+  PassToken,
+};

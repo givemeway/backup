@@ -11,6 +11,8 @@ export const ORIGIN = "https://qdrive.space";
 export const SERVER_DOMAIN = "https://api.qdrive.space";
 export const FRONTEND_DOMAIN = "https://qdrive.space";
 
+export const EXPIRY = 15 * 60 * 1000;
+
 export const corsOpts = {
   origin: ORIGIN,
   allowedHeaders:
