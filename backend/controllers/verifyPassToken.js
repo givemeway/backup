@@ -8,8 +8,12 @@ export const verifyPassToken = async (req, res, next) => {
       const now = Date.now();
       const expiry = user.expires_at;
       const diff = expiry - now;
-      if (diff < EXPIRY) {
-        res.status(200).json({ success: true, msg: "Password Link Valid" });
+      if (diff > 0 && diff < EXPIRY) {
+        res.status(200).json({
+          success: true,
+          msg: "Password Link Valid",
+          user: user.username,
+        });
         next();
       } else {
         await PassToken.deleteOne({ token });

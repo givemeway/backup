@@ -1,7 +1,9 @@
 import { PassToken } from "../models/mongodb.js";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
-import { EXPIRY } from "../config/config.js";
+import { cookieOpts, EXPIRY, JWT_SECRET } from "../config/config.js";
 import { createHash } from "node:crypto";
+import jwt from "jsonwebtoken";
+import cookie from "cookie";
 
 export const updatePassword = async (req, res, next) => {
   try {
@@ -14,16 +16,32 @@ export const updatePassword = async (req, res, next) => {
       const expiry = user.expires_at;
       const diff = expiry - now;
       const hashPass = createHash("sha512").update(password).digest("hex");
+      const username = user.username;
       if (diff < EXPIRY) {
         await PassToken.deleteOne({ token });
         await prisma.user.update({
           where: {
-            username: user.username,
+            username,
           },
           data: {
             password: hashPass,
           },
         });
+        const userData = await prisma.user.findUnique({
+          where: { username },
+        });
+        const payload = {
+          Username: userData.username,
+          first: userData.first_name,
+          last: userData.last_name,
+          userID: userData.id,
+          email: userData.email,
+        };
+        const jwt_token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+        res.setHeader(
+          "Set-Cookie",
+          cookie.serialize("token", jwt_token, cookieOpts)
+        );
         res.status(200).json({ success: true, msg: "password updated" });
         next();
       } else {

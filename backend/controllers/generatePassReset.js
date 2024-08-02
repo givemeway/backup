@@ -17,7 +17,7 @@ export const getPassLink = async (req, res, next) => {
       if (passToken === null) {
         await PassToken.create({ username, token: newToken });
       } else {
-        await PassToken.findOneAndReplace(
+        await PassToken.findOneAndUpdate(
           { username: username },
           {
             token: newToken,
