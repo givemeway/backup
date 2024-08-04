@@ -6,7 +6,7 @@ import { createHash } from "node:crypto";
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
 
-export const updatePassword = async (req, res, next) => {
+export const resetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.query;
     const user = await PassToken.findOne({
