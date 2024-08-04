@@ -2,6 +2,7 @@ import { PassToken } from "../models/mongodb.js";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
 import { cookieOpts, EXPIRY, JWT_SECRET } from "../config/config.js";
 import { createHash } from "node:crypto";
+
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
 
