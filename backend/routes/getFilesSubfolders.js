@@ -5,55 +5,12 @@ import { getSignedURls } from "../controllers/getSignedURLs.js";
 
 const router = express.Router();
 
-const getFiles = async (req, res, next) => {
+const getFilesFolders = async (req, res, next) => {
   try {
     const { d, dir, sort, start, page } = req.query;
-    console.log("files-->", start, page);
-    const order = sort;
+
+    console.log("items->", start, page);
     const currentDir = dir;
-    const username = req.user.Username;
-    const devicename = d;
-
-    const [count, rows] = await prisma.$transaction([
-      prisma.file.count({
-        where: {
-          username,
-          device: devicename,
-          directory: currentDir,
-        },
-      }),
-      prisma.file.findMany({
-        where: {
-          username,
-          device: devicename,
-          directory: currentDir,
-        },
-        skip: parseInt(start),
-        take: parseInt(page),
-        orderBy: {
-          directory: "asc",
-        },
-      }),
-    ]);
-
-    console.log(count);
-    req.data = {};
-    req.data["total"] = parseInt(count);
-    const updatedFiles = await getSignedURls(rows, username);
-    req.data["files"] = updatedFiles;
-    next();
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ success: false, msg: err });
-  }
-};
-
-const getFolders = async (req, res) => {
-  try {
-    const { d, dir, sort, start, page } = req.query;
-    console.log("folder->", start, page);
-    const currentDir = dir;
-
     const order = req.headers.sortorder;
     const username = req.user.Username;
     const devicename = d;
@@ -74,36 +31,68 @@ const getFolders = async (req, res) => {
       regex = `^${path}(/[^/]+)$`;
     }
 
-    const [rows, count] = await prisma.$transaction([
-      prisma.$queryRaw(Prisma.sql`SELECT 
-                        uuid,folder,path,created_at,device 
-                        FROM public."Directory" 
-                        WHERE username = ${username}
-                        AND
-                        path ~ ${regex} 
-                        ORDER BY folder ASC
-                        LIMIT ${parseInt(page)} OFFSET ${parseInt(start)}`),
-      prisma.$queryRaw(Prisma.sql`SELECT 
-                    COUNT(*)
-                    FROM public."Directory" 
-                    WHERE username = ${username}
-                    AND
-                    path ~ ${regex};`),
+    const [results, count] = await prisma.$transaction([
+      prisma.$queryRaw(Prisma.sql`
+        SELECT uuid, filename as name, device, directory, origin, versions,'file' as type,
+        last_modified as modified,size
+        FROM public."File"
+        WHERE username = ${username}
+        AND device = ${devicename}
+        AND directory = ${currentDir}
+        UNION ALL
+        SELECT uuid, folder as name, device,path as directory,'--' as origin, 0 as versions,
+        'folder' as type, created_at as modified, 0 as size
+        FROM public."Directory"
+        WHERE username = ${username}
+        AND path ~ ${regex}
+        ORDER BY name ASC
+        LIMIT ${parseInt(page)} OFFSET ${parseInt(start)};
+      `),
+      prisma.$queryRaw(Prisma.sql`
+        SELECT COUNT(*)
+        FROM public."File"
+        WHERE username = ${username}
+        AND device = ${devicename}
+        AND directory = ${currentDir}
+        UNION ALL
+        SELECT COUNT(*)
+        FROM public."Directory"
+        WHERE username = ${username}
+        AND path ~ ${regex};
+      `),
     ]);
-
-    req.data.total += parseInt(count[0].count);
-    req.data["folders"] = rows;
-
-    const data = JSON.stringify(req.data, (key, value) =>
-      typeof value === "bigint" ? parseInt(value) : value
-    );
-    res.json(JSON.parse(data));
+    const files = results
+      .filter((item) => item.type === "file")
+      .map((item) => ({
+        ...item,
+        filename: item.name,
+        last_modified: item.modified,
+        size: parseInt(item.size),
+      }));
+    const folders = results
+      .filter((item) => item.type === "folder")
+      .map((item) => ({
+        ...item,
+        path: item.directory,
+        folder: item.name,
+        created_at: item.modified,
+        size: parseInt(item.size),
+      }));
+    const fileCount = parseInt(count[0].count);
+    const folderCount = parseInt(count[1].count);
+    const total = fileCount + folderCount;
+    let data = {};
+    data["files"] = await getSignedURls(files, username);
+    data["folders"] = folders;
+    data["total"] = total;
+    res.status(200).json(data);
   } catch (err) {
     console.log(err);
     res.json(500).json({ success: false, msg: err });
   }
+  next();
 };
 
-router.get("/", verifyToken, getFiles, getFolders);
+router.get("/", verifyToken, getFilesFolders);
 
 export { router as getFilesSubfolders };
