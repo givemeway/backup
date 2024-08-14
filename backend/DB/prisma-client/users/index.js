@@ -139,6 +139,10 @@ const config = {
       {
         "fromEnvVar": null,
         "value": "debian-openssl-1.1.x"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
@@ -164,8 +168,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\r\n  provider = \"prisma-client-js\"\r\n  output = \"../DB/prisma-client/users\"\r\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\"]\r\n}\r\n\r\ndatasource db {\r\n  provider = \"postgresql\"\r\n  url      = env(\"DATABASE_URL_USER\")\r\n}\r\n\r\n\r\nmodel User {\r\n  id Int @id @default(autoincrement())\r\n  username String @unique @db.VarChar(70)\r\n  email String @db.VarChar(255)\r\n  password String @db.VarChar(255)\r\n  first_name String @db.VarChar(70)\r\n  last_name String @db.VarChar(70)\r\n  phone String @db.VarChar(20)\r\n  enc String @db.VarChar(64)\r\n\r\n}",
-  "inlineSchemaHash": "4e8698bdc48b1ea88585a63b7b7d9676465d409c9f56964dc9a5c9b70964199d",
+  "inlineSchema": "generator client {\r\n  provider = \"prisma-client-js\"\r\n  output = \"../DB/prisma-client/users\"\r\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\",\"debian-openssl-3.0.x\"]\r\n}\r\n\r\ndatasource db {\r\n  provider = \"postgresql\"\r\n  url      = env(\"DATABASE_URL_USER\")\r\n}\r\n\r\n\r\nmodel User {\r\n  id Int @id @default(autoincrement())\r\n  username String @unique @db.VarChar(70)\r\n  email String @db.VarChar(255)\r\n  password String @db.VarChar(255)\r\n  first_name String @db.VarChar(70)\r\n  last_name String @db.VarChar(70)\r\n  phone String @db.VarChar(20)\r\n  enc String @db.VarChar(64)\r\n\r\n}",
+  "inlineSchemaHash": "d2e5c74da71ab59ab5a0128ad576275c81e3af97105bd4820366d0e05c4fb668",
   "copyEngine": true
 }
 
@@ -209,6 +213,10 @@ path.join(process.cwd(), "DB/prisma-client/users/query_engine-windows.dll.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-1.1.x.so.node");
 path.join(process.cwd(), "DB/prisma-client/users/libquery_engine-debian-openssl-1.1.x.so.node")
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
+path.join(process.cwd(), "DB/prisma-client/users/libquery_engine-debian-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "DB/prisma-client/users/schema.prisma")
