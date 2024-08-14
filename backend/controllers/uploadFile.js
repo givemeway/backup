@@ -48,7 +48,6 @@ const parseFile = async (req) => {
         req.iv,
         "aes-256-cbc"
       );
-      console.log(req.ext);
       const data = {};
       data.id = req.headers.uuid;
       data.username = req.user.Username;
@@ -57,7 +56,6 @@ const parseFile = async (req) => {
       const options = {
         maxFileSize: 2000 * 1024 * 1024,
         fileWriteStreamHandler: (file) => {
-          console.log("called!");
           const read = new PassThrough();
           const write = new PassThrough();
           read.pipe(cipher).pipe(write);

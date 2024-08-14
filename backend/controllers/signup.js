@@ -1,13 +1,7 @@
-import express from "express";
-import csrf from "csurf";
-import { cookieOpts } from "../config/config.js";
-
 import { createHash, randomFill } from "node:crypto";
 import { Buffer } from "node:buffer";
 import { prismaUser } from "../config/prismaDBConfig.js";
-
-const router = express.Router();
-// router.use(csrf({ cookie: cookieOpts }));
+import { Avatar } from "../models/mongodb.js";
 
 const generateEncKey = () => {
   return new Promise((resolve, reject) => {
@@ -19,7 +13,7 @@ const generateEncKey = () => {
   });
 };
 
-const buildSignupQuery = async (req, res, next) => {
+export const signup = async (req, res, next) => {
   try {
     const { username, firstname, lastname, email, password, phone } = req.body;
     req.username = username;
@@ -37,7 +31,14 @@ const buildSignupQuery = async (req, res, next) => {
         enc,
       },
     });
-    console.log(user);
+    await Avatar.create({
+      username,
+      firstName: firstname,
+      lastName: lastname,
+      initial: `${firstname.split("")[0].toUpperCase()}${lastname
+        .split("")[0]
+        .toUpperCase()}`,
+    });
     res.status(200).json({
       success: true,
       msg: `Username ${username} created!`,
@@ -51,7 +52,3 @@ const buildSignupQuery = async (req, res, next) => {
     return res.status(500).json(err);
   }
 };
-
-router.post("/", buildSignupQuery);
-
-export { router as signup };

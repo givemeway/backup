@@ -114,6 +114,15 @@ const passTokenSchema = new Schema({
   expires_at: { type: Date, default: () => Date.now() + 15 * 60 * 1000 },
 });
 
+const avatarSchema = new Schema({
+  username: String,
+  initial: String,
+  firstName: String,
+  lastName: String,
+  avatar_url: { type: String, default: "" },
+  has_avatar: { type: Boolean, default: false },
+});
+
 const Transfer = model("Transfers", transferSchema, "transfers");
 const Share = model("Shares", shareSchema, "shares");
 const FileShare = model("FileShares", fileShareSchema, "fileshares");
@@ -121,6 +130,7 @@ const FolderShare = model("FolderShares", folderShareSchema, "folderShares");
 const DownloadZip = model("Downloads", downloadZipSchema, "downloads");
 const Image = model("Images", imageSchema, "images");
 const PassToken = model("PassToken", passTokenSchema, "passToken");
+const Avatar = model("Avatar", avatarSchema, "avatar");
 
 export {
   Share,
@@ -130,4 +140,5 @@ export {
   FileShare,
   FolderShare,
   PassToken,
+  Avatar,
 };

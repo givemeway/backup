@@ -31,8 +31,6 @@ const validateUserDetails = async (req, res) => {
           email: true,
         },
       });
-      console.log(returnedUser);
-
       if (returnedUser !== null) {
         const { username, first_name, last_name, id, email } = returnedUser;
         const payload = {
@@ -43,8 +41,6 @@ const validateUserDetails = async (req, res) => {
           email,
         };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
-        console.log(token);
-        console.log(cookieOpts);
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", token, cookieOpts)

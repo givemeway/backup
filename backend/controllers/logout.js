@@ -1,10 +1,8 @@
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
-import express from "express";
 import { JWT_SECRET, DOMAIN } from "../config/config.js";
-const router = express.Router();
 
-router.get("/", (req, res) => {
+export const logout = (req, res) => {
   const payload = { email: "", first: "", last: "", userID: "", Username: "" };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: -100 });
   console.log(token);
@@ -20,6 +18,4 @@ router.get("/", (req, res) => {
     })
   );
   res.status(200).json({ success: true, msg: "logged out" });
-});
-
-export { router as Logout };
+};
