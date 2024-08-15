@@ -78,27 +78,34 @@ const consumer = kafka.consumer({
   groupId: "IMAGE-TRANSFORM-SERVER-GROUP",
 });
 
-const getObject = async (id, username, Bucket) => {
+const getObject = async (value, Bucket) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const Key = `${username}/${id}`;
-      const getCommand = new GetObjectCommand({ Bucket, Key });
-      const file = await prismaQdrive.file.findFirst({
-        where: { uuid: id, username },
-        select: { salt: true, iv: true, size: true },
-      });
+      const { username, id, avatar } = value;
+      if (!avatar) {
+        const Key = `${username}/${id}`;
+        const getCommand = new GetObjectCommand({ Bucket, Key });
+        const file = await prismaQdrive.file.findFirst({
+          where: { uuid: id, username },
+          select: { salt: true, iv: true, size: true },
+        });
 
-      const user = await prismaUser.user.findUnique({
-        where: { username },
-        select: { enc: true },
-      });
-      if (file !== null) {
-        const { salt, iv } = file;
-        const { enc } = user;
-        const input = (await s3Client.send(getCommand)).Body;
-        resolve(await decryptFile(input, salt, iv, enc));
+        const user = await prismaUser.user.findUnique({
+          where: { username },
+          select: { enc: true },
+        });
+        if (file !== null) {
+          const { salt, iv } = file;
+          const { enc } = user;
+          const input = (await s3Client.send(getCommand)).Body;
+          resolve(await decryptFile(input, salt, iv, enc));
+        } else {
+          reject("FILENOTFOUND");
+        }
       } else {
-        reject("FILENOTFOUND");
+        const Key = `avatar/${username}/${id}`;
+        const getCommand = new GetObjectCommand({ Bucket, Key });
+        resolve((await s3Client.send(getCommand)).Body);
       }
     } catch (err) {
       reject(err);
@@ -109,6 +116,7 @@ const getObject = async (id, username, Bucket) => {
 const putObject = (Key, Bucket, Body) => {
   return new Promise(async (resolve, reject) => {
     // console.log(Key);
+
     const upload = new Upload({
       client: s3Client,
       params: {
@@ -144,7 +152,7 @@ const process_and_upload_images = (message) => {
       // console.log(value);
       const pipeline = sharp();
 
-      const input = await getObject(value.id, value.username, sourceBucket);
+      const input = await getObject(value, sourceBucket);
       const output1 = new PassThrough();
       const output2 = new PassThrough();
       const output3 = new PassThrough();
@@ -178,7 +186,9 @@ const process_and_upload_images = (message) => {
         .pipe(output6);
 
       input.pipe(pipeline);
-      const Key = `${value.username}/${value.id}`;
+      const Key = `${value?.avatar ? "avatar/" : ""}${value.username}/${
+        value.id
+      }`;
       const key_32w = `${Key}_32w`;
       const key_640w = `${Key}_640w`;
       const key_900w = `${Key}_900w`;
@@ -187,12 +197,13 @@ const process_and_upload_images = (message) => {
       const key_2048w = `${Key}_2048w`;
 
       const promises = [];
-      promises.push(putObject(key_32w, dstBucket, output1));
-      promises.push(putObject(key_640w, dstBucket, output2));
-      promises.push(putObject(key_900w, dstBucket, output3));
-      promises.push(putObject(key_256w, dstBucket, output4));
-      promises.push(putObject(key_1280w, dstBucket, output5));
-      promises.push(putObject(key_2048w, dstBucket, output6));
+      const bucket = value?.avatar ? sourceBucket : dstBucket;
+      promises.push(putObject(key_32w, bucket, output1));
+      promises.push(putObject(key_640w, bucket, output2));
+      promises.push(putObject(key_900w, bucket, output3));
+      promises.push(putObject(key_256w, bucket, output4));
+      promises.push(putObject(key_1280w, bucket, output5));
+      promises.push(putObject(key_2048w, bucket, output6));
 
       await Promise.all(promises);
       resolve();
