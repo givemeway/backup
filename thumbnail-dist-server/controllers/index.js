@@ -14,12 +14,14 @@ const s3client = new S3Client({
 
 export const getSignedURL = async (req, res) => {
   try {
-    const { key, username } = req.query;
-    const Key = `${username}/${key}`;
-    const command = new GetObjectCommand({
-      Bucket: process.env.BUCKET,
-      Key,
-    });
+    const { key, username, avatar } = req.query;
+    let Key = `${username}/${key}`;
+    let Bucket = process.env.BUCKET;
+    if (avatar) {
+      Key = `avatar/${Key}`;
+      Bucket = "qdrivebucket";
+    }
+    const command = new GetObjectCommand({ Bucket, Key });
     const signedURL = await getSignedUrl(s3client, command, {
       expiresIn: 3600,
     });
