@@ -31,13 +31,10 @@ export const updateAvatar = (req, res) => {
           console.error(error);
           res.status(500).json({ msg: error, success: false });
         });
-        upload.on("uploaded", (details) => {
-          console.log(details);
-        });
+        upload.on("uploaded", (details) => {});
         upload
           .done()
           .then(async (response) => {
-            console.log(response);
             const user = await Avatar.findOne({ username: Username });
             if (user) {
               await Avatar.findOneAndUpdate(
