@@ -6,6 +6,7 @@ import { Avatar } from "../models/mongodb.js";
 import { createHash } from "crypto";
 import dotenv from "dotenv";
 import { initiKafkaProducer } from "../utils/kafka.js";
+import { getSignedURL } from "./createSignedURL.js";
 dotenv.config();
 const Bucket = process.env.BUCKET;
 
@@ -54,7 +55,18 @@ export const updateAvatar = (req, res) => {
               });
             }
             await initiKafkaProducer(imgData);
-            res.status(200).json({ msg: response, success: true });
+            const urls = await getSignedURL(
+              imgData.id,
+              imgData.username,
+              true,
+              ["original"]
+            );
+            res.status(200).json({
+              msg: response,
+              success: true,
+              ...urls,
+              ...user._doc,
+            });
           })
           .catch((err) => {
             // res.status(500).json({ msg: err, success: false });

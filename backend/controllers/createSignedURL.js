@@ -2,13 +2,13 @@ import { THUMBNAIL_MS } from "../config/config.js";
 import axios from "axios";
 import { prisma } from "../config/prismaDBConfig.js";
 
-export const getSignedURL = async (uuid, username, widths = ["32w"]) =>
+export const getSignedURL = async (uuid, username, avatar, widths = ["32w"]) =>
   new Promise(async (resolve, reject) => {
     try {
       let URLs = [];
       widths.forEach((width) => {
-        const key = uuid + "_" + width;
-        const url = `${THUMBNAIL_MS}?key=${key}&username=${username}`;
+        const key = width !== "original" ? uuid + "_" + width : uuid;
+        const url = `${THUMBNAIL_MS}?key=${key}&username=${username}&avatar=${avatar}`;
         URLs.push([url, width]);
       });
       const headers = {
@@ -16,7 +16,6 @@ export const getSignedURL = async (uuid, username, widths = ["32w"]) =>
       };
       let signedURLs = {};
       for (const url of URLs) {
-        console.log(url);
         const response = await axios.get(url[0], headers);
         const signedURL = response.data;
         signedURLs[url[1]] = signedURL;
@@ -30,7 +29,6 @@ export const getSignedURL = async (uuid, username, widths = ["32w"]) =>
 export const createSignedURL = async (req, res) => {
   try {
     const { path, filename } = req.query;
-    console.log("create Signed URL-->", path, filename);
     const username = req.user.Username;
     const dir = await prisma.directory.findFirst({
       where: {
@@ -59,7 +57,7 @@ export const createSignedURL = async (req, res) => {
     }
     const widths = ["640w", "900w", "1280w", "2048w"];
     if (uuid) {
-      const URLs = await getSignedURL(uuid, username, widths);
+      const URLs = await getSignedURL(uuid, username, false, widths);
       res.status(200).json(URLs);
     } else {
       return res.status(404).json("Image not found");

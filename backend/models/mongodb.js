@@ -119,7 +119,7 @@ const avatarSchema = new Schema({
   initial: String,
   firstName: String,
   lastName: String,
-  avatar_url: { type: String, default: "" },
+  avatar_url: { type: Array, default: [] },
   has_avatar: { type: Boolean, default: false },
 });
 
