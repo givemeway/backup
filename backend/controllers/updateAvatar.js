@@ -5,16 +5,22 @@ import { s3Client as client } from "../server.js";
 import { Avatar } from "../models/mongodb.js";
 import { createHash } from "crypto";
 import dotenv from "dotenv";
+import { initiKafkaProducer } from "../utils/kafka.js";
 dotenv.config();
 const Bucket = process.env.BUCKET;
 
 export const updateAvatar = (req, res) => {
   try {
+    const { Username, first, last } = req.user;
+    const hash = createHash("sha1").update(Username).digest("hex");
+    let imgData = {};
+    imgData.id = hash;
+    imgData.username = Username;
+    imgData.filename = hash;
+    imgData.avatar = true;
     const options = {
       maxFileSize: 200 * 1024 * 1024,
       fileWriteStreamHandler: (file) => {
-        const { Username, first, last } = req.user;
-        const hash = createHash("sha1").update(Username).digest("hex");
         const Key = `avatar/${Username}/${hash}`;
         const Body = new PassThrough();
         const params = { Bucket, Key, Body };
@@ -47,10 +53,11 @@ export const updateAvatar = (req, res) => {
                 initial: `${first}${last}`,
               });
             }
+            await initiKafkaProducer(imgData);
             res.status(200).json({ msg: response, success: true });
           })
           .catch((err) => {
-            res.status(500).json({ msg: err, success: false });
+            // res.status(500).json({ msg: err, success: false });
           });
 
         return Body;

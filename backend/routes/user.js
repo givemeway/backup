@@ -6,7 +6,6 @@ import { validateSession } from "../controllers/validateSession.js";
 import { logout } from "../controllers/logout.js";
 import { editName } from "../controllers/editName.js";
 import { updateAvatar } from "../controllers/updateAvatar.js";
-import formidable from "formidable";
 const router = express.Router();
 
 router.post("/login", validateUserDetails);

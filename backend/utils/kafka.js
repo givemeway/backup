@@ -15,11 +15,14 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 
 export const initiKafkaProducer = async (imgData) => {
-  const { id, username, filename } = imgData;
+  const { id, username, filename, avatar } = imgData;
+  console.log(imgData);
   await producer.connect();
   await producer.send({
     topic: "PROCESS-IMAGE",
-    messages: [{ key: id, value: JSON.stringify({ id, username, filename }) }],
+    messages: [
+      { key: id, value: JSON.stringify({ id, username, filename, avatar }) },
+    ],
   });
   await producer.disconnect();
 };
