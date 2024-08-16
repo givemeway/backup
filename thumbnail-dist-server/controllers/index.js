@@ -17,7 +17,7 @@ export const getSignedURL = async (req, res) => {
     const { key, username, avatar } = req.query;
     let Key = `${username}/${key}`;
     let Bucket = process.env.BUCKET;
-    if (avatar) {
+    if (avatar === "true") {
       Key = `avatar/${Key}`;
       Bucket = "qdrivebucket";
     }
