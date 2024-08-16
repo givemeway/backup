@@ -198,12 +198,17 @@ const process_and_upload_images = (message) => {
 
       const promises = [];
       const bucket = value?.avatar ? sourceBucket : dstBucket;
-      promises.push(putObject(key_32w, bucket, output1));
-      promises.push(putObject(key_640w, bucket, output2));
-      promises.push(putObject(key_900w, bucket, output3));
-      promises.push(putObject(key_256w, bucket, output4));
-      promises.push(putObject(key_1280w, bucket, output5));
-      promises.push(putObject(key_2048w, bucket, output6));
+      if (value?.avatar) {
+        promises.push(putObject(key_32w, bucket, output1));
+        promises.push(putObject(key_640w, bucket, output2));
+      } else {
+        promises.push(putObject(key_32w, bucket, output1));
+        promises.push(putObject(key_640w, bucket, output2));
+        promises.push(putObject(key_900w, bucket, output3));
+        promises.push(putObject(key_256w, bucket, output4));
+        promises.push(putObject(key_1280w, bucket, output5));
+        promises.push(putObject(key_2048w, bucket, output6));
+      }
 
       await Promise.all(promises);
       resolve();
