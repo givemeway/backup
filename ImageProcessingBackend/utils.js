@@ -162,26 +162,32 @@ const process_and_upload_images = (message) => {
 
       pipeline
         .clone()
+        .rotate()
         .resize(32, null, { fit: "contain", background: "white" })
         .pipe(output1);
       pipeline
         .clone()
+        .rotate()
         .resize(640, null, { fit: "contain", background: "white" })
         .pipe(output2);
       pipeline
         .clone()
+        .rotate()
         .resize(900, null, { fit: "contain", background: "white" })
         .pipe(output3);
       pipeline
         .clone()
+        .rotate()
         .resize(256, null, { fit: "contain", background: "white" })
         .pipe(output4);
       pipeline
         .clone()
+        .rotate()
         .resize(1280, null, { fit: "contain", background: "white" })
         .pipe(output5);
       pipeline
         .clone()
+        .rotate()
         .resize(2048, null, { fit: "contain", background: "white" })
         .pipe(output6);
 
