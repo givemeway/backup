@@ -8,7 +8,7 @@ import { editName } from "../controllers/editName.js";
 import { updateAvatar } from "../controllers/updateAvatar.js";
 import { getAvatar } from "../controllers/getAvatar.js";
 import { deleteAvatar } from "../controllers/deleteAvatar.js";
-import { configTOTP } from "../controllers/totp.js";
+import { configTOTP } from "../controllers/configOTP.js";
 const router = express.Router();
 
 router.post("/login", validateUserDetails);
