@@ -8,11 +8,14 @@ import { editName } from "../controllers/editName.js";
 import { updateAvatar } from "../controllers/updateAvatar.js";
 import { getAvatar } from "../controllers/getAvatar.js";
 import { deleteAvatar } from "../controllers/deleteAvatar.js";
-import { configTOTP } from "../controllers/configOTP.js";
+import { configTOTP, enableOTP, disableOTP } from "../controllers/OTP.js";
+
 const router = express.Router();
 
 router.post("/login", validateUserDetails);
 router.get("/login/configTOTP", verifyToken, configTOTP);
+router.get("/login/enableOTP", verifyToken, enableOTP);
+router.get("/login/disableOTP", verifyToken, disableOTP);
 router.post("/signup", signup);
 router.get("/verifySession", verifyToken, validateSession);
 router.get("/logout", logout);

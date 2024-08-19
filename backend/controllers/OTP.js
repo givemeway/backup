@@ -4,6 +4,14 @@ import qrcode from "qrcode";
 import { authenticator } from "@otplib/preset-default";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
 
+export const enableOTP = (req, res, next) => {
+  res.status(200).json({ success: true, msg: "enable otp" });
+};
+
+export const disableOTP = (req, res, next) => {
+  res.status(200).json({ success: true, msg: "disable otp" });
+};
+
 const google_authenticator = async (username, secret) => {
   const unsignedArrBuff = Buffer.from(secret.toUpperCase(), "hex");
   const base32_secret = base32Encode(unsignedArrBuff, "RFC4648", {
