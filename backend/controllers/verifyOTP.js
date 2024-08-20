@@ -13,8 +13,8 @@ export const fn_verifyOTP = (username, token) => {
       });
       if (user) {
         const now = Date.now();
-        const diff = now - parseInt(user.OTPGenTime) / 1000;
-        console.log(diff);
+        const diff = (now - parseInt(user.OTPGenTime)) / 1000;
+        console.log(now, parseInt(user.OTPGenTime), diff);
         if (diff < OTP_EXPIRY) {
           const isValid = hotp.verify({
             token: token,
@@ -49,14 +49,14 @@ export const verifyOTP = async (req, res, next) => {
   try {
     const username = req.user.Username;
     const { token, mfa } = req.query;
+    console.log(token, mfa);
     if (mfa === "email" || mfa === "sms") {
       const isValid = await fn_verifyOTP(username, token);
       console.log(token, isValid);
       res
         .status(200)
         .json({ success: true, msg: `OTP validity is ${isValid}`, isValid });
-    }else if (mfa === "totp"){
-      
+    } else if (mfa === "totp") {
     }
   } catch (err) {
     console.log(err);
