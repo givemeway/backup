@@ -880,10 +880,16 @@ export namespace Prisma {
 
   export type UserAvgAggregateOutputType = {
     id: number | null
+    hotpCounter: number | null
+    OTPGenTime: number | null
+    OTPValidity: number | null
   }
 
   export type UserSumAggregateOutputType = {
     id: number | null
+    hotpCounter: bigint | null
+    OTPGenTime: bigint | null
+    OTPValidity: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -899,6 +905,9 @@ export namespace Prisma {
     isSMS: boolean | null
     isEmail: boolean | null
     isTOTP: boolean | null
+    hotpCounter: bigint | null
+    OTPGenTime: bigint | null
+    OTPValidity: number | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -914,6 +923,9 @@ export namespace Prisma {
     isSMS: boolean | null
     isEmail: boolean | null
     isTOTP: boolean | null
+    hotpCounter: bigint | null
+    OTPGenTime: bigint | null
+    OTPValidity: number | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -929,16 +941,25 @@ export namespace Prisma {
     isSMS: number
     isEmail: number
     isTOTP: number
+    hotpCounter: number
+    OTPGenTime: number
+    OTPValidity: number
     _all: number
   }
 
 
   export type UserAvgAggregateInputType = {
     id?: true
+    hotpCounter?: true
+    OTPGenTime?: true
+    OTPValidity?: true
   }
 
   export type UserSumAggregateInputType = {
     id?: true
+    hotpCounter?: true
+    OTPGenTime?: true
+    OTPValidity?: true
   }
 
   export type UserMinAggregateInputType = {
@@ -954,6 +975,9 @@ export namespace Prisma {
     isSMS?: true
     isEmail?: true
     isTOTP?: true
+    hotpCounter?: true
+    OTPGenTime?: true
+    OTPValidity?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -969,6 +993,9 @@ export namespace Prisma {
     isSMS?: true
     isEmail?: true
     isTOTP?: true
+    hotpCounter?: true
+    OTPGenTime?: true
+    OTPValidity?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -984,6 +1011,9 @@ export namespace Prisma {
     isSMS?: true
     isEmail?: true
     isTOTP?: true
+    hotpCounter?: true
+    OTPGenTime?: true
+    OTPValidity?: true
     _all?: true
   }
 
@@ -1086,6 +1116,9 @@ export namespace Prisma {
     isSMS: boolean
     isEmail: boolean
     isTOTP: boolean
+    hotpCounter: bigint
+    OTPGenTime: bigint
+    OTPValidity: number
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -1120,6 +1153,9 @@ export namespace Prisma {
     isSMS?: boolean
     isEmail?: boolean
     isTOTP?: boolean
+    hotpCounter?: boolean
+    OTPGenTime?: boolean
+    OTPValidity?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1135,6 +1171,9 @@ export namespace Prisma {
     isSMS?: boolean
     isEmail?: boolean
     isTOTP?: boolean
+    hotpCounter?: boolean
+    OTPGenTime?: boolean
+    OTPValidity?: boolean
   }
 
 
@@ -1154,6 +1193,9 @@ export namespace Prisma {
       isSMS: boolean
       isEmail: boolean
       isTOTP: boolean
+      hotpCounter: bigint
+      OTPGenTime: bigint
+      OTPValidity: number
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1560,6 +1602,9 @@ export namespace Prisma {
     readonly isSMS: FieldRef<"User", 'Boolean'>
     readonly isEmail: FieldRef<"User", 'Boolean'>
     readonly isTOTP: FieldRef<"User", 'Boolean'>
+    readonly hotpCounter: FieldRef<"User", 'BigInt'>
+    readonly OTPGenTime: FieldRef<"User", 'BigInt'>
+    readonly OTPValidity: FieldRef<"User", 'Int'>
   }
     
 
@@ -1873,7 +1918,10 @@ export namespace Prisma {
     is2FA: 'is2FA',
     isSMS: 'isSMS',
     isEmail: 'isEmail',
-    isTOTP: 'isTOTP'
+    isTOTP: 'isTOTP',
+    hotpCounter: 'hotpCounter',
+    OTPGenTime: 'OTPGenTime',
+    OTPValidity: 'OTPValidity'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1936,6 +1984,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'BigInt'
+   */
+  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+  /**
+   * Reference to a field of type 'BigInt[]'
+   */
+  export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1968,6 +2030,9 @@ export namespace Prisma {
     isSMS?: BoolFilter<"User"> | boolean
     isEmail?: BoolFilter<"User"> | boolean
     isTOTP?: BoolFilter<"User"> | boolean
+    hotpCounter?: BigIntFilter<"User"> | bigint | number
+    OTPGenTime?: BigIntFilter<"User"> | bigint | number
+    OTPValidity?: IntFilter<"User"> | number
   }
 
   export type UserOrderByWithRelationInput = {
@@ -1983,6 +2048,9 @@ export namespace Prisma {
     isSMS?: SortOrder
     isEmail?: SortOrder
     isTOTP?: SortOrder
+    hotpCounter?: SortOrder
+    OTPGenTime?: SortOrder
+    OTPValidity?: SortOrder
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -2001,6 +2069,9 @@ export namespace Prisma {
     isSMS?: BoolFilter<"User"> | boolean
     isEmail?: BoolFilter<"User"> | boolean
     isTOTP?: BoolFilter<"User"> | boolean
+    hotpCounter?: BigIntFilter<"User"> | bigint | number
+    OTPGenTime?: BigIntFilter<"User"> | bigint | number
+    OTPValidity?: IntFilter<"User"> | number
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -2016,6 +2087,9 @@ export namespace Prisma {
     isSMS?: SortOrder
     isEmail?: SortOrder
     isTOTP?: SortOrder
+    hotpCounter?: SortOrder
+    OTPGenTime?: SortOrder
+    OTPValidity?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -2039,6 +2113,9 @@ export namespace Prisma {
     isSMS?: BoolWithAggregatesFilter<"User"> | boolean
     isEmail?: BoolWithAggregatesFilter<"User"> | boolean
     isTOTP?: BoolWithAggregatesFilter<"User"> | boolean
+    hotpCounter?: BigIntWithAggregatesFilter<"User"> | bigint | number
+    OTPGenTime?: BigIntWithAggregatesFilter<"User"> | bigint | number
+    OTPValidity?: IntWithAggregatesFilter<"User"> | number
   }
 
   export type UserCreateInput = {
@@ -2053,6 +2130,9 @@ export namespace Prisma {
     isSMS?: boolean
     isEmail?: boolean
     isTOTP?: boolean
+    hotpCounter?: bigint | number
+    OTPGenTime?: bigint | number
+    OTPValidity?: number
   }
 
   export type UserUncheckedCreateInput = {
@@ -2068,6 +2148,9 @@ export namespace Prisma {
     isSMS?: boolean
     isEmail?: boolean
     isTOTP?: boolean
+    hotpCounter?: bigint | number
+    OTPGenTime?: bigint | number
+    OTPValidity?: number
   }
 
   export type UserUpdateInput = {
@@ -2082,6 +2165,9 @@ export namespace Prisma {
     isSMS?: BoolFieldUpdateOperationsInput | boolean
     isEmail?: BoolFieldUpdateOperationsInput | boolean
     isTOTP?: BoolFieldUpdateOperationsInput | boolean
+    hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPValidity?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserUncheckedUpdateInput = {
@@ -2097,6 +2183,9 @@ export namespace Prisma {
     isSMS?: BoolFieldUpdateOperationsInput | boolean
     isEmail?: BoolFieldUpdateOperationsInput | boolean
     isTOTP?: BoolFieldUpdateOperationsInput | boolean
+    hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPValidity?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserCreateManyInput = {
@@ -2112,6 +2201,9 @@ export namespace Prisma {
     isSMS?: boolean
     isEmail?: boolean
     isTOTP?: boolean
+    hotpCounter?: bigint | number
+    OTPGenTime?: bigint | number
+    OTPValidity?: number
   }
 
   export type UserUpdateManyMutationInput = {
@@ -2126,6 +2218,9 @@ export namespace Prisma {
     isSMS?: BoolFieldUpdateOperationsInput | boolean
     isEmail?: BoolFieldUpdateOperationsInput | boolean
     isTOTP?: BoolFieldUpdateOperationsInput | boolean
+    hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPValidity?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -2141,6 +2236,9 @@ export namespace Prisma {
     isSMS?: BoolFieldUpdateOperationsInput | boolean
     isEmail?: BoolFieldUpdateOperationsInput | boolean
     isTOTP?: BoolFieldUpdateOperationsInput | boolean
+    hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
+    OTPValidity?: IntFieldUpdateOperationsInput | number
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -2174,6 +2272,17 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
@@ -2187,10 +2296,16 @@ export namespace Prisma {
     isSMS?: SortOrder
     isEmail?: SortOrder
     isTOTP?: SortOrder
+    hotpCounter?: SortOrder
+    OTPGenTime?: SortOrder
+    OTPValidity?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
     id?: SortOrder
+    hotpCounter?: SortOrder
+    OTPGenTime?: SortOrder
+    OTPValidity?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -2206,6 +2321,9 @@ export namespace Prisma {
     isSMS?: SortOrder
     isEmail?: SortOrder
     isTOTP?: SortOrder
+    hotpCounter?: SortOrder
+    OTPGenTime?: SortOrder
+    OTPValidity?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -2221,10 +2339,16 @@ export namespace Prisma {
     isSMS?: SortOrder
     isEmail?: SortOrder
     isTOTP?: SortOrder
+    hotpCounter?: SortOrder
+    OTPGenTime?: SortOrder
+    OTPValidity?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
     id?: SortOrder
+    hotpCounter?: SortOrder
+    OTPGenTime?: SortOrder
+    OTPValidity?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -2269,12 +2393,36 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
 
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
+  }
+
+  export type BigIntFieldUpdateOperationsInput = {
+    set?: bigint | number
+    increment?: bigint | number
+    decrement?: bigint | number
+    multiply?: bigint | number
+    divide?: bigint | number
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -2313,6 +2461,17 @@ export namespace Prisma {
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -2365,6 +2524,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
   }
 
 

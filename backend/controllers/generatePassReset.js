@@ -1,7 +1,7 @@
 import { PassToken } from "../models/mongodb.js";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
 import { v4 as uuidv4 } from "uuid";
-import { MailService } from "./sendEmail.js";
+import { MailService } from "./sendGrid.js";
 import { passResetTemplate } from "./passResetTemplate.js";
 import { FRONTEND_DOMAIN } from "../config/config.js";
 

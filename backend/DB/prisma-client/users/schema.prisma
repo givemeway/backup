@@ -23,4 +23,7 @@ model User {
   isSMS Boolean @default(false)
   isEmail Boolean @default(false)
   isTOTP Boolean @default(false)
+  hotpCounter BigInt @default(0)
+  OTPGenTime BigInt @default(0)
+  OTPValidity Int @default(300)
 }

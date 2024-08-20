@@ -119,7 +119,10 @@ exports.Prisma.UserScalarFieldEnum = {
   is2FA: 'is2FA',
   isSMS: 'isSMS',
   isEmail: 'isEmail',
-  isTOTP: 'isTOTP'
+  isTOTP: 'isTOTP',
+  hotpCounter: 'hotpCounter',
+  OTPGenTime: 'OTPGenTime',
+  OTPValidity: 'OTPValidity'
 };
 
 exports.Prisma.SortOrder = {

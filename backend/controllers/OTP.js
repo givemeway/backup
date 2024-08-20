@@ -1,11 +1,26 @@
-import { totp, hotp } from "otplib";
 import base32Encode from "base32-encode";
 import qrcode from "qrcode";
 import { authenticator } from "@otplib/preset-default";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
+import { fn_generateOTP } from "./sendOTP.js";
+import { sendEmail } from "./sendEmail.js";
 
-export const enableOTP = (req, res, next) => {
-  res.status(200).json({ success: true, msg: "enable otp" });
+export const enableOTP = async (req, res, next) => {
+  try {
+    const username = req.user.Username;
+    const { isSMS, isTOTP, isEmail } = req.query;
+    if (isEmail === "true") {
+      req._2fa = { isEmail: true };
+      next();
+    } else if (isTOTP) {
+      // configure totp
+    } else if (isSMS) {
+      // send otp via sms
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, msg: err });
+  }
 };
 
 export const disableOTP = (req, res, next) => {
@@ -34,7 +49,7 @@ export const configTOTP = async (req, res, next) => {
       },
     });
     if (user) {
-      const imgUrl = await google_authenticator(username, user.enc, 123456);
+      const imgUrl = await google_authenticator(username, user.enc);
       res.status(200).json({
         succes: true,
         msg: "Scan Barcode to configure OTP",

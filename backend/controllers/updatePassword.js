@@ -19,7 +19,6 @@ export const updatePassword = async (req, res, next) => {
       },
     });
     if (user === null) {
-      console.log("user not found");
       res.status(404).json({ success: false, msg: "Incorrect password" });
       next();
     } else {
