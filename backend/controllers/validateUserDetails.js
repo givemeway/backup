@@ -29,9 +29,13 @@ const validateUserDetails = async (req, res) => {
           last_name: true,
           id: true,
           email: true,
+          is2FA: true,
+          isSMS: true,
+          isTOTP: true,
+          isEmail: true,
         },
       });
-      if (returnedUser !== null) {
+      if (returnedUser !== null && !returnedUser.is2FA) {
         const { username, first_name, last_name, id, email } = returnedUser;
         const payload = {
           Username: username,
@@ -47,8 +51,27 @@ const validateUserDetails = async (req, res) => {
         );
 
         res.status(200).json({ success: true, msg: "login success" });
+      } else if (returnedUser !== null && returnedUser.is2FA) {
+        const { username, first_name, last_name, id, email } = returnedUser;
+        const payload = {
+          Username: username,
+          first: first_name,
+          last: last_name,
+          userID: id,
+          email,
+        };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+        res.setHeader(
+          "Set-Cookie",
+          cookie.serialize("token", token, cookieOpts)
+        );
+        console.log("inside the 2FA");
+        res.status(403).json({
+          success: false,
+          error: "2FA_REQUIRED",
+          msg: "Two Factor verification is required to complete the sign in process",
+        });
       } else {
-        console.log("incorrect");
         res
           .status(401)
           .json({ success: false, msg: "UserName / Password Incorrect" });
