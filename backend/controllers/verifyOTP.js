@@ -161,10 +161,14 @@ export const verifyOTP = async (req, res, next) => {
       if (is2FAConfig === "false" && isValid) {
         payload._2FA_verified = true;
         const jwt_token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
-        res.setHeader(
-          "Set-Cookie",
-          cookie.serialize("token", jwt_token, cookieOpts)
-        );
+        const jwt_2fa_token = jwt.sign(_2fa_payload, JWT_SECRET, {
+          expiresIn: -100,
+        });
+        const cookies = [
+          cookie.serialize("token", jwt_token, cookieOpts),
+          cookie.serialize("_2FA", jwt_2fa_token, cookieOpts),
+        ];
+        res.setHeader("Set-Cookie", cookies);
       }
       res
         .status(200)
