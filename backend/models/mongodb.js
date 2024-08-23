@@ -114,8 +114,6 @@ const passTokenSchema = new Schema({
   expires_at: { type: Date, default: () => Date.now() + 15 * 60 * 1000 },
 });
 
-const backup_codes_schema = new Schema({});
-
 const avatarSchema = new Schema({
   username: String,
   initial: String,

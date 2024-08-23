@@ -12,12 +12,13 @@ import { enableOTP } from "../controllers/enableOTP.js";
 import { verifyPassword } from "../controllers/verifyPassword.js";
 import { verifyOTP } from "../controllers/verifyOTP.js";
 import { sendOTP } from "../controllers/sendOTP.js";
+import { disableOTP } from "./disableOTP.js";
 
 const router = express.Router();
 
 router.post("/login", validateUserDetails);
 router.post("/login/enableOTP", verifyToken, enableOTP, sendOTP);
-// router.post("/login/disableOTP", verifyToken, disableOTP);
+router.post("/login/disableOTP", verifyToken, disableOTP);
 router.get("/login/verifyOTP", verify_2FA_Token, verifyOTP);
 router.post("/login/sendOTP", verifyToken, sendOTP);
 router.post("/signup", signup);

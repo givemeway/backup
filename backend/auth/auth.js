@@ -1,4 +1,3 @@
-// const jwt = require("jsonwebtoken");
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
@@ -46,7 +45,6 @@ const verifyToken = (request, response, next) => {
 
 const verify_2FA_Token = (request, response, next) => {
   const { _2FA } = request.cookies;
-  console.log(_2FA);
   if (_2FA) {
     jwt.verify(_2FA, process.env.JWT_SECRET, (error, user) => {
       if (error)
@@ -54,19 +52,24 @@ const verify_2FA_Token = (request, response, next) => {
           .status(403)
           .json({ success: false, msg: "Invalid Token" });
       const { is2FA, _2FA_verifying } = user;
+      console.log({ is2FA, _2FA_verifying });
       if (is2FA && _2FA_verifying) {
+        request.user = user;
+        next();
+      } else if (!is2FA && _2FA_verifying) {
         request.user = user;
         next();
       } else {
         return response
           .status(401)
-          .json({ success: false, msg: "You are not authenticated" });
+          .json({ success: false, msg: "You are not authenticated--->here" });
       }
     });
   } else {
-    return response
-      .status(401)
-      .json({ success: false, msg: "You are not authenticated" });
+    return response.status(401).json({
+      success: false,
+      msg: "You are not authenticated---> 2fa module",
+    });
   }
 };
 

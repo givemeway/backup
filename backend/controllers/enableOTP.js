@@ -18,7 +18,3 @@ export const enableOTP = async (req, res, next) => {
     res.status(500).json({ success: false, msg: err });
   }
 };
-
-export const disableOTP = (req, res, next) => {
-  res.status(200).json({ success: true, msg: "disable otp" });
-};
