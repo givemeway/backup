@@ -3,7 +3,18 @@ import cookie from "cookie";
 import { JWT_SECRET, DOMAIN } from "../config/config.js";
 
 export const logout = (req, res) => {
-  const payload = { email: "", first: "", last: "", userID: "", Username: "" };
+  const payload = {
+    email: "",
+    first: "",
+    last: "",
+    userID: "",
+    Username: "",
+    is2FA: null,
+    isSMS: null,
+    isEmail: null,
+    isTOTP: null,
+    _2FA_verified: null,
+  };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: -100 });
   console.log(token);
   res.setHeader(

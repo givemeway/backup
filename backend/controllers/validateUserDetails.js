@@ -57,7 +57,7 @@ const validateUserDetails = async (req, res) => {
         is2FA,
       } = returnedUser;
 
-      let payload = {
+      const payload = {
         Username: username,
         first: first_name,
         last: last_name,
@@ -68,7 +68,6 @@ const validateUserDetails = async (req, res) => {
         isEmail,
         isTOTP,
         _2FA_verified: false,
-        _2FA_verifying: false,
       };
       const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
 
@@ -92,13 +91,38 @@ const validateUserDetails = async (req, res) => {
           const token = await fn_generateOTP(enc, parseInt(hotpCounter) + 1);
           await sendEmail(first_name, email, token);
         }
-        payload._2FA_verifying = true;
-        const jwt_token = jwt.sign(payload, JWT_SECRET, { expiresIn: 300 });
-
-        res.setHeader(
-          "Set-Cookie",
-          cookie.serialize("token", jwt_token, cookieOpts)
-        );
+        const _2fa_payload = {
+          Username: username,
+          email,
+          is2FA,
+          isSMS,
+          isTOTP,
+          _2FA_verified: false,
+          _2FA_verifying: true,
+        };
+        const dummy_token = {
+          email: "",
+          first: "",
+          last: "",
+          userID: "",
+          Username: "",
+          is2FA: null,
+          isSMS: null,
+          isEmail: null,
+          isTOTP: null,
+          _2FA_verified: null,
+        };
+        const jwt_token_2fa = jwt.sign(_2fa_payload, JWT_SECRET, {
+          expiresIn: 300,
+        });
+        const jwt_dummy_token = jwt.sign(dummy_token, JWT_SECRET, {
+          expiresIn: -100,
+        });
+        const cookies = [
+          cookie.serialize("token", jwt_dummy_token, cookieOpts),
+          cookie.serialize("_2FA", jwt_token_2fa, cookieOpts),
+        ];
+        res.setHeader("Set-Cookie", cookies);
         const expandedUser = {
           ...Object.fromEntries(
             Object.entries(returnedUser).map(([k, v]) => {

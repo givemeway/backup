@@ -1,6 +1,6 @@
 import { JWT_SECRET, OTP_EXPIRY } from "../config/config.js";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
-import { hotp, totp } from "otplib";
+import { hotp } from "otplib";
 import { authenticator } from "@otplib/preset-default";
 import base32Encode from "base32-encode";
 import cookie from "cookie";
@@ -89,6 +89,28 @@ export const verifyOTP = async (req, res, next) => {
     }
     const { first_name, last_name, id, email, is2FA, isSMS, isEmail, isTOTP } =
       user;
+    let payload = {
+      Username: username,
+      first: first_name,
+      last: last_name,
+      userID: id,
+      email,
+      is2FA,
+      isSMS,
+      isEmail,
+      isTOTP,
+      _2FA_verified: null,
+    };
+
+    const _2fa_payload = {
+      Username: "",
+      email: "",
+      is2FA: null,
+      isSMS: null,
+      isTOTP: null,
+      _2FA_verified: null,
+      _2FA_verifying: null,
+    };
 
     if (mfa === "email" || mfa === "sms") {
       const isValid = await fn_verifyOTP(username, token);
@@ -106,24 +128,16 @@ export const verifyOTP = async (req, res, next) => {
         });
       }
       if (is2FAConfig === "false" && isValid) {
-        const payload = {
-          Username: username,
-          first: first_name,
-          last: last_name,
-          userID: id,
-          email,
-          is2FA,
-          isSMS,
-          isEmail,
-          isTOTP,
-          _2FA_verified: true,
-          _2FA_verifying: false,
-        };
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
-        res.setHeader(
-          "Set-Cookie",
-          cookie.serialize("token", token, cookieOpts)
-        );
+        payload._2FA_verified = true;
+        const jwt_token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+        const jwt_2fa_token = jwt.sign(_2fa_payload, JWT_SECRET, {
+          expiresIn: -100,
+        });
+        const cookies = [
+          cookie.serialize("token", jwt_token, cookieOpts),
+          cookie.serialize("_2FA", jwt_2fa_token, cookieOpts),
+        ];
+        res.setHeader("Set-Cookie", cookies);
       }
 
       res
@@ -131,7 +145,7 @@ export const verifyOTP = async (req, res, next) => {
         .json({ success: true, msg: `OTP validity is ${isValid}`, isValid });
     } else if (mfa === "totp") {
       const isValid = await verifyTOTP(username, token);
-      if (is2FAConfig && isValid) {
+      if (is2FAConfig === "true" && isValid) {
         await prisma.user.update({
           where: {
             username,
@@ -144,28 +158,19 @@ export const verifyOTP = async (req, res, next) => {
           },
         });
       }
-      if (!is2FAConfig && isValid) {
-        const payload = {
-          Username: username,
-          first: first_name,
-          last: last_name,
-          userID: id,
-          email,
-          is2FA,
-          isSMS,
-          isEmail,
-          isTOTP,
-          _2FA_verified: true,
-        };
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+      if (is2FAConfig === "false" && isValid) {
+        payload._2FA_verified = true;
+        const jwt_token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
         res.setHeader(
           "Set-Cookie",
-          cookie.serialize("token", token, cookieOpts)
+          cookie.serialize("token", jwt_token, cookieOpts)
         );
       }
       res
         .status(200)
         .json({ success: true, msg: `OTP validity is ${isValid}`, isValid });
+    } else {
+      res.status(400).json({ success: true, msg: "Invalid input" });
     }
   } catch (err) {
     console.log(err);

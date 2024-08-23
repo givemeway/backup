@@ -1,7 +1,7 @@
 import express from "express";
 import { validateUserDetails } from "../controllers/validateUserDetails.js";
 import { signup } from "../controllers/signup.js";
-import { verifyToken } from "../auth/auth.js";
+import { verify_2FA_Token, verifyToken } from "../auth/auth.js";
 import { validateSession } from "../controllers/validateSession.js";
 import { logout } from "../controllers/logout.js";
 import { editName } from "../controllers/editName.js";
@@ -16,10 +16,9 @@ import { sendOTP } from "../controllers/sendOTP.js";
 const router = express.Router();
 
 router.post("/login", validateUserDetails);
-// router.post("/login/configTOTP", verifyToken, configTOTP);
 router.post("/login/enableOTP", verifyToken, enableOTP, sendOTP);
 // router.post("/login/disableOTP", verifyToken, disableOTP);
-router.get("/login/verifyOTP", verifyToken, verifyOTP);
+router.get("/login/verifyOTP", verify_2FA_Token, verifyOTP);
 router.post("/login/sendOTP", verifyToken, sendOTP);
 router.post("/signup", signup);
 router.get("/verifySession", verifyToken, validateSession);
