@@ -21,9 +21,21 @@ const verifyToken = (request, response, next) => {
         return response
           .status(403)
           .json({ success: false, msg: "Invalid Token" });
-
-      request.user = user;
-      next();
+      const { is2FA, _2FA_verifying, _2FA_verified } = user;
+      if (is2FA && (_2FA_verifying || _2FA_verified)) {
+        request.user = user;
+        next();
+      } else if (!is2FA) {
+        request.user = user;
+        next();
+      } else if (is2FA && !_2FA_verified) {
+        return response.status(403).json({
+          success: false,
+          error: "2FA_REQUIRED",
+          ...user,
+          msg: "Two Factor verification is required to complete the sign in process",
+        });
+      }
     });
   } else {
     return response

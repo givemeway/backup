@@ -1,8 +1,11 @@
-import { OTP_EXPIRY } from "../config/config.js";
+import { JWT_SECRET, OTP_EXPIRY } from "../config/config.js";
 import { prismaUser as prisma } from "../config/prismaDBConfig.js";
 import { hotp, totp } from "otplib";
 import { authenticator } from "@otplib/preset-default";
 import base32Encode from "base32-encode";
+import cookie from "cookie";
+import { cookieOpts } from "../config/config.js";
+import jwt from "jsonwebtoken";
 
 export const fn_verifyOTP = (username, token) => {
   return new Promise(async (resolve, reject) => {
@@ -76,9 +79,20 @@ export const verifyOTP = async (req, res, next) => {
   try {
     const username = req.user.Username;
     const { token, mfa, is2FAConfig } = req.query;
+    const user = await prisma.user.findUnique({
+      where: {
+        username,
+      },
+    });
+    if (user === null) {
+      return res.status(404).json({ success: false, msg: `User not found` });
+    }
+    const { first_name, last_name, id, email, is2FA, isSMS, isEmail, isTOTP } =
+      user;
+
     if (mfa === "email" || mfa === "sms") {
       const isValid = await fn_verifyOTP(username, token);
-      if (is2FAConfig && isValid) {
+      if (is2FAConfig === "true" && isValid) {
         await prisma.user.update({
           where: {
             username,
@@ -90,6 +104,26 @@ export const verifyOTP = async (req, res, next) => {
             isSMS: false,
           },
         });
+      }
+      if (is2FAConfig === "false" && isValid) {
+        const payload = {
+          Username: username,
+          first: first_name,
+          last: last_name,
+          userID: id,
+          email,
+          is2FA,
+          isSMS,
+          isEmail,
+          isTOTP,
+          _2FA_verified: true,
+          _2FA_verifying: false,
+        };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+        res.setHeader(
+          "Set-Cookie",
+          cookie.serialize("token", token, cookieOpts)
+        );
       }
 
       res
@@ -109,6 +143,25 @@ export const verifyOTP = async (req, res, next) => {
             isSMS: false,
           },
         });
+      }
+      if (!is2FAConfig && isValid) {
+        const payload = {
+          Username: username,
+          first: first_name,
+          last: last_name,
+          userID: id,
+          email,
+          is2FA,
+          isSMS,
+          isEmail,
+          isTOTP,
+          _2FA_verified: true,
+        };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+        res.setHeader(
+          "Set-Cookie",
+          cookie.serialize("token", token, cookieOpts)
+        );
       }
       res
         .status(200)

@@ -3,24 +3,25 @@ import cookie from "cookie";
 import { cookieOpts } from "../config/config.js";
 import { JWT_SECRET } from "../config/config.js";
 import { createHash } from "node:crypto";
-import { prismaUser as prisma } from "../config/prismaDBConfig.js";
+import { prismaUser as prisma, prismaUser } from "../config/prismaDBConfig.js";
+import { fn_generateOTP } from "./sendOTP.js";
+import { sendEmail } from "./sendEmail.js";
 
 const validateUserDetails = async (req, res) => {
   let encodedString = req.headers.authorization;
   let extractedUsernamePassword;
-  let username;
   let password;
+  let receivedUsername;
   const usernametype = req.body.usernametype;
-  console.log("usernametype -->", usernametype);
   try {
     if (typeof encodedString === "string" && typeof usernametype === "string") {
       extractedUsernamePassword = atob(encodedString.split(" ")[1]);
-      username = extractedUsernamePassword.split(":")[0];
+      receivedUsername = extractedUsernamePassword.split(":")[0];
       password = extractedUsernamePassword.split(":")[1];
       const hashPass = createHash("sha512").update(password).digest("hex");
       const returnedUser = await prisma.user.findUnique({
         where: {
-          username,
+          username: receivedUsername,
           password: hashPass,
         },
         select: {
@@ -33,53 +34,89 @@ const validateUserDetails = async (req, res) => {
           isSMS: true,
           isTOTP: true,
           isEmail: true,
+          enc: true,
+          hotpCounter: true,
         },
       });
-      if (returnedUser !== null && !returnedUser.is2FA) {
-        const { username, first_name, last_name, id, email } = returnedUser;
-        const payload = {
-          Username: username,
-          first: first_name,
-          last: last_name,
-          userID: id,
-          email,
-        };
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
-        res.setHeader(
-          "Set-Cookie",
-          cookie.serialize("token", token, cookieOpts)
-        );
-
-        res.status(200).json({ success: true, msg: "login success" });
-      } else if (returnedUser !== null && returnedUser.is2FA) {
-        const { username, first_name, last_name, id, email } = returnedUser;
-        const payload = {
-          Username: username,
-          first: first_name,
-          last: last_name,
-          userID: id,
-          email,
-        };
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
-        res.setHeader(
-          "Set-Cookie",
-          cookie.serialize("token", token, cookieOpts)
-        );
-        console.log("inside the 2FA");
-        res.status(403).json({
-          success: false,
-          error: "2FA_REQUIRED",
-          msg: "Two Factor verification is required to complete the sign in process",
-        });
-      } else {
-        res
+      if (returnedUser === null) {
+        return res
           .status(401)
           .json({ success: false, msg: "UserName / Password Incorrect" });
       }
-    } else {
-      console.log("invalid input");
+      const {
+        username,
+        first_name,
+        last_name,
+        enc,
+        id,
+        email,
+        isSMS,
+        isEmail,
+        isTOTP,
+        hotpCounter,
+        is2FA,
+      } = returnedUser;
 
-      res.status(422).json({ success: false, msg: "Invalid Input" });
+      let payload = {
+        Username: username,
+        first: first_name,
+        last: last_name,
+        userID: id,
+        email,
+        is2FA,
+        isSMS,
+        isEmail,
+        isTOTP,
+        _2FA_verified: false,
+        _2FA_verifying: false,
+      };
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+
+      if (!is2FA) {
+        res.setHeader(
+          "Set-Cookie",
+          cookie.serialize("token", token, cookieOpts)
+        );
+        res.status(200).json({ success: true, msg: "login success" });
+      } else {
+        if (isSMS || isEmail) {
+          await prismaUser.user.update({
+            where: {
+              username,
+            },
+            data: {
+              hotpCounter: parseInt(hotpCounter) + 1,
+              OTPGenTime: Date.now(),
+            },
+          });
+          const token = await fn_generateOTP(enc, parseInt(hotpCounter) + 1);
+          await sendEmail(first_name, email, token);
+        }
+        payload._2FA_verifying = true;
+        const jwt_token = jwt.sign(payload, JWT_SECRET, { expiresIn: 300 });
+
+        res.setHeader(
+          "Set-Cookie",
+          cookie.serialize("token", jwt_token, cookieOpts)
+        );
+        const expandedUser = {
+          ...Object.fromEntries(
+            Object.entries(returnedUser).map(([k, v]) => {
+              if (k === "hotpCounter") {
+                return [k, parseInt(v)];
+              } else {
+                return [k, v];
+              }
+            })
+          ),
+        };
+        res.status(403).json({
+          success: false,
+          error: "2FA_REQUIRED",
+          ...expandedUser,
+          msg: "Two Factor verification is required to complete the sign in process",
+        });
+      }
     }
   } catch (err) {
     console.error(err);

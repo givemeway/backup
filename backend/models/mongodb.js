@@ -122,6 +122,8 @@ const avatarSchema = new Schema({
   firstName: String,
   lastName: String,
   backup_codes: { type: Object, default: {} },
+  isTrustedDevice: { type: Boolean, default: false },
+  trusted_devices: { type: Object, default: {} },
   avatar_url: { type: Array, default: [] },
   has_avatar: { type: Boolean, default: false },
 });
