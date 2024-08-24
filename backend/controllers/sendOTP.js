@@ -23,6 +23,7 @@ export const sendOTP = async (req, res, next) => {
   try {
     const username = req.user.Username;
     const { isSMS, isTOTP, isEmail } = req.query;
+    console.log({ isSMS, isTOTP, isEmail }, req?.is2FAConfig);
     const user = await prismaUser.user.findUnique({
       where: {
         username,

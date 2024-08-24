@@ -27,10 +27,10 @@ export const disableOTP = async (req, res, next) => {
         last: user.last_name,
         userID: user.id,
         email: user.email,
-        is2FA: user.is2FA,
-        isSMS: user.isSMS,
-        isEmail: user.isEmail,
-        isTOTP: user.isTOTP,
+        is2FA: false,
+        isEmail: false,
+        isSMS: false,
+        isTOTP: false,
         _2FA_verified: null,
       };
       const dummy_token = {
@@ -46,10 +46,10 @@ export const disableOTP = async (req, res, next) => {
         _2FA_verified: null,
       };
       const jwt_token_2fa = jwt.sign(dummy_token, JWT_SECRET, {
-        expiresIn: 300,
+        expiresIn: -100,
       });
       const jwt_token = jwt.sign(payload, JWT_SECRET, {
-        expiresIn: -100,
+        expiresIn: "1d",
       });
       const cookies = [
         cookie.serialize("token", jwt_token, cookieOpts),
