@@ -52,7 +52,6 @@ const verify_2FA_Token = (request, response, next) => {
           .status(403)
           .json({ success: false, msg: "Invalid Token" });
       const { is2FA, _2FA_verifying } = user;
-      console.log({ is2FA, _2FA_verifying });
       if (is2FA && _2FA_verifying) {
         request.user = user;
         next();

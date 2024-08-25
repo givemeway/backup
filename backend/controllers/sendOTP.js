@@ -22,8 +22,7 @@ export const fn_generateOTP = (enc, counter) => {
 export const sendOTP = async (req, res, next) => {
   try {
     const username = req.user.Username;
-    const { isSMS, isTOTP, isEmail } = req.query;
-    console.log({ isSMS, isTOTP, isEmail }, req?.is2FAConfig);
+    const { isSMS, isTOTP, isEmail, is2FAConfig } = req.query;
     const user = await prismaUser.user.findUnique({
       where: {
         username,
@@ -49,7 +48,7 @@ export const sendOTP = async (req, res, next) => {
       );
       await sendEmail(user.first_name, user.email, token);
 
-      if (req?.is2FAConfig === true) {
+      if (is2FAConfig === true) {
         const _2fa_payload = {
           Username: username,
           email: user.email,

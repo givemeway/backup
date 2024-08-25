@@ -14,6 +14,10 @@ router.get("/", verifyToken, async (req, res) => {
         { filename: { endsWith: ".jpg" } },
         { filename: { endsWith: ".jpeg" } },
         { filename: { endsWith: ".tiff" } },
+        { filename: { endsWith: ".PNG" } },
+        { filename: { endsWith: ".JPG" } },
+        { filename: { endsWith: ".JPEG" } },
+        { filename: { endsWith: ".TIFF" } },
       ],
     },
     select: {
