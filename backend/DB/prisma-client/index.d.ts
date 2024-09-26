@@ -1426,11 +1426,15 @@ export namespace Prisma {
   export type FileAvgAggregateOutputType = {
     versions: number | null
     size: number | null
+    height: number | null
+    width: number | null
   }
 
   export type FileSumAggregateOutputType = {
     versions: number | null
     size: bigint | null
+    height: number | null
+    width: number | null
   }
 
   export type FileMinAggregateOutputType = {
@@ -1448,6 +1452,9 @@ export namespace Prisma {
     salt: string | null
     iv: string | null
     dirID: string | null
+    type: string | null
+    height: number | null
+    width: number | null
   }
 
   export type FileMaxAggregateOutputType = {
@@ -1465,6 +1472,9 @@ export namespace Prisma {
     salt: string | null
     iv: string | null
     dirID: string | null
+    type: string | null
+    height: number | null
+    width: number | null
   }
 
   export type FileCountAggregateOutputType = {
@@ -1482,6 +1492,9 @@ export namespace Prisma {
     salt: number
     iv: number
     dirID: number
+    type: number
+    height: number
+    width: number
     _all: number
   }
 
@@ -1489,11 +1502,15 @@ export namespace Prisma {
   export type FileAvgAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type FileSumAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type FileMinAggregateInputType = {
@@ -1511,6 +1528,9 @@ export namespace Prisma {
     salt?: true
     iv?: true
     dirID?: true
+    type?: true
+    height?: true
+    width?: true
   }
 
   export type FileMaxAggregateInputType = {
@@ -1528,6 +1548,9 @@ export namespace Prisma {
     salt?: true
     iv?: true
     dirID?: true
+    type?: true
+    height?: true
+    width?: true
   }
 
   export type FileCountAggregateInputType = {
@@ -1545,6 +1568,9 @@ export namespace Prisma {
     salt?: true
     iv?: true
     dirID?: true
+    type?: true
+    height?: true
+    width?: true
     _all?: true
   }
 
@@ -1649,6 +1675,9 @@ export namespace Prisma {
     salt: string
     iv: string
     dirID: string
+    type: string
+    height: number
+    width: number
     _count: FileCountAggregateOutputType | null
     _avg: FileAvgAggregateOutputType | null
     _sum: FileSumAggregateOutputType | null
@@ -1685,6 +1714,9 @@ export namespace Prisma {
     salt?: boolean
     iv?: boolean
     dirID?: boolean
+    type?: boolean
+    height?: boolean
+    width?: boolean
     versionedFiles?: boolean | File$versionedFilesArgs<ExtArgs>
     directoryID?: boolean | DirectoryDefaultArgs<ExtArgs>
     _count?: boolean | FileCountOutputTypeDefaultArgs<ExtArgs>
@@ -1705,6 +1737,9 @@ export namespace Prisma {
     salt?: boolean
     iv?: boolean
     dirID?: boolean
+    type?: boolean
+    height?: boolean
+    width?: boolean
   }
 
   export type FileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1735,6 +1770,9 @@ export namespace Prisma {
       salt: string
       iv: string
       dirID: string
+      type: string
+      height: number
+      width: number
     }, ExtArgs["result"]["file"]>
     composites: {}
   }
@@ -2146,6 +2184,9 @@ export namespace Prisma {
     readonly salt: FieldRef<"File", 'String'>
     readonly iv: FieldRef<"File", 'String'>
     readonly dirID: FieldRef<"File", 'String'>
+    readonly type: FieldRef<"File", 'String'>
+    readonly height: FieldRef<"File", 'Int'>
+    readonly width: FieldRef<"File", 'Int'>
   }
     
 
@@ -2518,11 +2559,15 @@ export namespace Prisma {
   export type FileVersionAvgAggregateOutputType = {
     versions: number | null
     size: number | null
+    height: number | null
+    width: number | null
   }
 
   export type FileVersionSumAggregateOutputType = {
     versions: number | null
     size: bigint | null
+    height: number | null
+    width: number | null
   }
 
   export type FileVersionMinAggregateOutputType = {
@@ -2539,6 +2584,8 @@ export namespace Prisma {
     size: bigint | null
     salt: string | null
     iv: string | null
+    height: number | null
+    width: number | null
   }
 
   export type FileVersionMaxAggregateOutputType = {
@@ -2555,6 +2602,8 @@ export namespace Prisma {
     size: bigint | null
     salt: string | null
     iv: string | null
+    height: number | null
+    width: number | null
   }
 
   export type FileVersionCountAggregateOutputType = {
@@ -2571,6 +2620,8 @@ export namespace Prisma {
     size: number
     salt: number
     iv: number
+    height: number
+    width: number
     _all: number
   }
 
@@ -2578,11 +2629,15 @@ export namespace Prisma {
   export type FileVersionAvgAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type FileVersionSumAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type FileVersionMinAggregateInputType = {
@@ -2599,6 +2654,8 @@ export namespace Prisma {
     size?: true
     salt?: true
     iv?: true
+    height?: true
+    width?: true
   }
 
   export type FileVersionMaxAggregateInputType = {
@@ -2615,6 +2672,8 @@ export namespace Prisma {
     size?: true
     salt?: true
     iv?: true
+    height?: true
+    width?: true
   }
 
   export type FileVersionCountAggregateInputType = {
@@ -2631,6 +2690,8 @@ export namespace Prisma {
     size?: true
     salt?: true
     iv?: true
+    height?: true
+    width?: true
     _all?: true
   }
 
@@ -2734,6 +2795,8 @@ export namespace Prisma {
     size: bigint
     salt: string
     iv: string
+    height: number
+    width: number
     _count: FileVersionCountAggregateOutputType | null
     _avg: FileVersionAvgAggregateOutputType | null
     _sum: FileVersionSumAggregateOutputType | null
@@ -2769,6 +2832,8 @@ export namespace Prisma {
     size?: boolean
     salt?: boolean
     iv?: boolean
+    height?: boolean
+    width?: boolean
     LatestFile?: boolean | FileDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fileVersion"]>
 
@@ -2786,6 +2851,8 @@ export namespace Prisma {
     size?: boolean
     salt?: boolean
     iv?: boolean
+    height?: boolean
+    width?: boolean
   }
 
   export type FileVersionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2812,6 +2879,8 @@ export namespace Prisma {
       size: bigint
       salt: string
       iv: string
+      height: number
+      width: number
     }, ExtArgs["result"]["fileVersion"]>
     composites: {}
   }
@@ -3220,6 +3289,8 @@ export namespace Prisma {
     readonly size: FieldRef<"FileVersion", 'BigInt'>
     readonly salt: FieldRef<"FileVersion", 'String'>
     readonly iv: FieldRef<"FileVersion", 'String'>
+    readonly height: FieldRef<"FileVersion", 'Int'>
+    readonly width: FieldRef<"FileVersion", 'Int'>
   }
     
 
@@ -3571,11 +3642,15 @@ export namespace Prisma {
   export type DeletedFileAvgAggregateOutputType = {
     versions: number | null
     size: number | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileSumAggregateOutputType = {
     versions: number | null
     size: bigint | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileMinAggregateOutputType = {
@@ -3595,6 +3670,9 @@ export namespace Prisma {
     deletion_date: Date | null
     deletion_type: string | null
     dirID: string | null
+    type: string | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileMaxAggregateOutputType = {
@@ -3614,6 +3692,9 @@ export namespace Prisma {
     deletion_date: Date | null
     deletion_type: string | null
     dirID: string | null
+    type: string | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileCountAggregateOutputType = {
@@ -3633,6 +3714,9 @@ export namespace Prisma {
     deletion_date: number
     deletion_type: number
     dirID: number
+    type: number
+    height: number
+    width: number
     _all: number
   }
 
@@ -3640,11 +3724,15 @@ export namespace Prisma {
   export type DeletedFileAvgAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileSumAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileMinAggregateInputType = {
@@ -3664,6 +3752,9 @@ export namespace Prisma {
     deletion_date?: true
     deletion_type?: true
     dirID?: true
+    type?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileMaxAggregateInputType = {
@@ -3683,6 +3774,9 @@ export namespace Prisma {
     deletion_date?: true
     deletion_type?: true
     dirID?: true
+    type?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileCountAggregateInputType = {
@@ -3702,6 +3796,9 @@ export namespace Prisma {
     deletion_date?: true
     deletion_type?: true
     dirID?: true
+    type?: true
+    height?: true
+    width?: true
     _all?: true
   }
 
@@ -3808,6 +3905,9 @@ export namespace Prisma {
     deletion_date: Date
     deletion_type: string
     dirID: string
+    type: string
+    height: number
+    width: number
     _count: DeletedFileCountAggregateOutputType | null
     _avg: DeletedFileAvgAggregateOutputType | null
     _sum: DeletedFileSumAggregateOutputType | null
@@ -3846,6 +3946,9 @@ export namespace Prisma {
     deletion_date?: boolean
     deletion_type?: boolean
     dirID?: boolean
+    type?: boolean
+    height?: boolean
+    width?: boolean
     directoryID?: boolean | DeletedDirectoryDefaultArgs<ExtArgs>
     deletedFileVersions?: boolean | DeletedFile$deletedFileVersionsArgs<ExtArgs>
     _count?: boolean | DeletedFileCountOutputTypeDefaultArgs<ExtArgs>
@@ -3868,6 +3971,9 @@ export namespace Prisma {
     deletion_date?: boolean
     deletion_type?: boolean
     dirID?: boolean
+    type?: boolean
+    height?: boolean
+    width?: boolean
   }
 
   export type DeletedFileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3900,6 +4006,9 @@ export namespace Prisma {
       deletion_date: Date
       deletion_type: string
       dirID: string
+      type: string
+      height: number
+      width: number
     }, ExtArgs["result"]["deletedFile"]>
     composites: {}
   }
@@ -4313,6 +4422,9 @@ export namespace Prisma {
     readonly deletion_date: FieldRef<"DeletedFile", 'DateTime'>
     readonly deletion_type: FieldRef<"DeletedFile", 'String'>
     readonly dirID: FieldRef<"DeletedFile", 'String'>
+    readonly type: FieldRef<"DeletedFile", 'String'>
+    readonly height: FieldRef<"DeletedFile", 'Int'>
+    readonly width: FieldRef<"DeletedFile", 'Int'>
   }
     
 
@@ -4685,11 +4797,15 @@ export namespace Prisma {
   export type DeletedFileVersionAvgAggregateOutputType = {
     versions: number | null
     size: number | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileVersionSumAggregateOutputType = {
     versions: number | null
     size: bigint | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileVersionMinAggregateOutputType = {
@@ -4708,6 +4824,8 @@ export namespace Prisma {
     iv: string | null
     deletion_date: Date | null
     deletion_type: string | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileVersionMaxAggregateOutputType = {
@@ -4726,6 +4844,8 @@ export namespace Prisma {
     iv: string | null
     deletion_date: Date | null
     deletion_type: string | null
+    height: number | null
+    width: number | null
   }
 
   export type DeletedFileVersionCountAggregateOutputType = {
@@ -4744,6 +4864,8 @@ export namespace Prisma {
     iv: number
     deletion_date: number
     deletion_type: number
+    height: number
+    width: number
     _all: number
   }
 
@@ -4751,11 +4873,15 @@ export namespace Prisma {
   export type DeletedFileVersionAvgAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileVersionSumAggregateInputType = {
     versions?: true
     size?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileVersionMinAggregateInputType = {
@@ -4774,6 +4900,8 @@ export namespace Prisma {
     iv?: true
     deletion_date?: true
     deletion_type?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileVersionMaxAggregateInputType = {
@@ -4792,6 +4920,8 @@ export namespace Prisma {
     iv?: true
     deletion_date?: true
     deletion_type?: true
+    height?: true
+    width?: true
   }
 
   export type DeletedFileVersionCountAggregateInputType = {
@@ -4810,6 +4940,8 @@ export namespace Prisma {
     iv?: true
     deletion_date?: true
     deletion_type?: true
+    height?: true
+    width?: true
     _all?: true
   }
 
@@ -4915,6 +5047,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date
     deletion_type: string
+    height: number
+    width: number
     _count: DeletedFileVersionCountAggregateOutputType | null
     _avg: DeletedFileVersionAvgAggregateOutputType | null
     _sum: DeletedFileVersionSumAggregateOutputType | null
@@ -4952,6 +5086,8 @@ export namespace Prisma {
     iv?: boolean
     deletion_date?: boolean
     deletion_type?: boolean
+    height?: boolean
+    width?: boolean
     latest_deleted_file?: boolean | DeletedFileDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["deletedFileVersion"]>
 
@@ -4971,6 +5107,8 @@ export namespace Prisma {
     iv?: boolean
     deletion_date?: boolean
     deletion_type?: boolean
+    height?: boolean
+    width?: boolean
   }
 
   export type DeletedFileVersionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4999,6 +5137,8 @@ export namespace Prisma {
       iv: string
       deletion_date: Date
       deletion_type: string
+      height: number
+      width: number
     }, ExtArgs["result"]["deletedFileVersion"]>
     composites: {}
   }
@@ -5409,6 +5549,8 @@ export namespace Prisma {
     readonly iv: FieldRef<"DeletedFileVersion", 'String'>
     readonly deletion_date: FieldRef<"DeletedFileVersion", 'DateTime'>
     readonly deletion_type: FieldRef<"DeletedFileVersion", 'String'>
+    readonly height: FieldRef<"DeletedFileVersion", 'Int'>
+    readonly width: FieldRef<"DeletedFileVersion", 'Int'>
   }
     
 
@@ -7739,7 +7881,10 @@ export namespace Prisma {
     size: 'size',
     salt: 'salt',
     iv: 'iv',
-    dirID: 'dirID'
+    dirID: 'dirID',
+    type: 'type',
+    height: 'height',
+    width: 'width'
   };
 
   export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
@@ -7766,7 +7911,9 @@ export namespace Prisma {
     versions: 'versions',
     size: 'size',
     salt: 'salt',
-    iv: 'iv'
+    iv: 'iv',
+    height: 'height',
+    width: 'width'
   };
 
   export type FileVersionScalarFieldEnum = (typeof FileVersionScalarFieldEnum)[keyof typeof FileVersionScalarFieldEnum]
@@ -7788,7 +7935,10 @@ export namespace Prisma {
     iv: 'iv',
     deletion_date: 'deletion_date',
     deletion_type: 'deletion_type',
-    dirID: 'dirID'
+    dirID: 'dirID',
+    type: 'type',
+    height: 'height',
+    width: 'width'
   };
 
   export type DeletedFileScalarFieldEnum = (typeof DeletedFileScalarFieldEnum)[keyof typeof DeletedFileScalarFieldEnum]
@@ -7809,7 +7959,9 @@ export namespace Prisma {
     salt: 'salt',
     iv: 'iv',
     deletion_date: 'deletion_date',
-    deletion_type: 'deletion_type'
+    deletion_type: 'deletion_type',
+    height: 'height',
+    width: 'width'
   };
 
   export type DeletedFileVersionScalarFieldEnum = (typeof DeletedFileVersionScalarFieldEnum)[keyof typeof DeletedFileVersionScalarFieldEnum]
@@ -7870,7 +8022,8 @@ export namespace Prisma {
     enc_hashvalue: 'enc_hashvalue',
     salt: 'salt',
     iv: 'iv',
-    dirID: 'dirID'
+    dirID: 'dirID',
+    type: 'type'
   };
 
   export type FileOrderByRelevanceFieldEnum = (typeof FileOrderByRelevanceFieldEnum)[keyof typeof FileOrderByRelevanceFieldEnum]
@@ -7904,7 +8057,8 @@ export namespace Prisma {
     salt: 'salt',
     iv: 'iv',
     deletion_type: 'deletion_type',
-    dirID: 'dirID'
+    dirID: 'dirID',
+    type: 'type'
   };
 
   export type DeletedFileOrderByRelevanceFieldEnum = (typeof DeletedFileOrderByRelevanceFieldEnum)[keyof typeof DeletedFileOrderByRelevanceFieldEnum]
@@ -8056,6 +8210,9 @@ export namespace Prisma {
     salt?: StringFilter<"File"> | string
     iv?: StringFilter<"File"> | string
     dirID?: StringFilter<"File"> | string
+    type?: StringFilter<"File"> | string
+    height?: IntFilter<"File"> | number
+    width?: IntFilter<"File"> | number
     versionedFiles?: FileVersionListRelationFilter
     directoryID?: XOR<DirectoryRelationFilter, DirectoryWhereInput>
   }
@@ -8075,6 +8232,9 @@ export namespace Prisma {
     salt?: SortOrder
     iv?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     versionedFiles?: FileVersionOrderByRelationAggregateInput
     directoryID?: DirectoryOrderByWithRelationAndSearchRelevanceInput
     _relevance?: FileOrderByRelevanceInput
@@ -8099,6 +8259,9 @@ export namespace Prisma {
     salt?: StringFilter<"File"> | string
     iv?: StringFilter<"File"> | string
     dirID?: StringFilter<"File"> | string
+    type?: StringFilter<"File"> | string
+    height?: IntFilter<"File"> | number
+    width?: IntFilter<"File"> | number
     versionedFiles?: FileVersionListRelationFilter
     directoryID?: XOR<DirectoryRelationFilter, DirectoryWhereInput>
   }, "origin" | "username_device_directory_filename">
@@ -8118,6 +8281,9 @@ export namespace Prisma {
     salt?: SortOrder
     iv?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     _count?: FileCountOrderByAggregateInput
     _avg?: FileAvgOrderByAggregateInput
     _max?: FileMaxOrderByAggregateInput
@@ -8143,6 +8309,9 @@ export namespace Prisma {
     salt?: StringWithAggregatesFilter<"File"> | string
     iv?: StringWithAggregatesFilter<"File"> | string
     dirID?: StringWithAggregatesFilter<"File"> | string
+    type?: StringWithAggregatesFilter<"File"> | string
+    height?: IntWithAggregatesFilter<"File"> | number
+    width?: IntWithAggregatesFilter<"File"> | number
   }
 
   export type FileVersionWhereInput = {
@@ -8162,6 +8331,8 @@ export namespace Prisma {
     size?: BigIntFilter<"FileVersion"> | bigint | number
     salt?: StringFilter<"FileVersion"> | string
     iv?: StringFilter<"FileVersion"> | string
+    height?: IntFilter<"FileVersion"> | number
+    width?: IntFilter<"FileVersion"> | number
     LatestFile?: XOR<FileRelationFilter, FileWhereInput>
   }
 
@@ -8179,6 +8350,8 @@ export namespace Prisma {
     size?: SortOrder
     salt?: SortOrder
     iv?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     LatestFile?: FileOrderByWithRelationAndSearchRelevanceInput
     _relevance?: FileVersionOrderByRelevanceInput
   }
@@ -8201,6 +8374,8 @@ export namespace Prisma {
     size?: BigIntFilter<"FileVersion"> | bigint | number
     salt?: StringFilter<"FileVersion"> | string
     iv?: StringFilter<"FileVersion"> | string
+    height?: IntFilter<"FileVersion"> | number
+    width?: IntFilter<"FileVersion"> | number
     LatestFile?: XOR<FileRelationFilter, FileWhereInput>
   }, "username_device_directory_filename_uuid">
 
@@ -8218,6 +8393,8 @@ export namespace Prisma {
     size?: SortOrder
     salt?: SortOrder
     iv?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     _count?: FileVersionCountOrderByAggregateInput
     _avg?: FileVersionAvgOrderByAggregateInput
     _max?: FileVersionMaxOrderByAggregateInput
@@ -8242,6 +8419,8 @@ export namespace Prisma {
     size?: BigIntWithAggregatesFilter<"FileVersion"> | bigint | number
     salt?: StringWithAggregatesFilter<"FileVersion"> | string
     iv?: StringWithAggregatesFilter<"FileVersion"> | string
+    height?: IntWithAggregatesFilter<"FileVersion"> | number
+    width?: IntWithAggregatesFilter<"FileVersion"> | number
   }
 
   export type DeletedFileWhereInput = {
@@ -8264,6 +8443,9 @@ export namespace Prisma {
     deletion_date?: DateTimeFilter<"DeletedFile"> | Date | string
     deletion_type?: StringFilter<"DeletedFile"> | string
     dirID?: StringFilter<"DeletedFile"> | string
+    type?: StringFilter<"DeletedFile"> | string
+    height?: IntFilter<"DeletedFile"> | number
+    width?: IntFilter<"DeletedFile"> | number
     directoryID?: XOR<DeletedDirectoryRelationFilter, DeletedDirectoryWhereInput>
     deletedFileVersions?: DeletedFileVersionListRelationFilter
   }
@@ -8285,6 +8467,9 @@ export namespace Prisma {
     deletion_date?: SortOrder
     deletion_type?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     directoryID?: DeletedDirectoryOrderByWithRelationAndSearchRelevanceInput
     deletedFileVersions?: DeletedFileVersionOrderByRelationAggregateInput
     _relevance?: DeletedFileOrderByRelevanceInput
@@ -8311,6 +8496,9 @@ export namespace Prisma {
     deletion_date?: DateTimeFilter<"DeletedFile"> | Date | string
     deletion_type?: StringFilter<"DeletedFile"> | string
     dirID?: StringFilter<"DeletedFile"> | string
+    type?: StringFilter<"DeletedFile"> | string
+    height?: IntFilter<"DeletedFile"> | number
+    width?: IntFilter<"DeletedFile"> | number
     directoryID?: XOR<DeletedDirectoryRelationFilter, DeletedDirectoryWhereInput>
     deletedFileVersions?: DeletedFileVersionListRelationFilter
   }, "origin" | "username_device_directory_filename">
@@ -8332,6 +8520,9 @@ export namespace Prisma {
     deletion_date?: SortOrder
     deletion_type?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     _count?: DeletedFileCountOrderByAggregateInput
     _avg?: DeletedFileAvgOrderByAggregateInput
     _max?: DeletedFileMaxOrderByAggregateInput
@@ -8359,6 +8550,9 @@ export namespace Prisma {
     deletion_date?: DateTimeWithAggregatesFilter<"DeletedFile"> | Date | string
     deletion_type?: StringWithAggregatesFilter<"DeletedFile"> | string
     dirID?: StringWithAggregatesFilter<"DeletedFile"> | string
+    type?: StringWithAggregatesFilter<"DeletedFile"> | string
+    height?: IntWithAggregatesFilter<"DeletedFile"> | number
+    width?: IntWithAggregatesFilter<"DeletedFile"> | number
   }
 
   export type DeletedFileVersionWhereInput = {
@@ -8380,6 +8574,8 @@ export namespace Prisma {
     iv?: StringFilter<"DeletedFileVersion"> | string
     deletion_date?: DateTimeFilter<"DeletedFileVersion"> | Date | string
     deletion_type?: StringFilter<"DeletedFileVersion"> | string
+    height?: IntFilter<"DeletedFileVersion"> | number
+    width?: IntFilter<"DeletedFileVersion"> | number
     latest_deleted_file?: XOR<DeletedFileRelationFilter, DeletedFileWhereInput>
   }
 
@@ -8399,6 +8595,8 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     latest_deleted_file?: DeletedFileOrderByWithRelationAndSearchRelevanceInput
     _relevance?: DeletedFileVersionOrderByRelevanceInput
   }
@@ -8423,6 +8621,8 @@ export namespace Prisma {
     iv?: StringFilter<"DeletedFileVersion"> | string
     deletion_date?: DateTimeFilter<"DeletedFileVersion"> | Date | string
     deletion_type?: StringFilter<"DeletedFileVersion"> | string
+    height?: IntFilter<"DeletedFileVersion"> | number
+    width?: IntFilter<"DeletedFileVersion"> | number
     latest_deleted_file?: XOR<DeletedFileRelationFilter, DeletedFileWhereInput>
   }, "username_device_directory_filename_uuid">
 
@@ -8442,6 +8642,8 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
     _count?: DeletedFileVersionCountOrderByAggregateInput
     _avg?: DeletedFileVersionAvgOrderByAggregateInput
     _max?: DeletedFileVersionMaxOrderByAggregateInput
@@ -8468,6 +8670,8 @@ export namespace Prisma {
     iv?: StringWithAggregatesFilter<"DeletedFileVersion"> | string
     deletion_date?: DateTimeWithAggregatesFilter<"DeletedFileVersion"> | Date | string
     deletion_type?: StringWithAggregatesFilter<"DeletedFileVersion"> | string
+    height?: IntWithAggregatesFilter<"DeletedFileVersion"> | number
+    width?: IntWithAggregatesFilter<"DeletedFileVersion"> | number
   }
 
   export type DirectoryWhereInput = {
@@ -8628,6 +8832,9 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    type?: string
+    height?: number
+    width?: number
     versionedFiles?: FileVersionCreateNestedManyWithoutLatestFileInput
     directoryID: DirectoryCreateNestedOneWithoutFilesInput
   }
@@ -8647,6 +8854,9 @@ export namespace Prisma {
     salt: string
     iv: string
     dirID: string
+    type?: string
+    height?: number
+    width?: number
     versionedFiles?: FileVersionUncheckedCreateNestedManyWithoutLatestFileInput
   }
 
@@ -8664,6 +8874,9 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     versionedFiles?: FileVersionUpdateManyWithoutLatestFileNestedInput
     directoryID?: DirectoryUpdateOneRequiredWithoutFilesNestedInput
   }
@@ -8683,6 +8896,9 @@ export namespace Prisma {
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
     dirID?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     versionedFiles?: FileVersionUncheckedUpdateManyWithoutLatestFileNestedInput
   }
 
@@ -8701,6 +8917,9 @@ export namespace Prisma {
     salt: string
     iv: string
     dirID: string
+    type?: string
+    height?: number
+    width?: number
   }
 
   export type FileUpdateManyMutationInput = {
@@ -8717,6 +8936,9 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileUncheckedUpdateManyInput = {
@@ -8734,6 +8956,9 @@ export namespace Prisma {
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
     dirID?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileVersionCreateInput = {
@@ -8749,6 +8974,8 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    height?: number
+    width?: number
     LatestFile: FileCreateNestedOneWithoutVersionedFilesInput
   }
 
@@ -8766,6 +8993,8 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    height?: number
+    width?: number
   }
 
   export type FileVersionUpdateInput = {
@@ -8781,6 +9010,8 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     LatestFile?: FileUpdateOneRequiredWithoutVersionedFilesNestedInput
   }
 
@@ -8798,6 +9029,8 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileVersionCreateManyInput = {
@@ -8814,6 +9047,8 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    height?: number
+    width?: number
   }
 
   export type FileVersionUpdateManyMutationInput = {
@@ -8829,6 +9064,8 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileVersionUncheckedUpdateManyInput = {
@@ -8845,6 +9082,8 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileCreateInput = {
@@ -8863,6 +9102,9 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    type?: string
+    height?: number
+    width?: number
     directoryID: DeletedDirectoryCreateNestedOneWithoutFilesInput
     deletedFileVersions?: DeletedFileVersionCreateNestedManyWithoutLatest_deleted_fileInput
   }
@@ -8884,6 +9126,9 @@ export namespace Prisma {
     deletion_date: Date | string
     deletion_type: string
     dirID: string
+    type?: string
+    height?: number
+    width?: number
     deletedFileVersions?: DeletedFileVersionUncheckedCreateNestedManyWithoutLatest_deleted_fileInput
   }
 
@@ -8903,6 +9148,9 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     directoryID?: DeletedDirectoryUpdateOneRequiredWithoutFilesNestedInput
     deletedFileVersions?: DeletedFileVersionUpdateManyWithoutLatest_deleted_fileNestedInput
   }
@@ -8924,6 +9172,9 @@ export namespace Prisma {
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
     dirID?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     deletedFileVersions?: DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileNestedInput
   }
 
@@ -8944,6 +9195,9 @@ export namespace Prisma {
     deletion_date: Date | string
     deletion_type: string
     dirID: string
+    type?: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileUpdateManyMutationInput = {
@@ -8962,6 +9216,9 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileUncheckedUpdateManyInput = {
@@ -8981,6 +9238,9 @@ export namespace Prisma {
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
     dirID?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileVersionCreateInput = {
@@ -8998,6 +9258,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    height?: number
+    width?: number
     latest_deleted_file: DeletedFileCreateNestedOneWithoutDeletedFileVersionsInput
   }
 
@@ -9017,6 +9279,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileVersionUpdateInput = {
@@ -9034,6 +9298,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     latest_deleted_file?: DeletedFileUpdateOneRequiredWithoutDeletedFileVersionsNestedInput
   }
 
@@ -9053,6 +9319,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileVersionCreateManyInput = {
@@ -9071,6 +9339,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileVersionUpdateManyMutationInput = {
@@ -9088,6 +9358,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileVersionUncheckedUpdateManyInput = {
@@ -9106,6 +9378,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DirectoryCreateInput = {
@@ -9362,11 +9636,16 @@ export namespace Prisma {
     salt?: SortOrder
     iv?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileAvgOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileMaxOrderByAggregateInput = {
@@ -9384,6 +9663,9 @@ export namespace Prisma {
     salt?: SortOrder
     iv?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileMinOrderByAggregateInput = {
@@ -9401,11 +9683,16 @@ export namespace Prisma {
     salt?: SortOrder
     iv?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileSumOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -9506,11 +9793,15 @@ export namespace Prisma {
     size?: SortOrder
     salt?: SortOrder
     iv?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileVersionAvgOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileVersionMaxOrderByAggregateInput = {
@@ -9527,6 +9818,8 @@ export namespace Prisma {
     size?: SortOrder
     salt?: SortOrder
     iv?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileVersionMinOrderByAggregateInput = {
@@ -9543,11 +9836,15 @@ export namespace Prisma {
     size?: SortOrder
     salt?: SortOrder
     iv?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileVersionSumOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedDirectoryRelationFilter = {
@@ -9595,11 +9892,16 @@ export namespace Prisma {
     deletion_date?: SortOrder
     deletion_type?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileAvgOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileMaxOrderByAggregateInput = {
@@ -9619,6 +9921,9 @@ export namespace Prisma {
     deletion_date?: SortOrder
     deletion_type?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileMinOrderByAggregateInput = {
@@ -9638,11 +9943,16 @@ export namespace Prisma {
     deletion_date?: SortOrder
     deletion_type?: SortOrder
     dirID?: SortOrder
+    type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileSumOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileRelationFilter = {
@@ -9680,11 +9990,15 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileVersionAvgOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileVersionMaxOrderByAggregateInput = {
@@ -9703,6 +10017,8 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileVersionMinOrderByAggregateInput = {
@@ -9721,11 +10037,15 @@ export namespace Prisma {
     iv?: SortOrder
     deletion_date?: SortOrder
     deletion_type?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type DeletedFileVersionSumOrderByAggregateInput = {
     versions?: SortOrder
     size?: SortOrder
+    height?: SortOrder
+    width?: SortOrder
   }
 
   export type FileListRelationFilter = {
@@ -10312,6 +10632,8 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    height?: number
+    width?: number
   }
 
   export type FileVersionUncheckedCreateWithoutLatestFileInput = {
@@ -10327,6 +10649,8 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    height?: number
+    width?: number
   }
 
   export type FileVersionCreateOrConnectWithoutLatestFileInput = {
@@ -10395,6 +10719,8 @@ export namespace Prisma {
     size?: BigIntFilter<"FileVersion"> | bigint | number
     salt?: StringFilter<"FileVersion"> | string
     iv?: StringFilter<"FileVersion"> | string
+    height?: IntFilter<"FileVersion"> | number
+    width?: IntFilter<"FileVersion"> | number
   }
 
   export type DirectoryUpsertWithoutFilesInput = {
@@ -10440,6 +10766,9 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    type?: string
+    height?: number
+    width?: number
     directoryID: DirectoryCreateNestedOneWithoutFilesInput
   }
 
@@ -10458,6 +10787,9 @@ export namespace Prisma {
     salt: string
     iv: string
     dirID: string
+    type?: string
+    height?: number
+    width?: number
   }
 
   export type FileCreateOrConnectWithoutVersionedFilesInput = {
@@ -10490,6 +10822,9 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     directoryID?: DirectoryUpdateOneRequiredWithoutFilesNestedInput
   }
 
@@ -10508,6 +10843,9 @@ export namespace Prisma {
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
     dirID?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedDirectoryCreateWithoutFilesInput = {
@@ -10556,6 +10894,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileVersionUncheckedCreateWithoutLatest_deleted_fileInput = {
@@ -10573,6 +10913,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileVersionCreateOrConnectWithoutLatest_deleted_fileInput = {
@@ -10657,6 +10999,8 @@ export namespace Prisma {
     iv?: StringFilter<"DeletedFileVersion"> | string
     deletion_date?: DateTimeFilter<"DeletedFileVersion"> | Date | string
     deletion_type?: StringFilter<"DeletedFileVersion"> | string
+    height?: IntFilter<"DeletedFileVersion"> | number
+    width?: IntFilter<"DeletedFileVersion"> | number
   }
 
   export type DeletedFileCreateWithoutDeletedFileVersionsInput = {
@@ -10675,6 +11019,9 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    type?: string
+    height?: number
+    width?: number
     directoryID: DeletedDirectoryCreateNestedOneWithoutFilesInput
   }
 
@@ -10695,6 +11042,9 @@ export namespace Prisma {
     deletion_date: Date | string
     deletion_type: string
     dirID: string
+    type?: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileCreateOrConnectWithoutDeletedFileVersionsInput = {
@@ -10729,6 +11079,9 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     directoryID?: DeletedDirectoryUpdateOneRequiredWithoutFilesNestedInput
   }
 
@@ -10749,6 +11102,9 @@ export namespace Prisma {
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
     dirID?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileCreateWithoutDirectoryIDInput = {
@@ -10765,6 +11121,9 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    type?: string
+    height?: number
+    width?: number
     versionedFiles?: FileVersionCreateNestedManyWithoutLatestFileInput
   }
 
@@ -10782,6 +11141,9 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    type?: string
+    height?: number
+    width?: number
     versionedFiles?: FileVersionUncheckedCreateNestedManyWithoutLatestFileInput
   }
 
@@ -10829,6 +11191,9 @@ export namespace Prisma {
     salt?: StringFilter<"File"> | string
     iv?: StringFilter<"File"> | string
     dirID?: StringFilter<"File"> | string
+    type?: StringFilter<"File"> | string
+    height?: IntFilter<"File"> | number
+    width?: IntFilter<"File"> | number
   }
 
   export type DeletedFileCreateWithoutDirectoryIDInput = {
@@ -10847,6 +11212,9 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    type?: string
+    height?: number
+    width?: number
     deletedFileVersions?: DeletedFileVersionCreateNestedManyWithoutLatest_deleted_fileInput
   }
 
@@ -10866,6 +11234,9 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    type?: string
+    height?: number
+    width?: number
     deletedFileVersions?: DeletedFileVersionUncheckedCreateNestedManyWithoutLatest_deleted_fileInput
   }
 
@@ -10915,6 +11286,9 @@ export namespace Prisma {
     deletion_date?: DateTimeFilter<"DeletedFile"> | Date | string
     deletion_type?: StringFilter<"DeletedFile"> | string
     dirID?: StringFilter<"DeletedFile"> | string
+    type?: StringFilter<"DeletedFile"> | string
+    height?: IntFilter<"DeletedFile"> | number
+    width?: IntFilter<"DeletedFile"> | number
   }
 
   export type FileVersionCreateManyLatestFileInput = {
@@ -10930,6 +11304,8 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    height?: number
+    width?: number
   }
 
   export type FileVersionUpdateWithoutLatestFileInput = {
@@ -10945,6 +11321,8 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileVersionUncheckedUpdateWithoutLatestFileInput = {
@@ -10960,6 +11338,8 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileVersionUncheckedUpdateManyWithoutLatestFileInput = {
@@ -10975,6 +11355,8 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileVersionCreateManyLatest_deleted_fileInput = {
@@ -10992,6 +11374,8 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileVersionUpdateWithoutLatest_deleted_fileInput = {
@@ -11009,6 +11393,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileVersionUncheckedUpdateWithoutLatest_deleted_fileInput = {
@@ -11026,6 +11412,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileInput = {
@@ -11043,6 +11431,8 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type FileCreateManyDirectoryIDInput = {
@@ -11059,6 +11449,9 @@ export namespace Prisma {
     size: bigint | number
     salt: string
     iv: string
+    type?: string
+    height?: number
+    width?: number
   }
 
   export type FileUpdateWithoutDirectoryIDInput = {
@@ -11075,6 +11468,9 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     versionedFiles?: FileVersionUpdateManyWithoutLatestFileNestedInput
   }
 
@@ -11092,6 +11488,9 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     versionedFiles?: FileVersionUncheckedUpdateManyWithoutLatestFileNestedInput
   }
 
@@ -11109,6 +11508,9 @@ export namespace Prisma {
     size?: BigIntFieldUpdateOperationsInput | bigint | number
     salt?: StringFieldUpdateOperationsInput | string
     iv?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeletedFileCreateManyDirectoryIDInput = {
@@ -11127,6 +11529,9 @@ export namespace Prisma {
     iv: string
     deletion_date: Date | string
     deletion_type: string
+    type?: string
+    height?: number
+    width?: number
   }
 
   export type DeletedFileUpdateWithoutDirectoryIDInput = {
@@ -11145,6 +11550,9 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     deletedFileVersions?: DeletedFileVersionUpdateManyWithoutLatest_deleted_fileNestedInput
   }
 
@@ -11164,6 +11572,9 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
     deletedFileVersions?: DeletedFileVersionUncheckedUpdateManyWithoutLatest_deleted_fileNestedInput
   }
 
@@ -11183,6 +11594,9 @@ export namespace Prisma {
     iv?: StringFieldUpdateOperationsInput | string
     deletion_date?: DateTimeFieldUpdateOperationsInput | Date | string
     deletion_type?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    height?: IntFieldUpdateOperationsInput | number
+    width?: IntFieldUpdateOperationsInput | number
   }
 
 

@@ -31,6 +31,9 @@ model File {
   iv String @db.VarChar(64)
   versionedFiles FileVersion[]
   dirID String @db.VarChar(36)
+  type String @db.VarChar(30) @default("file")
+  height Int @default(0)
+  width Int @default(0)
   directoryID Directory @relation(fields: [dirID],references: [uuid])
   @@unique([username,device,directory,filename])
   // @@schema("files")
@@ -52,6 +55,8 @@ model FileVersion {
   size BigInt
   salt String @db.VarChar(64)
   iv String @db.VarChar(64)
+  height Int @default(0)
+  width Int @default(0)
   @@unique([username,device,directory,filename,uuid])
   // @@schema("versions")
   @@index([origin])
@@ -74,6 +79,9 @@ model DeletedFile {
   deletion_date DateTime
   deletion_type String @db.VarChar(6)
   dirID String @db.VarChar(36)
+  type String @db.VarChar(30) @default("file")
+  height Int @default(0)
+  width Int @default(0)
   directoryID DeletedDirectory @relation(fields: [dirID],references: [uuid])
   deletedFileVersions DeletedFileVersion[]
   @@unique([username,device,directory,filename])
@@ -97,6 +105,8 @@ model DeletedFileVersion {
   iv String @db.VarChar(64)
   deletion_date DateTime
   deletion_type String @db.VarChar(6)
+  height Int @default(0)
+  width Int @default(0)
   latest_deleted_file DeletedFile @relation(fields: [origin],references: [origin])
   @@unique([username,device,directory,filename,uuid])
   // @@schema("deleted_files")

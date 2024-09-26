@@ -13,7 +13,7 @@ export const validateSession = async (req, res) => {
     });
     const username = req.user.Username;
     const id = createHash("sha1").update(username).digest("hex");
-    const url = await getSignedURL(id, username, true, ["640w"]);
+    const url = await getSignedURL(id, username, true);
     res.status(200).json({
       success: true,
       userID: req.user.userID,
@@ -23,8 +23,8 @@ export const validateSession = async (req, res) => {
       lastName: user.lastName,
       fullName: user.firstName + " " + user.lastName,
       initials: user.initial,
-      avatar_url: url["640w"],
-      hasAvatar: user.has_avatar,
+      avatar_url: url["32w"],
+      has_avatar: user.has_avatar,
       is2FA: user_main.is2FA,
       isSMS: user_main.isSMS,
       isEmail: user_main.isEmail,

@@ -1,15 +1,7 @@
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
 
 export const insert_file_version = async (data) => {
-  const {
-    filename,
-    device,
-    username,
-    directory,
-    origin,
-    insertData,
-    updateData,
-  } = data;
+  const { filename, device, username, directory, origin, updateData } = data;
 
   const file = await prisma.file.findUnique({
     where: { origin, username },
@@ -28,11 +20,9 @@ export const insert_file_version = async (data) => {
     filename: file.filename,
     directory: file.directory,
     device: file.device,
+    height: file.height,
+    width: file.width,
   };
-  console.log("fileVersionData-->", fileVersionData);
-  console.log("insertData-->", insertData);
-  console.log("updateData-->", updateData);
-
   await prisma.$transaction([
     prisma.file.update({
       where: {

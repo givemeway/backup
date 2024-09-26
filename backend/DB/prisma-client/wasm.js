@@ -121,7 +121,10 @@ exports.Prisma.FileScalarFieldEnum = {
   size: 'size',
   salt: 'salt',
   iv: 'iv',
-  dirID: 'dirID'
+  dirID: 'dirID',
+  type: 'type',
+  height: 'height',
+  width: 'width'
 };
 
 exports.Prisma.RelationLoadStrategy = {
@@ -142,7 +145,9 @@ exports.Prisma.FileVersionScalarFieldEnum = {
   versions: 'versions',
   size: 'size',
   salt: 'salt',
-  iv: 'iv'
+  iv: 'iv',
+  height: 'height',
+  width: 'width'
 };
 
 exports.Prisma.DeletedFileScalarFieldEnum = {
@@ -161,7 +166,10 @@ exports.Prisma.DeletedFileScalarFieldEnum = {
   iv: 'iv',
   deletion_date: 'deletion_date',
   deletion_type: 'deletion_type',
-  dirID: 'dirID'
+  dirID: 'dirID',
+  type: 'type',
+  height: 'height',
+  width: 'width'
 };
 
 exports.Prisma.DeletedFileVersionScalarFieldEnum = {
@@ -179,7 +187,9 @@ exports.Prisma.DeletedFileVersionScalarFieldEnum = {
   salt: 'salt',
   iv: 'iv',
   deletion_date: 'deletion_date',
-  deletion_type: 'deletion_type'
+  deletion_type: 'deletion_type',
+  height: 'height',
+  width: 'width'
 };
 
 exports.Prisma.DirectoryScalarFieldEnum = {
@@ -225,7 +235,8 @@ exports.Prisma.FileOrderByRelevanceFieldEnum = {
   enc_hashvalue: 'enc_hashvalue',
   salt: 'salt',
   iv: 'iv',
-  dirID: 'dirID'
+  dirID: 'dirID',
+  type: 'type'
 };
 
 exports.Prisma.FileVersionOrderByRelevanceFieldEnum = {
@@ -253,7 +264,8 @@ exports.Prisma.DeletedFileOrderByRelevanceFieldEnum = {
   salt: 'salt',
   iv: 'iv',
   deletion_type: 'deletion_type',
-  dirID: 'dirID'
+  dirID: 'dirID',
+  type: 'type'
 };
 
 exports.Prisma.DeletedFileVersionOrderByRelevanceFieldEnum = {

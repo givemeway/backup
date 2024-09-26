@@ -17,6 +17,12 @@ const update_file_directory_DB = async (req, res, next) => {
   const enc_file_checksum = req.enc_hash;
   const directory = req.headers.dir;
   const fileStat = JSON.parse(req.headers.filestat);
+  let height = 0;
+  let width = 0;
+  if (fileStat.type.split("/")[0] === "image") {
+    height = fileStat.height;
+    width = fileStat.width;
+  }
   const last_modified = new Date(fileStat.mtime);
   const checksum = fileStat.checksum;
   let version;
@@ -62,6 +68,11 @@ const update_file_directory_DB = async (req, res, next) => {
     size,
     salt,
     iv,
+    type: fileStat.type,
+    height:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+    width:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
   };
 
   const updateData = {
@@ -74,6 +85,11 @@ const update_file_directory_DB = async (req, res, next) => {
     origin,
     uuid,
     enc_hashvalue: enc_file_checksum,
+    type: fileStat.type,
+    height:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+    width:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
   };
 
   try {
