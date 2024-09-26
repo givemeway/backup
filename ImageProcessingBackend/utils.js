@@ -87,7 +87,13 @@ const getObject = async (value, Bucket) => {
         const getCommand = new GetObjectCommand({ Bucket, Key });
         const file = await prismaQdrive.file.findFirst({
           where: { uuid: id, username },
-          select: { salt: true, iv: true, size: true },
+          select: {
+            salt: true,
+            iv: true,
+            size: true,
+            height: true,
+            width: true,
+          },
         });
 
         const user = await prismaUser.user.findUnique({
@@ -98,14 +104,18 @@ const getObject = async (value, Bucket) => {
           const { salt, iv } = file;
           const { enc } = user;
           const input = (await s3Client.send(getCommand)).Body;
-          resolve(await decryptFile(input, salt, iv, enc));
+          resolve({
+            input: await decryptFile(input, salt, iv, enc),
+            height: file.height,
+            width: file.width,
+          });
         } else {
           reject("FILENOTFOUND");
         }
       } else {
         const Key = `avatar/${username}/${id}`;
         const getCommand = new GetObjectCommand({ Bucket, Key });
-        resolve((await s3Client.send(getCommand)).Body);
+        resolve({ input: (await s3Client.send(getCommand)).Body });
       }
     } catch (err) {
       reject(err);
@@ -152,43 +162,74 @@ const process_and_upload_images = (message) => {
       // console.log(value);
       const pipeline = sharp();
 
-      const input = await getObject(value, sourceBucket);
+      const { input, height, width } = await getObject(value, sourceBucket);
       const output1 = new PassThrough();
       const output2 = new PassThrough();
       const output3 = new PassThrough();
       const output4 = new PassThrough();
       const output5 = new PassThrough();
       const output6 = new PassThrough();
-
+      let resizeHeight;
+      let resizeWidth;
+      resizeHeight = height > width ? 32 : null;
+      resizeWidth = width > height ? 32 : null;
       pipeline
         .clone()
         .rotate()
-        .resize(32, null, { fit: "contain", background: "white" })
+        .resize(resizeWidth, resizeHeight, {
+          fit: "contain",
+          background: "white",
+        })
         .pipe(output1);
+      resizeHeight = height > width ? 640 : null;
+      resizeWidth = width > height ? 640 : null;
       pipeline
         .clone()
         .rotate()
-        .resize(640, null, { fit: "contain", background: "white" })
+        .resize(resizeWidth, resizeHeight, {
+          fit: "contain",
+          background: "white",
+        })
         .pipe(output2);
+      resizeHeight = height > width ? 900 : null;
+      resizeWidth = width > height ? 900 : null;
       pipeline
         .clone()
         .rotate()
-        .resize(900, null, { fit: "contain", background: "white" })
+        .resize(resizeWidth, resizeHeight, {
+          fit: "contain",
+          background: "white",
+        })
         .pipe(output3);
+      resizeHeight = height > width ? 256 : null;
+      resizeWidth = width > height ? 256 : null;
       pipeline
         .clone()
         .rotate()
-        .resize(256, null, { fit: "contain", background: "white" })
+        .resize(resizeWidth, resizeHeight, {
+          fit: "contain",
+          background: "white",
+        })
         .pipe(output4);
+      resizeHeight = height > width ? 1280 : null;
+      resizeWidth = width > height ? 1280 : null;
       pipeline
         .clone()
         .rotate()
-        .resize(1280, null, { fit: "contain", background: "white" })
+        .resize(resizeWidth, resizeHeight, {
+          fit: "contain",
+          background: "white",
+        })
         .pipe(output5);
+      resizeHeight = height > width ? 2048 : null;
+      resizeWidth = width > height ? 2048 : null;
       pipeline
         .clone()
         .rotate()
-        .resize(2048, null, { fit: "contain", background: "white" })
+        .resize(resizeWidth, resizeHeight, {
+          fit: "contain",
+          background: "white",
+        })
         .pipe(output6);
 
       input.pipe(pipeline);

@@ -107,16 +107,42 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.DeletedDirectoryScalarFieldEnum = {
-  uuid: 'uuid',
+exports.Prisma.FileScalarFieldEnum = {
   username: 'username',
   device: 'device',
-  folder: 'folder',
-  path: 'path',
-  created_at: 'created_at',
-  deleted: 'deleted',
-  rel_path: 'rel_path',
-  rel_name: 'rel_name'
+  directory: 'directory',
+  uuid: 'uuid',
+  origin: 'origin',
+  filename: 'filename',
+  last_modified: 'last_modified',
+  hashvalue: 'hashvalue',
+  enc_hashvalue: 'enc_hashvalue',
+  versions: 'versions',
+  size: 'size',
+  salt: 'salt',
+  iv: 'iv',
+  dirID: 'dirID',
+  type: 'type',
+  height: 'height',
+  width: 'width'
+};
+
+exports.Prisma.FileVersionScalarFieldEnum = {
+  username: 'username',
+  device: 'device',
+  directory: 'directory',
+  uuid: 'uuid',
+  origin: 'origin',
+  filename: 'filename',
+  last_modified: 'last_modified',
+  hashvalue: 'hashvalue',
+  enc_hashvalue: 'enc_hashvalue',
+  versions: 'versions',
+  size: 'size',
+  salt: 'salt',
+  iv: 'iv',
+  height: 'height',
+  width: 'width'
 };
 
 exports.Prisma.DeletedFileScalarFieldEnum = {
@@ -134,7 +160,11 @@ exports.Prisma.DeletedFileScalarFieldEnum = {
   salt: 'salt',
   iv: 'iv',
   deletion_date: 'deletion_date',
-  deletion_type: 'deletion_type'
+  deletion_type: 'deletion_type',
+  dirID: 'dirID',
+  type: 'type',
+  height: 'height',
+  width: 'width'
 };
 
 exports.Prisma.DeletedFileVersionScalarFieldEnum = {
@@ -152,7 +182,9 @@ exports.Prisma.DeletedFileVersionScalarFieldEnum = {
   salt: 'salt',
   iv: 'iv',
   deletion_date: 'deletion_date',
-  deletion_type: 'deletion_type'
+  deletion_type: 'deletion_type',
+  height: 'height',
+  width: 'width'
 };
 
 exports.Prisma.DirectoryScalarFieldEnum = {
@@ -164,36 +196,17 @@ exports.Prisma.DirectoryScalarFieldEnum = {
   created_at: 'created_at'
 };
 
-exports.Prisma.FileScalarFieldEnum = {
+exports.Prisma.DeletedDirectoryScalarFieldEnum = {
+  uuid: 'uuid',
   username: 'username',
   device: 'device',
-  directory: 'directory',
-  uuid: 'uuid',
-  origin: 'origin',
-  filename: 'filename',
-  last_modified: 'last_modified',
-  hashvalue: 'hashvalue',
-  enc_hashvalue: 'enc_hashvalue',
-  versions: 'versions',
-  size: 'size',
-  salt: 'salt',
-  iv: 'iv'
-};
-
-exports.Prisma.FileVersionScalarFieldEnum = {
-  username: 'username',
-  device: 'device',
-  directory: 'directory',
-  uuid: 'uuid',
-  origin: 'origin',
-  filename: 'filename',
-  last_modified: 'last_modified',
-  hashvalue: 'hashvalue',
-  enc_hashvalue: 'enc_hashvalue',
-  versions: 'versions',
-  size: 'size',
-  salt: 'salt',
-  iv: 'iv'
+  folder: 'folder',
+  path: 'path',
+  created_at: 'created_at',
+  deleted: 'deleted',
+  rel_path: 'rel_path',
+  rel_name: 'rel_name',
+  deletion_type: 'deletion_type'
 };
 
 exports.Prisma.SortOrder = {
@@ -206,14 +219,19 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
-  DeletedDirectory: 'DeletedDirectory',
+  File: 'File',
+  FileVersion: 'FileVersion',
   DeletedFile: 'DeletedFile',
   DeletedFileVersion: 'DeletedFileVersion',
   Directory: 'Directory',
-  File: 'File',
-  FileVersion: 'FileVersion'
+  DeletedDirectory: 'DeletedDirectory'
 };
 
 /**
