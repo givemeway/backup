@@ -48,12 +48,6 @@ export const moveFile = async (device, username, filename, dir, to) => {
         const to_dir = to_dirParts === "" ? "/" : to_dirParts;
         const to_folder = to.split("/").slice(-1)[0];
         const path = "/" + to;
-        console.log({
-          username,
-          device: to_device,
-          folder: to_folder,
-          path,
-        });
         const { uuid } = await prisma.directory.findUnique({
           where: {
             username_device_folder_path: {
@@ -69,26 +63,24 @@ export const moveFile = async (device, username, filename, dir, to) => {
         });
         val = [to_device, to_dir, filename, dir, device, username, uuid];
       }
-      const uuid_file = uuidV4();
-      const uuid_file_ver = uuidV4();
-
+      const new_origin = uuidV4();
       await prisma.$transaction(
         [
           prisma.$executeRaw(Prisma.sql`INSERT INTO public."File"
-              SELECT username,${val[0]},${val[1]},${uuid_file},${uuid_file},filename,last_modified,
+              SELECT username,${val[0]},${val[1]},uuid,${new_origin},filename,last_modified,
               hashvalue,enc_hashvalue,versions,size,salt,iv,${val[6]} 
               FROM public."File"
               WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
           prisma.$executeRaw(Prisma.sql`INSERT INTO public."FileVersion"
-              SELECT username,${val[0]},${val[1]},${uuid_file_ver},${uuid_file},filename,last_modified,
+              SELECT username,${val[0]},${val[1]},uuid,${new_origin},filename,last_modified,
               hashvalue,enc_hashvalue,versions,size,salt,iv
               FROM public."FileVersion"
               WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
           prisma.$executeRaw(Prisma.sql`
-              DELETE FROM public."File" 
-              WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
+                DELETE FROM public."FileVersion" 
+                WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
           prisma.$executeRaw(Prisma.sql`
-              DELETE FROM public."FileVersion" 
+              DELETE FROM public."File" 
               WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
         ],
         prismaOpts

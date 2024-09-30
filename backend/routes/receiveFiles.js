@@ -39,7 +39,7 @@ const update_file_directory_DB = async (req, res, next) => {
     origin = req.uuid;
     uuid = req.uuid;
   }
-  const size = `${fileStat.size}`;
+  const size = BigInt(`${fileStat.size}`);
   const salt = req.salt;
   const iv = req.iv;
   req.uuid = uuid;
