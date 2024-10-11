@@ -25,6 +25,7 @@ import { getPhotos } from "./routes/getPhotos.js";
 import { validateShare } from "./routes/ValidateShare.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client } from "@aws-sdk/client-s3";
+import { Details } from "./routes/details.js";
 import cors from "cors";
 import csrf from "csurf";
 
@@ -120,6 +121,7 @@ try {
   app.use("/app/getFileVersion", getFileVersion);
   app.use("/app/getPhotos", getPhotos);
   app.use("/app/photopreview", PhotoPreviewURL);
+  app.use("/app/details", Details);
 } catch (err) {
   console.log(err);
 }

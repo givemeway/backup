@@ -60,7 +60,6 @@ export const moveFolder = async (
       regex_path,
       rename,
     };
-    console.log(data);
     await prisma.$transaction(move_empty_dir_transaction(data));
   }
 

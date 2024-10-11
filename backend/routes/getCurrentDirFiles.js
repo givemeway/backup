@@ -5,8 +5,6 @@ import { getFilesInDirectory } from "../controllers/getFilesInDirectory.js";
 
 router.post("/", verifyToken, getFilesInDirectory, (req, res) => {
   res.status(200).json(req.headers.data);
-
-  console.log("response sent");
 });
 
 export { router as getCurrentDirFiles };
