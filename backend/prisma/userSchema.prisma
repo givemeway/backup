@@ -26,4 +26,6 @@ model User {
   hotpCounter BigInt @default(0)
   OTPGenTime BigInt @default(0)
   OTPValidity Int @default(300)
+  status Boolean @default(true)
+  cancellation_date String @default("NULL")
 }

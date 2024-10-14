@@ -908,6 +908,8 @@ export namespace Prisma {
     hotpCounter: bigint | null
     OTPGenTime: bigint | null
     OTPValidity: number | null
+    status: boolean | null
+    cancellation_date: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -926,6 +928,8 @@ export namespace Prisma {
     hotpCounter: bigint | null
     OTPGenTime: bigint | null
     OTPValidity: number | null
+    status: boolean | null
+    cancellation_date: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -944,6 +948,8 @@ export namespace Prisma {
     hotpCounter: number
     OTPGenTime: number
     OTPValidity: number
+    status: number
+    cancellation_date: number
     _all: number
   }
 
@@ -978,6 +984,8 @@ export namespace Prisma {
     hotpCounter?: true
     OTPGenTime?: true
     OTPValidity?: true
+    status?: true
+    cancellation_date?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -996,6 +1004,8 @@ export namespace Prisma {
     hotpCounter?: true
     OTPGenTime?: true
     OTPValidity?: true
+    status?: true
+    cancellation_date?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1014,6 +1024,8 @@ export namespace Prisma {
     hotpCounter?: true
     OTPGenTime?: true
     OTPValidity?: true
+    status?: true
+    cancellation_date?: true
     _all?: true
   }
 
@@ -1119,6 +1131,8 @@ export namespace Prisma {
     hotpCounter: bigint
     OTPGenTime: bigint
     OTPValidity: number
+    status: boolean
+    cancellation_date: string
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -1156,6 +1170,8 @@ export namespace Prisma {
     hotpCounter?: boolean
     OTPGenTime?: boolean
     OTPValidity?: boolean
+    status?: boolean
+    cancellation_date?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1174,6 +1190,8 @@ export namespace Prisma {
     hotpCounter?: boolean
     OTPGenTime?: boolean
     OTPValidity?: boolean
+    status?: boolean
+    cancellation_date?: boolean
   }
 
 
@@ -1196,6 +1214,8 @@ export namespace Prisma {
       hotpCounter: bigint
       OTPGenTime: bigint
       OTPValidity: number
+      status: boolean
+      cancellation_date: string
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1605,6 +1625,8 @@ export namespace Prisma {
     readonly hotpCounter: FieldRef<"User", 'BigInt'>
     readonly OTPGenTime: FieldRef<"User", 'BigInt'>
     readonly OTPValidity: FieldRef<"User", 'Int'>
+    readonly status: FieldRef<"User", 'Boolean'>
+    readonly cancellation_date: FieldRef<"User", 'String'>
   }
     
 
@@ -1921,7 +1943,9 @@ export namespace Prisma {
     isTOTP: 'isTOTP',
     hotpCounter: 'hotpCounter',
     OTPGenTime: 'OTPGenTime',
-    OTPValidity: 'OTPValidity'
+    OTPValidity: 'OTPValidity',
+    status: 'status',
+    cancellation_date: 'cancellation_date'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -2033,6 +2057,8 @@ export namespace Prisma {
     hotpCounter?: BigIntFilter<"User"> | bigint | number
     OTPGenTime?: BigIntFilter<"User"> | bigint | number
     OTPValidity?: IntFilter<"User"> | number
+    status?: BoolFilter<"User"> | boolean
+    cancellation_date?: StringFilter<"User"> | string
   }
 
   export type UserOrderByWithRelationInput = {
@@ -2051,6 +2077,8 @@ export namespace Prisma {
     hotpCounter?: SortOrder
     OTPGenTime?: SortOrder
     OTPValidity?: SortOrder
+    status?: SortOrder
+    cancellation_date?: SortOrder
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -2072,6 +2100,8 @@ export namespace Prisma {
     hotpCounter?: BigIntFilter<"User"> | bigint | number
     OTPGenTime?: BigIntFilter<"User"> | bigint | number
     OTPValidity?: IntFilter<"User"> | number
+    status?: BoolFilter<"User"> | boolean
+    cancellation_date?: StringFilter<"User"> | string
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -2090,6 +2120,8 @@ export namespace Prisma {
     hotpCounter?: SortOrder
     OTPGenTime?: SortOrder
     OTPValidity?: SortOrder
+    status?: SortOrder
+    cancellation_date?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -2116,6 +2148,8 @@ export namespace Prisma {
     hotpCounter?: BigIntWithAggregatesFilter<"User"> | bigint | number
     OTPGenTime?: BigIntWithAggregatesFilter<"User"> | bigint | number
     OTPValidity?: IntWithAggregatesFilter<"User"> | number
+    status?: BoolWithAggregatesFilter<"User"> | boolean
+    cancellation_date?: StringWithAggregatesFilter<"User"> | string
   }
 
   export type UserCreateInput = {
@@ -2133,6 +2167,8 @@ export namespace Prisma {
     hotpCounter?: bigint | number
     OTPGenTime?: bigint | number
     OTPValidity?: number
+    status?: boolean
+    cancellation_date?: string
   }
 
   export type UserUncheckedCreateInput = {
@@ -2151,6 +2187,8 @@ export namespace Prisma {
     hotpCounter?: bigint | number
     OTPGenTime?: bigint | number
     OTPValidity?: number
+    status?: boolean
+    cancellation_date?: string
   }
 
   export type UserUpdateInput = {
@@ -2168,6 +2206,8 @@ export namespace Prisma {
     hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPValidity?: IntFieldUpdateOperationsInput | number
+    status?: BoolFieldUpdateOperationsInput | boolean
+    cancellation_date?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUncheckedUpdateInput = {
@@ -2186,6 +2226,8 @@ export namespace Prisma {
     hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPValidity?: IntFieldUpdateOperationsInput | number
+    status?: BoolFieldUpdateOperationsInput | boolean
+    cancellation_date?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserCreateManyInput = {
@@ -2204,6 +2246,8 @@ export namespace Prisma {
     hotpCounter?: bigint | number
     OTPGenTime?: bigint | number
     OTPValidity?: number
+    status?: boolean
+    cancellation_date?: string
   }
 
   export type UserUpdateManyMutationInput = {
@@ -2221,6 +2265,8 @@ export namespace Prisma {
     hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPValidity?: IntFieldUpdateOperationsInput | number
+    status?: BoolFieldUpdateOperationsInput | boolean
+    cancellation_date?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -2239,6 +2285,8 @@ export namespace Prisma {
     hotpCounter?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPGenTime?: BigIntFieldUpdateOperationsInput | bigint | number
     OTPValidity?: IntFieldUpdateOperationsInput | number
+    status?: BoolFieldUpdateOperationsInput | boolean
+    cancellation_date?: StringFieldUpdateOperationsInput | string
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -2299,6 +2347,8 @@ export namespace Prisma {
     hotpCounter?: SortOrder
     OTPGenTime?: SortOrder
     OTPValidity?: SortOrder
+    status?: SortOrder
+    cancellation_date?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -2324,6 +2374,8 @@ export namespace Prisma {
     hotpCounter?: SortOrder
     OTPGenTime?: SortOrder
     OTPValidity?: SortOrder
+    status?: SortOrder
+    cancellation_date?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -2342,6 +2394,8 @@ export namespace Prisma {
     hotpCounter?: SortOrder
     OTPGenTime?: SortOrder
     OTPValidity?: SortOrder
+    status?: SortOrder
+    cancellation_date?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {

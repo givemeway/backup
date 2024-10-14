@@ -36,8 +36,19 @@ const validateUserDetails = async (req, res) => {
           isEmail: true,
           enc: true,
           hotpCounter: true,
+          status: true,
+          cancellation_date: true,
         },
       });
+      if (!returnedUser.status) {
+        return res.status(401).json({
+          success: false,
+          msg: `User ${receivedUsername} cancelled on ${new Date(
+            parseInt(returnedUser.cancellation_date)
+          )}`,
+        });
+      }
+
       if (returnedUser === null) {
         return res
           .status(401)
