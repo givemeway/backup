@@ -40,20 +40,23 @@ const validateUserDetails = async (req, res) => {
           cancellation_date: true,
         },
       });
-      if (!returnedUser.status) {
+      if (returnedUser === null) {
         return res.status(401).json({
           success: false,
+          status: true,
+          msg: "UserName / Password Incorrect",
+        });
+      }
+      if (!returnedUser?.status) {
+        return res.status(401).json({
+          success: false,
+          status: false,
           msg: `User ${receivedUsername} cancelled on ${new Date(
-            parseInt(returnedUser.cancellation_date)
+            parseInt(returnedUser?.cancellation_date)
           )}`,
         });
       }
 
-      if (returnedUser === null) {
-        return res
-          .status(401)
-          .json({ success: false, msg: "UserName / Password Incorrect" });
-      }
       const {
         username,
         first_name,
@@ -87,7 +90,9 @@ const validateUserDetails = async (req, res) => {
           "Set-Cookie",
           cookie.serialize("token", token, cookieOpts)
         );
-        res.status(200).json({ success: true, msg: "login success" });
+        res
+          .status(200)
+          .json({ success: true, status: true, msg: "login success" });
       } else {
         if (isSMS || isEmail) {
           await prismaUser.user.update({
@@ -147,6 +152,7 @@ const validateUserDetails = async (req, res) => {
         };
         res.status(403).json({
           success: false,
+          status: true,
           error: "2FA_REQUIRED",
           ...expandedUser,
           msg: "Two Factor verification is required to complete the sign in process",
@@ -154,7 +160,7 @@ const validateUserDetails = async (req, res) => {
       }
     }
   } catch (err) {
-    console.error(err);
+    console.log(err);
     console.log("user not found");
     res.status(404).json({ success: false, msg: "User not found" });
   }

@@ -20,7 +20,7 @@ const router = express.Router();
 
 router.post("/login", validateUserDetails);
 router.put("/cancelUser", verifyToken, CancelUser, logout);
-router.put("/reactiveUser", ReactivateUser);
+router.put("/reactivateUser", ReactivateUser, validateUserDetails);
 router.post("/login/enableOTP", verifyToken, enableOTP, sendOTP);
 router.post("/login/disableOTP", verifyToken, disableOTP);
 router.get("/login/verifyOTP", verify_2FA_Token, verifyOTP);

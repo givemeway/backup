@@ -21,9 +21,14 @@ export const ReactivateUser = async (req, res, next) => {
         status: true,
       },
     });
-    console.log(user);
-    res.status(200).json({ success: false, msg: "successfully REACTIVATED" });
+    const encodedData = btoa(`${username}:${password}`);
+    const authorization = `Basic ${encodedData}`;
+    req.headers.authorization = authorization;
+    req.body.usernametype = "username";
+    next();
+    // res.status(200).json({ success: true, msg: "successfully REACTIVATED" });
   } catch (err) {
+    console.log(err);
     if (err instanceof PrismaClientKnownRequestError) {
       if (err.code === "P2025") {
         return res
