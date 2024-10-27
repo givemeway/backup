@@ -28,4 +28,8 @@ model User {
   OTPValidity Int @default(300)
   status Boolean @default(true)
   cancellation_date String @default("NULL")
+  isSSO Boolean @default(false)
+  issuer_URL String @default("")
+  SSO_EndPoint String @default("")
+  cert String @default("")
 }

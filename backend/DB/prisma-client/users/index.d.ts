@@ -910,6 +910,10 @@ export namespace Prisma {
     OTPValidity: number | null
     status: boolean | null
     cancellation_date: string | null
+    isSSO: boolean | null
+    issuer_URL: string | null
+    SSO_EndPoint: string | null
+    cert: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -930,6 +934,10 @@ export namespace Prisma {
     OTPValidity: number | null
     status: boolean | null
     cancellation_date: string | null
+    isSSO: boolean | null
+    issuer_URL: string | null
+    SSO_EndPoint: string | null
+    cert: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -950,6 +958,10 @@ export namespace Prisma {
     OTPValidity: number
     status: number
     cancellation_date: number
+    isSSO: number
+    issuer_URL: number
+    SSO_EndPoint: number
+    cert: number
     _all: number
   }
 
@@ -986,6 +998,10 @@ export namespace Prisma {
     OTPValidity?: true
     status?: true
     cancellation_date?: true
+    isSSO?: true
+    issuer_URL?: true
+    SSO_EndPoint?: true
+    cert?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1006,6 +1022,10 @@ export namespace Prisma {
     OTPValidity?: true
     status?: true
     cancellation_date?: true
+    isSSO?: true
+    issuer_URL?: true
+    SSO_EndPoint?: true
+    cert?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1026,6 +1046,10 @@ export namespace Prisma {
     OTPValidity?: true
     status?: true
     cancellation_date?: true
+    isSSO?: true
+    issuer_URL?: true
+    SSO_EndPoint?: true
+    cert?: true
     _all?: true
   }
 
@@ -1133,6 +1157,10 @@ export namespace Prisma {
     OTPValidity: number
     status: boolean
     cancellation_date: string
+    isSSO: boolean
+    issuer_URL: string
+    SSO_EndPoint: string
+    cert: string
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -1172,6 +1200,10 @@ export namespace Prisma {
     OTPValidity?: boolean
     status?: boolean
     cancellation_date?: boolean
+    isSSO?: boolean
+    issuer_URL?: boolean
+    SSO_EndPoint?: boolean
+    cert?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1192,6 +1224,10 @@ export namespace Prisma {
     OTPValidity?: boolean
     status?: boolean
     cancellation_date?: boolean
+    isSSO?: boolean
+    issuer_URL?: boolean
+    SSO_EndPoint?: boolean
+    cert?: boolean
   }
 
 
@@ -1216,6 +1252,10 @@ export namespace Prisma {
       OTPValidity: number
       status: boolean
       cancellation_date: string
+      isSSO: boolean
+      issuer_URL: string
+      SSO_EndPoint: string
+      cert: string
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1627,6 +1667,10 @@ export namespace Prisma {
     readonly OTPValidity: FieldRef<"User", 'Int'>
     readonly status: FieldRef<"User", 'Boolean'>
     readonly cancellation_date: FieldRef<"User", 'String'>
+    readonly isSSO: FieldRef<"User", 'Boolean'>
+    readonly issuer_URL: FieldRef<"User", 'String'>
+    readonly SSO_EndPoint: FieldRef<"User", 'String'>
+    readonly cert: FieldRef<"User", 'String'>
   }
     
 
@@ -1945,7 +1989,11 @@ export namespace Prisma {
     OTPGenTime: 'OTPGenTime',
     OTPValidity: 'OTPValidity',
     status: 'status',
-    cancellation_date: 'cancellation_date'
+    cancellation_date: 'cancellation_date',
+    isSSO: 'isSSO',
+    issuer_URL: 'issuer_URL',
+    SSO_EndPoint: 'SSO_EndPoint',
+    cert: 'cert'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -2059,6 +2107,10 @@ export namespace Prisma {
     OTPValidity?: IntFilter<"User"> | number
     status?: BoolFilter<"User"> | boolean
     cancellation_date?: StringFilter<"User"> | string
+    isSSO?: BoolFilter<"User"> | boolean
+    issuer_URL?: StringFilter<"User"> | string
+    SSO_EndPoint?: StringFilter<"User"> | string
+    cert?: StringFilter<"User"> | string
   }
 
   export type UserOrderByWithRelationInput = {
@@ -2079,6 +2131,10 @@ export namespace Prisma {
     OTPValidity?: SortOrder
     status?: SortOrder
     cancellation_date?: SortOrder
+    isSSO?: SortOrder
+    issuer_URL?: SortOrder
+    SSO_EndPoint?: SortOrder
+    cert?: SortOrder
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -2102,6 +2158,10 @@ export namespace Prisma {
     OTPValidity?: IntFilter<"User"> | number
     status?: BoolFilter<"User"> | boolean
     cancellation_date?: StringFilter<"User"> | string
+    isSSO?: BoolFilter<"User"> | boolean
+    issuer_URL?: StringFilter<"User"> | string
+    SSO_EndPoint?: StringFilter<"User"> | string
+    cert?: StringFilter<"User"> | string
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -2122,6 +2182,10 @@ export namespace Prisma {
     OTPValidity?: SortOrder
     status?: SortOrder
     cancellation_date?: SortOrder
+    isSSO?: SortOrder
+    issuer_URL?: SortOrder
+    SSO_EndPoint?: SortOrder
+    cert?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -2150,6 +2214,10 @@ export namespace Prisma {
     OTPValidity?: IntWithAggregatesFilter<"User"> | number
     status?: BoolWithAggregatesFilter<"User"> | boolean
     cancellation_date?: StringWithAggregatesFilter<"User"> | string
+    isSSO?: BoolWithAggregatesFilter<"User"> | boolean
+    issuer_URL?: StringWithAggregatesFilter<"User"> | string
+    SSO_EndPoint?: StringWithAggregatesFilter<"User"> | string
+    cert?: StringWithAggregatesFilter<"User"> | string
   }
 
   export type UserCreateInput = {
@@ -2169,6 +2237,10 @@ export namespace Prisma {
     OTPValidity?: number
     status?: boolean
     cancellation_date?: string
+    isSSO?: boolean
+    issuer_URL?: string
+    SSO_EndPoint?: string
+    cert?: string
   }
 
   export type UserUncheckedCreateInput = {
@@ -2189,6 +2261,10 @@ export namespace Prisma {
     OTPValidity?: number
     status?: boolean
     cancellation_date?: string
+    isSSO?: boolean
+    issuer_URL?: string
+    SSO_EndPoint?: string
+    cert?: string
   }
 
   export type UserUpdateInput = {
@@ -2208,6 +2284,10 @@ export namespace Prisma {
     OTPValidity?: IntFieldUpdateOperationsInput | number
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
+    isSSO?: BoolFieldUpdateOperationsInput | boolean
+    issuer_URL?: StringFieldUpdateOperationsInput | string
+    SSO_EndPoint?: StringFieldUpdateOperationsInput | string
+    cert?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUncheckedUpdateInput = {
@@ -2228,6 +2308,10 @@ export namespace Prisma {
     OTPValidity?: IntFieldUpdateOperationsInput | number
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
+    isSSO?: BoolFieldUpdateOperationsInput | boolean
+    issuer_URL?: StringFieldUpdateOperationsInput | string
+    SSO_EndPoint?: StringFieldUpdateOperationsInput | string
+    cert?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserCreateManyInput = {
@@ -2248,6 +2332,10 @@ export namespace Prisma {
     OTPValidity?: number
     status?: boolean
     cancellation_date?: string
+    isSSO?: boolean
+    issuer_URL?: string
+    SSO_EndPoint?: string
+    cert?: string
   }
 
   export type UserUpdateManyMutationInput = {
@@ -2267,6 +2355,10 @@ export namespace Prisma {
     OTPValidity?: IntFieldUpdateOperationsInput | number
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
+    isSSO?: BoolFieldUpdateOperationsInput | boolean
+    issuer_URL?: StringFieldUpdateOperationsInput | string
+    SSO_EndPoint?: StringFieldUpdateOperationsInput | string
+    cert?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -2287,6 +2379,10 @@ export namespace Prisma {
     OTPValidity?: IntFieldUpdateOperationsInput | number
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
+    isSSO?: BoolFieldUpdateOperationsInput | boolean
+    issuer_URL?: StringFieldUpdateOperationsInput | string
+    SSO_EndPoint?: StringFieldUpdateOperationsInput | string
+    cert?: StringFieldUpdateOperationsInput | string
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -2349,6 +2445,10 @@ export namespace Prisma {
     OTPValidity?: SortOrder
     status?: SortOrder
     cancellation_date?: SortOrder
+    isSSO?: SortOrder
+    issuer_URL?: SortOrder
+    SSO_EndPoint?: SortOrder
+    cert?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -2376,6 +2476,10 @@ export namespace Prisma {
     OTPValidity?: SortOrder
     status?: SortOrder
     cancellation_date?: SortOrder
+    isSSO?: SortOrder
+    issuer_URL?: SortOrder
+    SSO_EndPoint?: SortOrder
+    cert?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -2396,6 +2500,10 @@ export namespace Prisma {
     OTPValidity?: SortOrder
     status?: SortOrder
     cancellation_date?: SortOrder
+    isSSO?: SortOrder
+    issuer_URL?: SortOrder
+    SSO_EndPoint?: SortOrder
+    cert?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {

@@ -27,7 +27,8 @@ import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Details } from "./routes/details.js";
 import cors from "cors";
-import csrf from "csurf";
+import { SAML } from "@node-saml/passport-saml";
+import passport from "passport";
 
 import { Server } from "socket.io";
 
@@ -72,6 +73,9 @@ app.use(bodyparser.json({ limit: "50mb" }));
 app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(cors(corsOpts));
+app.use(passport.initialize());
+// const samlStrategy = new SAML({});
+
 // app.use(csrf({ cookie: cookieOpts }));
 
 // https://stackoverflow.com/questions/65728325/how-to-track-upload-progress-to-s3-using-aws-sdk-v3-for-browser-javascript

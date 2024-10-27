@@ -15,6 +15,11 @@ import { sendOTP } from "../controllers/sendOTP.js";
 import { disableOTP } from "./disableOTP.js";
 import { CancelUser } from "../controllers/CancelUser.js";
 import { ReactivateUser } from "../controllers/ReactivateUser.js";
+import {
+  ProcessSAMLLogin,
+  ProcessSAMLResponse,
+  SSOConfig,
+} from "../controllers/passport-saml.js";
 
 const router = express.Router();
 
@@ -33,12 +38,8 @@ router.get("/getAvatar", verifyToken, getAvatar);
 router.post("/updateAvatar", verifyToken, updateAvatar);
 router.delete("/deleteAvatar", verifyToken, deleteAvatar);
 router.get("/verifyPassword", verifyToken, verifyPassword);
-router.post("/sso/callback", (req, res) => {
-  res.status(200).json({ msg: "hi there sso redirect" });
-});
-
-router.get("/sso/login", (req, res) => {
-  res.status(200).json({ msg: "hi there sso login" });
-});
+router.post("/sso/process", ProcessSAMLResponse);
+router.put("/sso/config", verifyToken, SSOConfig);
+router.get("/sso/login", ProcessSAMLLogin);
 
 export { router as user };
