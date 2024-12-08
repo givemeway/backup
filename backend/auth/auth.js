@@ -20,10 +20,17 @@ const verifyToken = (request, response, next) => {
         return response
           .status(403)
           .json({ success: false, msg: "Invalid Token" });
-      const { is2FA, _2FA_verified } = user;
-      if (!is2FA) {
+      const { is2FA, _2FA_verified, isSSO_verified, isSSO } = user;
+      if (!is2FA && !isSSO) {
         request.user = user;
         next();
+      } else if (isSSO && isSSO_verified) {
+        request.user = user;
+        next();
+      } else if (isSSO && !isSSO_verified) {
+        return response
+          .status(401)
+          .json({ success: false, msg: "You are not authenticated" });
       } else if (is2FA && _2FA_verified) {
         request.user = user;
         next();

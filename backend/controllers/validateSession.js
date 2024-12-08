@@ -29,6 +29,7 @@ export const validateSession = async (req, res) => {
       isSMS: user_main.isSMS,
       isEmail: user_main.isEmail,
       isTOTP: user_main.isTOTP,
+      isSSO: user_main.isSSO,
     });
   } catch (err) {
     console.log(err);

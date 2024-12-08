@@ -20,6 +20,7 @@ import {
   ProcessSAMLResponse,
   SSOConfig,
 } from "../controllers/passport-saml.js";
+import { disableSSO, getSSOConfig } from "../controllers/SSOConfig.js";
 
 const router = express.Router();
 
@@ -41,5 +42,7 @@ router.get("/verifyPassword", verifyToken, verifyPassword);
 router.post("/sso/process", ProcessSAMLResponse);
 router.put("/sso/config", verifyToken, SSOConfig);
 router.get("/sso/login", ProcessSAMLLogin);
+router.get("/getSSOConfig", verifyToken, getSSOConfig);
+router.put("/disableConfig", verifyToken, disableSSO);
 
 export { router as user };

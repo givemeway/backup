@@ -4,13 +4,17 @@ import { prismaUser } from "../config/prismaDBConfig.js";
 import { PrismaClientKnownRequestError } from "../DB/prisma-client/users/runtime/library.js";
 import { SSOToken } from "../models/mongodb.js";
 import { randomUUID } from "crypto";
+import cookie from "cookie";
+import jwt from "jsonwebtoken";
+
 import dotenv from "dotenv";
+import { cookieOpts, JWT_SECRET } from "../config/config.js";
 dotenv.config();
 
-const HOST =
+export const HOST =
   process.env.ENV === "prod" ? "https://qdrive.space" : "http://localhost:3000";
 
-const SERVER =
+export const SERVER =
   process.env.ENV === "prod"
     ? "https://api.qdrive.space"
     : "http://localhost:3001";
@@ -31,7 +35,6 @@ const getSAMLConfig = async (opts, login = false) => {
 
     return saml;
   } else {
-    console.log("here this strategy");
     const saml = await new SAMLStrategy(
       {
         callbackUrl,
@@ -47,20 +50,48 @@ const getSAMLConfig = async (opts, login = false) => {
   }
 };
 
+console.log("HOST: ", HOST, " server: ", SERVER);
+
 export const ProcessSAMLResponse = async (req, res, next) => {
   try {
     const { RelayState } = req.body;
+
     const userToken = await SSOToken.findOne({ token: RelayState });
-    if (userToken) {
-      const opts = await getSAMLOpts(userToken.username);
+    const user = await prismaUser.user.findUnique({
+      where: { username: userToken.username },
+    });
+
+    if (user) {
+      const opts = await getSAMLOpts(user.username);
       const saml = await getSAMLConfig(opts);
+      console.log({ opts, saml });
       passport.use("saml", saml);
       passport.authenticate(
         "saml",
         { failureRedirect: `${HOST}/login` },
-        (err, user) => {
+        (err, profile) => {
+          console.log({ userToken, profile, err });
           if (err) return res.status(404).json({ msg: "invalid response" });
-          if (userToken.username === user.nameID) {
+          if (userToken.username === profile.nameID) {
+            const payload = {
+              Username: user.username,
+              first: user.first_name,
+              last: user.last_name,
+              userID: user.id,
+              email: user.email,
+              is2FA: user.is2FA,
+              isSMS: user.isSMS,
+              isEmail: user.isEmail,
+              isTOTP: user.isTOTP,
+              _2FA_verified: false,
+              isSSO: user.isSSO,
+              isSSO_verified: true,
+            };
+            const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+            res.setHeader(
+              "Set-Cookie",
+              cookie.serialize("token", token, cookieOpts)
+            );
             return res.status(200).redirect(`${HOST}/dashboard/home`);
           } else {
             return res.status(200).redirect(`${HOST}/login`);
@@ -131,7 +162,6 @@ export const ProcessSAMLLogin = async (req, res, next) => {
         username,
       },
     });
-    console.log(user);
     if (user && user.isSSO) {
       const opts = await getSAMLOpts(username);
       const saml = await getSAMLConfig(opts, true);
@@ -149,13 +179,13 @@ export const ProcessSAMLLogin = async (req, res, next) => {
           samlFallback: "login-request",
         }
       );
-      res.redirect(ssoLoginURL);
+      return res.status(200).json({ success: true, url: ssoLoginURL });
     }
     if (user && !user.isSSO) {
-      return res.redirect(`${HOST}/login`);
+      return res.status(401).json({ success: false, msg: "SSO Not enabled" });
     }
     if (!user) {
-      return res.status(404).redirect(`${HOST}/login`);
+      return res.status(404).json({ success: false, msg: "User not found" });
     }
   } catch (err) {
     console.log(err);

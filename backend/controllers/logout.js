@@ -14,6 +14,8 @@ export const logout = (req, res) => {
     isEmail: null,
     isTOTP: null,
     _2FA_verified: null,
+    isSSO_verified: null,
+    isSSO: null,
   };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: -100 });
   console.log(token);
