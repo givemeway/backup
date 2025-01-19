@@ -21,6 +21,8 @@ import {
   SSOConfig,
 } from "../controllers/passport-saml.js";
 import { disableSSO, getSSOConfig } from "../controllers/SSOConfig.js";
+import { authGoogleRequest } from "../controllers/googleAuth.js";
+import passport from "passport";
 
 const router = express.Router();
 
@@ -44,5 +46,10 @@ router.put("/sso/config", verifyToken, SSOConfig);
 router.get("/sso/login", ProcessSAMLLogin);
 router.get("/getSSOConfig", verifyToken, getSSOConfig);
 router.put("/disableConfig", verifyToken, disableSSO);
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+router.get("/auth/google/callback", authGoogleRequest);
 
 export { router as user };

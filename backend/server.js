@@ -29,6 +29,7 @@ import { Details } from "./routes/details.js";
 import cors from "cors";
 import { SAML } from "@node-saml/passport-saml";
 import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 import { Server } from "socket.io";
 
@@ -52,6 +53,7 @@ import { DeleteShare } from "./routes/deleteShares.js";
 import { copyShare } from "./routes/copyShare.js";
 import { forgotPassword } from "./routes/forgotPassword.js";
 import { user } from "./routes/user.js";
+import { getGoogleStrategy } from "./controllers/googleAuth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -95,6 +97,10 @@ try {
 }
 
 try {
+  const google = await getGoogleStrategy();
+  passport.use("google", google);
+  passport.serializeUser((user, done) => done(null, user));
+  passport.deserializeUser((user, done) => done(null, user));
   app.use("/app/user", user);
   app.use("/app/forgotPassword", forgotPassword);
   app.use("/app/sh/createShare", createShare);

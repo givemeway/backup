@@ -70,7 +70,6 @@ export const ProcessSAMLResponse = async (req, res, next) => {
         "saml",
         { failureRedirect: `${HOST}/login` },
         (err, profile) => {
-          console.log({ userToken, profile, err });
           if (err) return res.status(404).json({ msg: "invalid response" });
           if (userToken.username === profile.nameID) {
             const payload = {
