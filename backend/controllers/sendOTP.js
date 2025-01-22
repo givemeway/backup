@@ -32,6 +32,21 @@ export const sendOTP = async (req, res, next) => {
       return res
         .status(404)
         .json({ success: false, msg: `${username} not found` });
+    const _2fa_payload = {
+      Username: username,
+      email: user.email,
+      is2FA: user.is2FA,
+      isSMS: user.isSMS,
+      isTOTP: user.isTOTP,
+      _2FA_verified: false,
+      _2FA_verifying: true,
+      isSSO: user.isSSO,
+      isSSO_verified: req.user.isSSO_verified,
+    };
+    const jwt_token_2fa = jwt.sign(_2fa_payload, JWT_SECRET, {
+      expiresIn: 300,
+    });
+    const cookies = [cookie.serialize("_2FA", jwt_token_2fa, cookieOpts)];
     if (isEmail === "true") {
       await prismaUser.user.update({
         where: {
@@ -47,22 +62,8 @@ export const sendOTP = async (req, res, next) => {
         parseInt(user.hotpCounter) + 1
       );
       await sendEmail(user.first_name, user.email, token);
-
+      res.setHeader("Set-Cookie", cookies);
       if (is2FAConfig === true) {
-        const _2fa_payload = {
-          Username: username,
-          email: user.email,
-          is2FA: user.is2FA,
-          isSMS: user.isSMS,
-          isTOTP: user.isTOTP,
-          _2FA_verified: false,
-          _2FA_verifying: true,
-        };
-        const jwt_token_2fa = jwt.sign(_2fa_payload, JWT_SECRET, {
-          expiresIn: 300,
-        });
-        const cookies = [cookie.serialize("_2FA", jwt_token_2fa, cookieOpts)];
-        res.setHeader("Set-Cookie", cookies);
         res.status(200).json({
           success: true,
           msg: `OTP sent to ${user.email}. Please submit OTP to enable 2FA`,
@@ -78,20 +79,7 @@ export const sendOTP = async (req, res, next) => {
         .status(200)
         .json({ success: true, msg: "SMS implenetation pending!!" });
     } else if (isTOTP === "true") {
-      const _2fa_payload = {
-        Username: username,
-        email: user.email,
-        is2FA: user.is2FA,
-        isSMS: user.isSMS,
-        isTOTP: user.isTOTP,
-        _2FA_verified: false,
-        _2FA_verifying: true,
-      };
-      const jwt_token_2fa = jwt.sign(_2fa_payload, JWT_SECRET, {
-        expiresIn: 300,
-      });
       const authURL = await google_authenticator(username, user.enc);
-      const cookies = [cookie.serialize("_2FA", jwt_token_2fa, cookieOpts)];
       res.setHeader("Set-Cookie", cookies);
       res.status(200).json({
         succes: true,

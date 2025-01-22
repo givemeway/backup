@@ -21,7 +21,10 @@ import {
   SSOConfig,
 } from "../controllers/passport-saml.js";
 import { disableSSO, getSSOConfig } from "../controllers/SSOConfig.js";
-import { authGoogleRequest } from "../controllers/googleAuth.js";
+import {
+  authGoogleOneTap,
+  authGoogleRequest,
+} from "../controllers/googleAuth.js";
 import passport from "passport";
 
 const router = express.Router();
@@ -51,5 +54,6 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 router.get("/auth/google/callback", authGoogleRequest);
+router.get("/auth/google/onetap", authGoogleOneTap);
 
 export { router as user };

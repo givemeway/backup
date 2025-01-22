@@ -87,8 +87,17 @@ export const verifyOTP = async (req, res, next) => {
     if (user === null) {
       return res.status(404).json({ success: false, msg: `User not found` });
     }
-    const { first_name, last_name, id, email, is2FA, isSMS, isEmail, isTOTP } =
-      user;
+    const {
+      first_name,
+      last_name,
+      id,
+      email,
+      is2FA,
+      isSMS,
+      isEmail,
+      isTOTP,
+      isSSO,
+    } = user;
     let payload = {
       Username: username,
       first: first_name,
@@ -99,7 +108,10 @@ export const verifyOTP = async (req, res, next) => {
       isSMS,
       isEmail,
       isTOTP,
+      isSSO,
       _2FA_verified: null,
+      _2FA_verifying: req.user._2FA_verifying,
+      isSSO_verified: req.user.isSSO_verified,
     };
 
     const _2fa_payload = {
@@ -108,6 +120,7 @@ export const verifyOTP = async (req, res, next) => {
       is2FA: null,
       isSMS: null,
       isTOTP: null,
+      isSSO: null,
       _2FA_verified: null,
       _2FA_verifying: null,
     };
