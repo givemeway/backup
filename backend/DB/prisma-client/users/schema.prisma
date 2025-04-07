@@ -1,7 +1,7 @@
 generator client {
   provider = "prisma-client-js"
   output = "../DB/prisma-client/users"
-  binaryTargets = ["native", "debian-openssl-1.1.x","debian-openssl-3.0.x"]
+  binaryTargets = ["native", "debian-openssl-1.1.x","debian-openssl-3.0.x","darwin-arm64"]
 }
 
 datasource db {
@@ -14,10 +14,10 @@ model User {
   id Int @id @default(autoincrement())
   username String @unique @db.VarChar(70)
   email String @db.VarChar(255)
-  password String @db.VarChar(255)
+  password String @db.VarChar(255) @default("NULL")
   first_name String @db.VarChar(70)
   last_name String @db.VarChar(70)
-  phone String @db.VarChar(20)
+  phone String @db.VarChar(20) @default("NULL")
   enc String @db.VarChar(64)
   is2FA Boolean @default(false)
   isSMS Boolean @default(false)
@@ -29,6 +29,7 @@ model User {
   status Boolean @default(true)
   cancellation_date String @default("NULL")
   isSSO Boolean @default(false)
+  isSocial Boolean @default(false)
   issuer_URL String @default("")
   SSO_EndPoint String @default("")
   cert String @default("")

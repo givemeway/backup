@@ -54,6 +54,6 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 router.get("/auth/google/callback", authGoogleRequest);
-router.get("/auth/google/onetap", authGoogleOneTap);
+router.get("/auth/google/onetap", authGoogleOneTap, signup);
 
 export { router as user };

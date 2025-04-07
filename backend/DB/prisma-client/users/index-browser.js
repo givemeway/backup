@@ -126,6 +126,7 @@ exports.Prisma.UserScalarFieldEnum = {
   status: 'status',
   cancellation_date: 'cancellation_date',
   isSSO: 'isSSO',
+  isSocial: 'isSocial',
   issuer_URL: 'issuer_URL',
   SSO_EndPoint: 'SSO_EndPoint',
   cert: 'cert'

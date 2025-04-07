@@ -31,7 +31,9 @@ export const updateAvatar = (req, res) => {
           console.error(error);
           res.status(500).json({ msg: error, success: false });
         });
-        upload.on("uploaded", (details) => {});
+        upload.on("uploaded", (details) => {
+          console.log("uploaded: ", details)
+        });
         upload
           .done()
           .then(async (response) => {
@@ -51,7 +53,7 @@ export const updateAvatar = (req, res) => {
                 initial: `${first}${last}`,
               });
             }
-            await initiKafkaProducer(imgData);
+            //await initiKafkaProducer(imgData);
             const urls = await getSignedURL(
               imgData.id,
               imgData.username,
@@ -66,7 +68,7 @@ export const updateAvatar = (req, res) => {
             });
           })
           .catch((err) => {
-            // res.status(500).json({ msg: err, success: false });
+            res.status(500).json({ msg: err, success: false });
           });
 
         return Body;

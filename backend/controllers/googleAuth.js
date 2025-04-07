@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import { cookieOpts, JWT_SECRET, SERVER_DOMAIN } from "../config/config.js";
 import { OAuth2Client } from "google-auth-library";
 import { resolve } from "path";
+import { generateEncKey } from "./signup.js";
 dotenv.config();
 export const HOST =
   process.env.ENV === "prod" ? "https://qdrive.space" : "http://localhost:3000";
@@ -27,7 +28,23 @@ export const getGoogleStrategy = async (opts) => {
 export const authGoogleOneTap = async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
+    const { isSignup } = req.query;
     const data = await getAuthenticatedClient(token);
+    console.log({ isSignup, data })
+    if (isSignup === "true") {
+      console.log("signup initiated")
+      const body = {
+        username: data.email,
+        email: data.email,
+        firstname: data.name.split(" ")[0],
+        lastname: data.name.split(" ")[1] ? data.name.split(" ")[1] : "",
+        phone: null,
+        enc: await generateEncKey(),
+        isSocial: true,
+        password: null,
+      }
+      req.body = body;
+    }
     const user = await prismaUser.user.findUnique({
       where: {
         username: data.email,
@@ -47,16 +64,24 @@ export const authGoogleOneTap = async (req, res, next) => {
         _2FA_verified: false,
         isSSO: user.isSSO,
         isSSO_verified: true,
+        isSocial: user.isSocial
       };
       const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
       res.setHeader("Set-Cookie", cookie.serialize("token", token, cookieOpts));
       return res
         .status(200)
         .json({ success: true, redirect: `${HOST}/dashboard/home` });
-    } else
-      return res.status(404).json({ success: true, msg: "user doesn't exist" });
+    } else {
+
+      if (isSignup === "true") {
+        return next()
+      } else {
+
+        return res.status(404).json({ success: true, data, msg: "user doesn't exist" });
+      }
+    }
   } catch (err) {
-    res.status(500).json({ error: err });
+    return res.status(500).json({ error: err });
   }
 };
 
@@ -112,5 +137,5 @@ export const authGoogleRequest = async (req, res, next) => {
       res.setHeader("Set-Cookie", cookie.serialize("token", token, cookieOpts));
       return res.status(200).redirect(`${HOST}/dashboard/home`);
     })(req, res, next);
-  } catch (err) {}
+  } catch (err) { }
 };
