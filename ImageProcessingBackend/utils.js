@@ -63,15 +63,23 @@ const decryptFile = (input, salt, iv, password) => {
   });
 };
 
+// const kafka = new Kafka({
+//   clientId: "image-transform-server",
+//   brokers: ["poetic-tick-9403-eu1-kafka.upstash.io:9092"],
+//   ssl: true,
+//   sasl: {
+//     mechanism: "scram-sha-256",
+//     username: "cG9ldGljLXRpY2stOTQwMyQsPn_6NquhIskDTFU5gAGPyeFlm8XbBgqy98BTVJY",
+//     password: "MzkwMDNkMjUtNzc0MC00OTNlLWI2YzMtOWI4NjAxNWQwMzMx",
+//   },
+//   logLevel: logLevel.ERROR,
+// });
+
 const kafka = new Kafka({
   clientId: "image-transform-server",
-  brokers: ["poetic-tick-9403-eu1-kafka.upstash.io:9092"],
-  ssl: true,
-  sasl: {
-    mechanism: "scram-sha-256",
-    username: "cG9ldGljLXRpY2stOTQwMyQsPn_6NquhIskDTFU5gAGPyeFlm8XbBgqy98BTVJY",
-    password: "MzkwMDNkMjUtNzc0MC00OTNlLWI2YzMtOWI4NjAxNWQwMzMx",
-  },
+  brokers: ["localhost:29092"],
+  ssl: false,
+  sasl: undefined,
   logLevel: logLevel.ERROR,
 });
 const consumer = kafka.consumer({
