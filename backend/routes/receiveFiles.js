@@ -8,6 +8,7 @@ import mimetype from "mime-types";
 import { imageTypes } from "../utils/utils.js";
 import { insert_file_and_directory } from "../controllers/insert_file_directory.js";
 import { insert_file_version } from "../controllers/insert_file_version.js";
+import { deleteS3Object } from "../controllers/delete_trash_items.js";
 const router = express.Router();
 
 const update_file_directory_DB = async (req, res, next) => {
@@ -17,6 +18,7 @@ const update_file_directory_DB = async (req, res, next) => {
   const enc_file_checksum = req.enc_hash;
   const directory = req.headers.dir;
   const fileStat = JSON.parse(req.headers.filestat);
+  console.log({ ...fileStat });
   let height = 0;
   let width = 0;
   if (fileStat.type.split("/")[0] === "image") {
@@ -109,7 +111,9 @@ const update_file_directory_DB = async (req, res, next) => {
     }
     next();
   } catch (err) {
-    res.status(500).json(err?.meta);
+    console.log({ err });
+    await deleteS3Object(username, uuid);
+    await res.status(500).json(err?.meta);
   }
 };
 

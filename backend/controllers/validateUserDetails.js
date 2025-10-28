@@ -23,7 +23,7 @@ const validateUserDetails = async (req, res) => {
       const returnedUser = await prisma.user.findUnique({
         where: {
           username: receivedUsername,
-          // password: hashPass,
+          password: hashPass,
         },
         select: {
           username: true,
@@ -43,6 +43,7 @@ const validateUserDetails = async (req, res) => {
           password: true,
         },
       });
+      console.log("Returned User:", returnedUser);
 
       if (returnedUser === null) {
         return res.status(404).json({
@@ -60,7 +61,6 @@ const validateUserDetails = async (req, res) => {
           error: "SSO_USER",
         });
       }
-
       if (returnedUser.password === hashPass) {
         if (!returnedUser?.status) {
           return res.status(401).json({

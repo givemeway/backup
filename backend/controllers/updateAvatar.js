@@ -32,7 +32,7 @@ export const updateAvatar = (req, res) => {
           res.status(500).json({ msg: error, success: false });
         });
         upload.on("uploaded", (details) => {
-          console.log("uploaded: ", details)
+          console.log("uploaded: ", details);
         });
         upload
           .done()
@@ -53,7 +53,7 @@ export const updateAvatar = (req, res) => {
                 initial: `${first}${last}`,
               });
             }
-            //await initiKafkaProducer(imgData);
+            await initiKafkaProducer(imgData);
             const urls = await getSignedURL(
               imgData.id,
               imgData.username,

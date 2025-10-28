@@ -46,7 +46,7 @@ const deleteS3Objects = (username, files) => {
   });
 };
 
-const deleteS3Object = (username, uuid) => {
+export const deleteS3Object = (username, uuid) => {
   return new Promise(async (resolve, reject) => {
     try {
       const Key = `${username}/${uuid}`;
