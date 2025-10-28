@@ -50,12 +50,9 @@ const getSAMLConfig = async (opts, login = false) => {
   }
 };
 
-console.log("HOST: ", HOST, " server: ", SERVER);
-
 export const ProcessSAMLResponse = async (req, res, next) => {
   try {
     const { RelayState } = req.body;
-
     const userToken = await SSOToken.findOne({ token: RelayState });
     const user = await prismaUser.user.findUnique({
       where: { username: userToken.username },
@@ -64,7 +61,6 @@ export const ProcessSAMLResponse = async (req, res, next) => {
     if (user) {
       const opts = await getSAMLOpts(user.username);
       const saml = await getSAMLConfig(opts);
-      console.log({ opts, saml });
       passport.use("saml", saml);
       passport.authenticate(
         "saml",
@@ -83,14 +79,19 @@ export const ProcessSAMLResponse = async (req, res, next) => {
               isEmail: user.isEmail,
               isTOTP: user.isTOTP,
               _2FA_verified: false,
+              _2FA_verifying: user.is2FA ? true : false,
               isSSO: user.isSSO,
               isSSO_verified: true,
             };
             const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
-            res.setHeader(
-              "Set-Cookie",
-              cookie.serialize("token", token, cookieOpts)
-            );
+            const cookies = [cookie.serialize("token", token, cookieOpts)];
+            if (user.is2FA) {
+              const _2fa_token = jwt.sign(payload, JWT_SECRET, {
+                expiresIn: 300,
+              });
+              cookies.push(cookie.serialize("_2FA", _2fa_token, cookieOpts));
+            }
+            res.setHeader("Set-Cookie", cookies);
             return res.status(200).redirect(`${HOST}/dashboard/home`);
           } else {
             return res.status(200).redirect(`${HOST}/login`);

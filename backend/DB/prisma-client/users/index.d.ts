@@ -911,6 +911,7 @@ export namespace Prisma {
     status: boolean | null
     cancellation_date: string | null
     isSSO: boolean | null
+    isSocial: boolean | null
     issuer_URL: string | null
     SSO_EndPoint: string | null
     cert: string | null
@@ -935,6 +936,7 @@ export namespace Prisma {
     status: boolean | null
     cancellation_date: string | null
     isSSO: boolean | null
+    isSocial: boolean | null
     issuer_URL: string | null
     SSO_EndPoint: string | null
     cert: string | null
@@ -959,6 +961,7 @@ export namespace Prisma {
     status: number
     cancellation_date: number
     isSSO: number
+    isSocial: number
     issuer_URL: number
     SSO_EndPoint: number
     cert: number
@@ -999,6 +1002,7 @@ export namespace Prisma {
     status?: true
     cancellation_date?: true
     isSSO?: true
+    isSocial?: true
     issuer_URL?: true
     SSO_EndPoint?: true
     cert?: true
@@ -1023,6 +1027,7 @@ export namespace Prisma {
     status?: true
     cancellation_date?: true
     isSSO?: true
+    isSocial?: true
     issuer_URL?: true
     SSO_EndPoint?: true
     cert?: true
@@ -1047,6 +1052,7 @@ export namespace Prisma {
     status?: true
     cancellation_date?: true
     isSSO?: true
+    isSocial?: true
     issuer_URL?: true
     SSO_EndPoint?: true
     cert?: true
@@ -1158,6 +1164,7 @@ export namespace Prisma {
     status: boolean
     cancellation_date: string
     isSSO: boolean
+    isSocial: boolean
     issuer_URL: string
     SSO_EndPoint: string
     cert: string
@@ -1201,6 +1208,7 @@ export namespace Prisma {
     status?: boolean
     cancellation_date?: boolean
     isSSO?: boolean
+    isSocial?: boolean
     issuer_URL?: boolean
     SSO_EndPoint?: boolean
     cert?: boolean
@@ -1225,6 +1233,7 @@ export namespace Prisma {
     status?: boolean
     cancellation_date?: boolean
     isSSO?: boolean
+    isSocial?: boolean
     issuer_URL?: boolean
     SSO_EndPoint?: boolean
     cert?: boolean
@@ -1253,6 +1262,7 @@ export namespace Prisma {
       status: boolean
       cancellation_date: string
       isSSO: boolean
+      isSocial: boolean
       issuer_URL: string
       SSO_EndPoint: string
       cert: string
@@ -1668,6 +1678,7 @@ export namespace Prisma {
     readonly status: FieldRef<"User", 'Boolean'>
     readonly cancellation_date: FieldRef<"User", 'String'>
     readonly isSSO: FieldRef<"User", 'Boolean'>
+    readonly isSocial: FieldRef<"User", 'Boolean'>
     readonly issuer_URL: FieldRef<"User", 'String'>
     readonly SSO_EndPoint: FieldRef<"User", 'String'>
     readonly cert: FieldRef<"User", 'String'>
@@ -1991,6 +2002,7 @@ export namespace Prisma {
     status: 'status',
     cancellation_date: 'cancellation_date',
     isSSO: 'isSSO',
+    isSocial: 'isSocial',
     issuer_URL: 'issuer_URL',
     SSO_EndPoint: 'SSO_EndPoint',
     cert: 'cert'
@@ -2108,6 +2120,7 @@ export namespace Prisma {
     status?: BoolFilter<"User"> | boolean
     cancellation_date?: StringFilter<"User"> | string
     isSSO?: BoolFilter<"User"> | boolean
+    isSocial?: BoolFilter<"User"> | boolean
     issuer_URL?: StringFilter<"User"> | string
     SSO_EndPoint?: StringFilter<"User"> | string
     cert?: StringFilter<"User"> | string
@@ -2132,6 +2145,7 @@ export namespace Prisma {
     status?: SortOrder
     cancellation_date?: SortOrder
     isSSO?: SortOrder
+    isSocial?: SortOrder
     issuer_URL?: SortOrder
     SSO_EndPoint?: SortOrder
     cert?: SortOrder
@@ -2159,6 +2173,7 @@ export namespace Prisma {
     status?: BoolFilter<"User"> | boolean
     cancellation_date?: StringFilter<"User"> | string
     isSSO?: BoolFilter<"User"> | boolean
+    isSocial?: BoolFilter<"User"> | boolean
     issuer_URL?: StringFilter<"User"> | string
     SSO_EndPoint?: StringFilter<"User"> | string
     cert?: StringFilter<"User"> | string
@@ -2183,6 +2198,7 @@ export namespace Prisma {
     status?: SortOrder
     cancellation_date?: SortOrder
     isSSO?: SortOrder
+    isSocial?: SortOrder
     issuer_URL?: SortOrder
     SSO_EndPoint?: SortOrder
     cert?: SortOrder
@@ -2215,6 +2231,7 @@ export namespace Prisma {
     status?: BoolWithAggregatesFilter<"User"> | boolean
     cancellation_date?: StringWithAggregatesFilter<"User"> | string
     isSSO?: BoolWithAggregatesFilter<"User"> | boolean
+    isSocial?: BoolWithAggregatesFilter<"User"> | boolean
     issuer_URL?: StringWithAggregatesFilter<"User"> | string
     SSO_EndPoint?: StringWithAggregatesFilter<"User"> | string
     cert?: StringWithAggregatesFilter<"User"> | string
@@ -2223,10 +2240,10 @@ export namespace Prisma {
   export type UserCreateInput = {
     username: string
     email: string
-    password: string
+    password?: string
     first_name: string
     last_name: string
-    phone: string
+    phone?: string
     enc: string
     is2FA?: boolean
     isSMS?: boolean
@@ -2238,6 +2255,7 @@ export namespace Prisma {
     status?: boolean
     cancellation_date?: string
     isSSO?: boolean
+    isSocial?: boolean
     issuer_URL?: string
     SSO_EndPoint?: string
     cert?: string
@@ -2247,10 +2265,10 @@ export namespace Prisma {
     id?: number
     username: string
     email: string
-    password: string
+    password?: string
     first_name: string
     last_name: string
-    phone: string
+    phone?: string
     enc: string
     is2FA?: boolean
     isSMS?: boolean
@@ -2262,6 +2280,7 @@ export namespace Prisma {
     status?: boolean
     cancellation_date?: string
     isSSO?: boolean
+    isSocial?: boolean
     issuer_URL?: string
     SSO_EndPoint?: string
     cert?: string
@@ -2285,6 +2304,7 @@ export namespace Prisma {
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
     isSSO?: BoolFieldUpdateOperationsInput | boolean
+    isSocial?: BoolFieldUpdateOperationsInput | boolean
     issuer_URL?: StringFieldUpdateOperationsInput | string
     SSO_EndPoint?: StringFieldUpdateOperationsInput | string
     cert?: StringFieldUpdateOperationsInput | string
@@ -2309,6 +2329,7 @@ export namespace Prisma {
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
     isSSO?: BoolFieldUpdateOperationsInput | boolean
+    isSocial?: BoolFieldUpdateOperationsInput | boolean
     issuer_URL?: StringFieldUpdateOperationsInput | string
     SSO_EndPoint?: StringFieldUpdateOperationsInput | string
     cert?: StringFieldUpdateOperationsInput | string
@@ -2318,10 +2339,10 @@ export namespace Prisma {
     id?: number
     username: string
     email: string
-    password: string
+    password?: string
     first_name: string
     last_name: string
-    phone: string
+    phone?: string
     enc: string
     is2FA?: boolean
     isSMS?: boolean
@@ -2333,6 +2354,7 @@ export namespace Prisma {
     status?: boolean
     cancellation_date?: string
     isSSO?: boolean
+    isSocial?: boolean
     issuer_URL?: string
     SSO_EndPoint?: string
     cert?: string
@@ -2356,6 +2378,7 @@ export namespace Prisma {
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
     isSSO?: BoolFieldUpdateOperationsInput | boolean
+    isSocial?: BoolFieldUpdateOperationsInput | boolean
     issuer_URL?: StringFieldUpdateOperationsInput | string
     SSO_EndPoint?: StringFieldUpdateOperationsInput | string
     cert?: StringFieldUpdateOperationsInput | string
@@ -2380,6 +2403,7 @@ export namespace Prisma {
     status?: BoolFieldUpdateOperationsInput | boolean
     cancellation_date?: StringFieldUpdateOperationsInput | string
     isSSO?: BoolFieldUpdateOperationsInput | boolean
+    isSocial?: BoolFieldUpdateOperationsInput | boolean
     issuer_URL?: StringFieldUpdateOperationsInput | string
     SSO_EndPoint?: StringFieldUpdateOperationsInput | string
     cert?: StringFieldUpdateOperationsInput | string
@@ -2446,6 +2470,7 @@ export namespace Prisma {
     status?: SortOrder
     cancellation_date?: SortOrder
     isSSO?: SortOrder
+    isSocial?: SortOrder
     issuer_URL?: SortOrder
     SSO_EndPoint?: SortOrder
     cert?: SortOrder
@@ -2477,6 +2502,7 @@ export namespace Prisma {
     status?: SortOrder
     cancellation_date?: SortOrder
     isSSO?: SortOrder
+    isSocial?: SortOrder
     issuer_URL?: SortOrder
     SSO_EndPoint?: SortOrder
     cert?: SortOrder
@@ -2501,6 +2527,7 @@ export namespace Prisma {
     status?: SortOrder
     cancellation_date?: SortOrder
     isSSO?: SortOrder
+    isSocial?: SortOrder
     issuer_URL?: SortOrder
     SSO_EndPoint?: SortOrder
     cert?: SortOrder
