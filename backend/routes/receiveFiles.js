@@ -1,8 +1,8 @@
 import express from "express";
 import { verifyToken } from "../auth/auth.js";
 import { uploadFile } from "../controllers/uploadFile.js";
-
-import { socketIO as io } from "../server.js";
+import axios from "axios";
+// import { socketIO as io } from "../server.js";
 import { initiKafkaProducer } from "../utils/kafka.js";
 import mimetype from "mime-types";
 import { imageTypes } from "../utils/utils.js";
@@ -10,6 +10,10 @@ import { insert_file_and_directory } from "../controllers/insert_file_directory.
 import { insert_file_version } from "../controllers/insert_file_version.js";
 import { deleteS3Object } from "../controllers/delete_trash_items.js";
 const router = express.Router();
+
+const headers = {
+  headers: { "Content-Type": "application/json" },
+};
 
 const update_file_directory_DB = async (req, res, next) => {
   const username = req.user.Username;
@@ -113,15 +117,23 @@ const update_file_directory_DB = async (req, res, next) => {
   } catch (err) {
     console.log({ err });
     await deleteS3Object(username, uuid);
-    await res.status(500).json(err?.meta);
+    // await res.status(500).json(err?.meta);
+    await res.status(500).json("Something Went Wrong. Try again later");
   }
 };
 
 const triggerImageProcessingMS = async (req, res) => {
   try {
     console.log("sent!!!");
-    const payload = { name: req.name, id: req.id, path: req.filePath };
-    io.to(req.socket_main_id).emit("done", { payload });
+    const payload = {
+      name: req.name,
+      id: req.id,
+      path: req.filePath,
+      status: "done",
+      socket_main_id: req.socket_main_id,
+    };
+    await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
+    // io.to(req.socket_main_id).emit("done", { payload });
     const mime = mimetype.lookup(req.name);
     if (typeof mime === "string") {
       const ext = mime.split("/")[1].toUpperCase();

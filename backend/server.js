@@ -174,14 +174,14 @@ server.listen(PORT, (err) => {
 
 const opts = { cors: { origin: ORIGIN } };
 
-const socketIO = new Server(server, { cors: corsOpts });
+// const socketIO = new Server(server, { cors: corsOpts });
 
-socketIO.on("connection", (socket) => {
-  console.log("Connected to Client: ", socket.id);
-  socket.emit("connected", { socketID: socket.id });
-  socket.on("disconnect", () => {
-    console.log(`${socket.id} disconnected`);
-  });
-});
+// socketIO.on("connection", (socket) => {
+//   console.log("Connected to Client: ", socket.id);
+//   socket.emit("connected", { socketID: socket.id });
+//   socket.on("disconnect", () => {
+//     console.log(`${socket.id} disconnected`);
+//   });
+// });
 
-export { s3Client, socketIO };
+export { s3Client };

@@ -6,12 +6,15 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { s3Client } from "../server.js";
 import { PassThrough } from "stream";
 import { v4 as uuidv4 } from "uuid";
-import { socketIO as io } from "../server.js";
+// import { socketIO as io } from "../server.js";
 import { randomFill, createHash } from "crypto";
 import { encryptFile } from "../utils/encrypt.js";
 import mime from "mime-types";
 import { prismaUser } from "../config/prismaDBConfig.js";
-
+import axios from "axios";
+const headers = {
+  headers: { "Content-Type": "application/json" },
+};
 const BUCKET = process.env.BUCKET;
 
 const arrayBufferToHex = (buffer) => {
@@ -79,7 +82,7 @@ const parseFile = async (req) => {
             console.error(error);
             reject(error);
           });
-          upload.on("uploaded", (details) => {
+          upload.on("uploaded", async (details) => {
             const progress = parseInt((details.loaded / req.size) * 100);
             const payload = {
               processed: progress,
@@ -87,30 +90,40 @@ const parseFile = async (req) => {
               uploaded: details.loaded,
               id: req.id,
               name: req.name,
+              status: "uploadProgress",
+              socket_main_id: req.socket_main_id,
             };
-            io.to(req.socket_main_id).emit("uploadProgress", { payload });
+            // io.to(req.socket_main_id).emit("uploadProgress", { payload });
+            await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
           });
           upload
             .done()
-            .then((response) => {
+            .then(async (response) => {
               const payload = {
                 done: "success",
                 data: response,
                 id: req.id,
                 name: req.name,
+                status: "finalizing",
+                socket_main_id: req.socket_main_id,
               };
-              io.to(req.socket_main_id).emit("finalizing", { payload });
+              // io.to(req.socket_main_id).emit("finalizing", { payload });
+              await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
+
               resolve(encryptedHash);
             })
-            .catch((err) => {
+            .catch(async (err) => {
               console.error(err);
               const payload = {
                 done: "failure",
                 data: err,
                 id: req.id,
                 name: req.name,
+                status: "error",
+                socket_main_id: req.socket_main_id,
               };
-              io.to(req.socket_main_id).emit("error", { payload });
+              // io.to(req.socket_main_id).emit("error", { payload });
+              await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
             });
           return read;
         },
@@ -171,7 +184,7 @@ const uploadFile = async (req, res, next) => {
     next();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, place: "uploadfile", msg: err });
   }
 };
 
