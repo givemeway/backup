@@ -5,6 +5,7 @@ import cors from "cors";
 import http from "node:http";
 import { corsOpts } from "./config.js";
 import { Server } from "socket.io";
+import { emit } from "./routes/emit.js";
 const app = express();
 const PORT = 3005;
 
@@ -12,6 +13,7 @@ app.use(cors(corsOpts));
 app.use(cookieParser());
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use("/", emit);
 
 const server = http.createServer(app);
 
@@ -32,3 +34,5 @@ socketIO.on("connection", (socket) => {
     console.log(`${socket.id} disconnected`);
   });
 });
+
+export { socketIO as io };
