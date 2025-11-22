@@ -1,6 +1,6 @@
 import express from "express";
 import fs from "node:fs";
-import https from "node:https";
+//import https from "node:https";
 import http from "node:http";
 import cookieParser from "cookie-parser";
 import bodyparser from "body-parser";
@@ -26,16 +26,17 @@ import { validateShare } from "./routes/ValidateShare.js";
 import { validateUsername } from "./routes/ValidateUserName.js";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Details } from "./routes/details.js";
+import { sync } from "./routes/sync.js";
 import cors from "cors";
-import { SAML } from "@node-saml/passport-saml";
+//import { SAML } from "@node-saml/passport-saml";
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+//import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
-import { Server } from "socket.io";
+//import { Server } from "socket.io";
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-await dotenv.config();
+dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -132,6 +133,7 @@ try {
   app.use("/app/getPhotos", getPhotos);
   app.use("/app/photopreview", PhotoPreviewURL);
   app.use("/app/details", Details);
+  app.use("/app/sync", sync);
 } catch (err) {
   console.log(err);
 }
