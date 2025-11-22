@@ -77,7 +77,7 @@ const decryptFile = (input, salt, iv, password) => {
 
 const kafka = new Kafka({
   clientId: "image-transform-server",
-  brokers: ["localhost:9092"],
+  brokers: ["localhost:39092"],
   ssl: false,
   sasl: undefined,
   logLevel: logLevel.ERROR,
@@ -241,9 +241,8 @@ const process_and_upload_images = (message) => {
         .pipe(output6);
 
       input.pipe(pipeline);
-      const Key = `${value?.avatar ? "avatar/" : ""}${value.username}/${
-        value.id
-      }`;
+      const Key = `${value?.avatar ? "avatar/" : ""}${value.username}/${value.id
+        }`;
       const key_32w = `${Key}_32w`;
       const key_640w = `${Key}_640w`;
       const key_900w = `${Key}_900w`;

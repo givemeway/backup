@@ -6,12 +6,17 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { s3Client } from "../server.js";
 import { PassThrough } from "stream";
 import { v4 as uuidv4 } from "uuid";
+import { imageTypes } from "../utils/utils.js";
 // import { socketIO as io } from "../server.js";
 import { randomFill, createHash } from "crypto";
 import { encryptFile } from "../utils/encrypt.js";
 import mime from "mime-types";
+import mimetype from "mime-types";
 import { prismaUser } from "../config/prismaDBConfig.js";
 import axios from "axios";
+import { insert_file_version } from "./insert_file_version.js";
+import { insert_file_and_directory } from "./insert_file_directory.js";
+import { initiKafkaProducer } from "../utils/kafka.js";
 const headers = {
   headers: { "Content-Type": "application/json" },
 };
@@ -180,7 +185,6 @@ const uploadFile = async (req, res, next) => {
     req.enc_hash = await parseFile(req);
     req.salt = arrayBufferToHex(salt);
     req.iv = arrayBufferToHex(iv);
-
     next();
   } catch (err) {
     console.error(err);
@@ -188,4 +192,246 @@ const uploadFile = async (req, res, next) => {
   }
 };
 
-export { uploadFile };
+const getFileStreamOptions = (cipher, key, cb) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      let encryptedHash;
+      const hash = createHash("sha256");
+      const options = {
+        maxFileSize: 2000 * 1024 * 1024,
+        fileWriteStreamHandler: () => {
+          const read = new PassThrough();
+          const write = new PassThrough();
+          read.pipe(cipher).pipe(write);
+          const upload = new Upload({
+            client: s3Client,
+            params: {
+              Bucket: BUCKET,
+              Key: key,
+              Body: write,
+            },
+            partSize: 5 * 1024 * 1024,
+            queueSize: 10,
+          });
+
+          write.on("data", (data) => hash.update(data));
+          write.on("end", () => {
+            encryptedHash = hash.digest("hex");
+            console.log("encryptedHash : ", encryptedHash)
+          });
+
+          upload.on("error", (error) => {
+            console.error(error);
+            reject(error);
+          });
+
+          upload
+            .done()
+            .then(() =>
+              cb(encryptedHash)
+            )
+            .catch(async (err) => {
+              console.error(err);
+              reject(err)
+            });
+          return read;
+        },
+      };
+      resolve(options);
+    } catch (err) {
+      reject(err)
+    }
+
+
+  })
+const parseSyncFile = (req) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const cipher = await encryptFile(
+        req.password,
+        req.salt,
+        req.iv,
+        "aes-256-cbc"
+      );
+      const options = await getFileStreamOptions(cipher, req.key, resolve);
+      const form = formidable(options);
+      form.parse(req, (err) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+          return;
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      reject(err);
+    }
+  });
+const sync_update_file_directory_DB = async (req, res, next) => {
+  const enc_file_checksum = req.enc_hash;
+  const fileStat = req.body.filestat;
+  console.log({ ...fileStat });
+  let height = 0;
+  let width = 0;
+  if (fileStat.type.split("/")[0] === "image") {
+    height = fileStat.height;
+    width = fileStat.width;
+  }
+  const last_modified = new Date(fileStat.mtime);
+  const { username, device, filename, type, directory, checksum } = fileStat
+  let version;
+  let origin;
+  let uuid;
+  let modified = false;
+  if (fileStat?.version && fileStat?.isModified) {
+    version = fileStat.version;
+    origin = req.uuid;
+    uuid = req.uuid_new;
+    modified = true;
+  } else {
+    version = 1;
+    origin = req.uuid;
+    uuid = req.uuid;
+  }
+  const size = BigInt(`${fileStat.size}`);
+  const salt = req.salt;
+  const iv = req.iv;
+  req.uuid = uuid;
+  req.username = username;
+  let path;
+  if (directory === "/" && device === "/") {
+    path = "/";
+  } else if (device !== "/" && directory === "/") {
+    path = "/" + device;
+  } else {
+    path = "/" + device + "/" + directory;
+  }
+  req.filePath = path;
+
+  const insertData = {
+    username,
+    device,
+    directory,
+    uuid,
+    origin,
+    filename,
+    last_modified: last_modified.toISOString(),
+    hashvalue: checksum,
+    enc_hashvalue: enc_file_checksum,
+    versions: version,
+    size,
+    salt,
+    iv,
+    type: type,
+    height:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+    width:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+  };
+
+  const updateData = {
+    last_modified: last_modified.toISOString(),
+    versions: version,
+    size,
+    salt,
+    iv,
+    hashvalue: checksum,
+    origin,
+    uuid,
+    enc_hashvalue: enc_file_checksum,
+    type: type,
+    height:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+    width:
+      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+  };
+
+  try {
+    if (modified) {
+      const data = {
+        username,
+        filename,
+        device,
+        directory,
+        origin,
+        insertData,
+        updateData,
+      };
+      await insert_file_version(data);
+    } else {
+      await insert_file_and_directory(path, insertData);
+    }
+    next();
+  } catch (err) {
+    console.log({ err });
+    await deleteS3Object(username, uuid);
+    // await res.status(500).json(err?.meta);
+    await res.status(500).json("Something Went Wrong. Try again later");
+  }
+};
+const syncUpFile = async (req, res, next) => {
+  const salt = await generateRandomBytes(32);
+  const iv = await generateRandomBytes(16);
+  console.log("body: ", req.body);
+  const fileStat = req.body.filestat;
+  req.uuid = uuidv4();
+  const size = fileStat.size;
+  const name = fileStat.filename;
+  const userName = fileStat.username;
+  let key;
+  if (fileStat.isModified === true) {
+    req.uuid_new = req.uuid;
+    req.uuid = fileStat.uuid;
+    key = `${userName}/${req.uuid_new}`;
+  } else {
+    key = `${userName}/${req.uuid}`;
+  }
+  try {
+    req.salt = salt;
+    req.iv = iv;
+    req.key = key;
+    req.size = size;
+    req.name = name;
+    //req.ext = mime.lookup(name);
+    const { enc } = await prismaUser.user.findUnique({
+      where: { username: userName },
+      select: {
+        enc: true,
+      },
+    });
+    req.password = enc;
+    req.enc_hash = await parseSyncFile(req);
+    req.salt = arrayBufferToHex(salt);
+    req.iv = arrayBufferToHex(iv);
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, place: "uploadfile", msg: err });
+  }
+  next()
+}
+const sync_triggerImageProcessingMS = async (req, res) => {
+  try {
+    const mime = mimetype.lookup(req.name);
+    if (typeof mime === "string") {
+      const ext = mime.split("/")[1].toUpperCase();
+
+      if (imageTypes.hasOwnProperty(ext)) {
+        let data = {};
+        data.id = req.uuid;
+        data.username = req.username;
+        data.filename = req.name;
+        console.log("Image process triggered: ", data.filename);
+        await initiKafkaProducer(data);
+        return res.status(200).json(`file ${req.headers.filename} received`);
+      }
+    }
+    res.status(200).json(`file ${req.headers.filename} received`);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(`file ${req.headers.filename} received`);
+  }
+};
+
+
+export { uploadFile, syncUpFile, sync_update_file_directory_DB, sync_triggerImageProcessingMS };
