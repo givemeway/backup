@@ -2,7 +2,6 @@ import { prisma, Prisma } from "../config/prismaDBConfig.js";
 import { join } from "node:path";
 export const get_sync_items = async (req, res, next) => {
   const { username } = req.query
-  console.log({ username })
   try {
     const [results, count] = await prisma.$transaction([
       prisma.$queryRaw(Prisma.sql`

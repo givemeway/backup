@@ -30,7 +30,6 @@ export const authGoogleOneTap = async (req, res, next) => {
     const token = req.headers.authorization.split(" ")[1];
     const { isSignup } = req.query;
     const data = await getAuthenticatedClient(token);
-    console.log({ isSignup, data })
     if (isSignup === "true") {
       console.log("signup initiated")
       const body = {
@@ -105,7 +104,6 @@ const getAuthenticatedClient = (token) =>
 export const authGoogleRequest = async (req, res, next) => {
   try {
     passport.authenticate("google", async (err, profile) => {
-      console.log(profile);
       if (err)
         return res
           .status(400)

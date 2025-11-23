@@ -14,7 +14,6 @@ const getFilesFolders = async (req, res, next) => {
     const order = req.headers.sortorder;
     const username = req.user.Username;
     const devicename = d;
-    console.log(username, devicename);
     let regex = ``;
     let path = ``;
     if (devicename === "/") {

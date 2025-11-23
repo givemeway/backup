@@ -4,7 +4,6 @@ dotenv.config();
 
 export const verifyToken = (request, response, next) => {
   const { share, token } = request.cookies;
-  console.log(share, token);
   if (share) {
     jwt.verify(share, process.env.JWT_SECRET, (error, payload) => {
       if (error)

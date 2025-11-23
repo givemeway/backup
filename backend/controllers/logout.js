@@ -18,7 +18,6 @@ export const logout = (req, res) => {
     isSSO: null,
   };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: -100 });
-  console.log(token);
   res.setHeader(
     "Set-Cookie",
     cookie.serialize("token", token, {

@@ -33,4 +33,3 @@ export const cookieOpts = {
 };
 
 export const { JWT_SECRET, THUMBNAIL_MS } = process.env;
-console.log(JWT_SECRET, THUMBNAIL_MS);

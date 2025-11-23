@@ -18,7 +18,6 @@ const validateUserDetails = async (req, res) => {
     if (typeof encodedString === "string" && typeof usernametype === "string") {
       extractedUsernamePassword = atob(encodedString.split(" ")[1]);
       receivedUsername = extractedUsernamePassword.split(":")[0];
-      console.log({ receivedUsername })
       password = extractedUsernamePassword.split(":")[1];
       const hashPass = createHash("sha512").update(password).digest("hex");
       const returnedUser = await prisma.user.findUnique({

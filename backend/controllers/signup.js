@@ -32,7 +32,6 @@ export const signup = async (req, res, next) => {
       data.password = hashPass;
       req.username = username;
     }
-    console.log({ data })
     await prismaUser.user.create({ data });
     await Avatar.create({
       username,

@@ -100,7 +100,6 @@ const parseFile = async (req) => {
               socket_main_id: req.socket_main_id,
             };
             // io.to(req.socket_main_id).emit("uploadProgress", { payload });
-            console.log("process.env.WEBHOOK_URL IS ", process.env.WEBHOOK_URL);
             await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
           });
           upload
@@ -201,6 +200,8 @@ const getFileStreamOptions = (cipher, key, cb) =>
       const hash = createHash("sha256");
       const options = {
         maxFileSize: 2000 * 1024 * 1024,
+        allowEmptyFiles: true,
+        minFileSize: 0,
         fileWriteStreamHandler: () => {
           const read = new PassThrough();
           const write = new PassThrough();
@@ -356,9 +357,7 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     }
     return next();
   } catch (err) {
-    console.log("*********************************************************")
     console.log("Error: ", err);
-    console.log("*********************************************************")
     await deleteS3Object(username, uuid);
     return res.status(500).json({ [filename]: false, msg: "Something Went Wrong. Try again later" });
   }
@@ -399,12 +398,11 @@ const syncUpFile = async (req, res, next) => {
     next();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ [name]: false, msg: err });
+    return res.status(500).json({ [name]: false, msg: err });
   }
 }
 const sync_triggerImageProcessingMS = async (req, res) => {
   try {
-    console.log("********************Entering the final function**************************")
     const mime = mimetype.lookup(req.name);
     if (typeof mime === "string") {
       const ext = mime.split("/")[1].toUpperCase();
@@ -419,7 +417,7 @@ const sync_triggerImageProcessingMS = async (req, res) => {
       }
     }
     console.log(`Files received: ${req.name}`)
-    res.status(200).json({ [req.name]: true, msg: `file ${req.name} received` });
+    return res.status(200).json({ [req.name]: true, msg: `file ${req.name} received` });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ [req.name]: false, msg: `file ${req.name} failed` });

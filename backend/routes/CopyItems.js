@@ -12,7 +12,6 @@ const organizeItems = async (req, res, next) => {
     const { files, folders } = req.body;
     const to = req.query.to;
     const failed = [];
-    console.log(to);
     for (const file of files ? files : []) {
       try {
         const params = new URLSearchParams(file.path);
@@ -30,17 +29,14 @@ const organizeItems = async (req, res, next) => {
       const from = folder.path.split("/").slice(1).join("/");
       await copyFolder(from, to, username);
     }
-
-    console.log("returned the value...........");
-
     res.status(200).json({
       success: true,
       msg: "copied",
       copied: files?.length
         ? files.length
         : 0 + folders?.length
-        ? folders.length
-        : 0 + failed.length,
+          ? folders.length
+          : 0 + failed.length,
       failed: failed,
     });
   } catch (err) {

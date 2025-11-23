@@ -47,12 +47,7 @@ export const copyFile = async (device, username, filename, dir, to) => {
         const to_dir = to_dirParts === "" ? "/" : to_dirParts;
         const to_folder = to.split("/").slice(-1)[0];
         const path = "/" + to;
-        console.log({
-          username,
-          device: to_device,
-          folder: to_folder,
-          path,
-        });
+
         const { uuid } = await prisma.directory.findUnique({
           where: {
             username_device_folder_path: {

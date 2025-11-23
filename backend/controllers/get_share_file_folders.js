@@ -86,8 +86,6 @@ const browseTransferData_promise = async (params) => {
       const [fileTotal, files] = await getFiles(data);
       const files_with_thumbs_urls = await getSignedURls(files, username);
       const [directoryTotal, directories] = await getFolders(data);
-      console.log(directories);
-
       let dir;
       if (directories.length > 0) {
         dir = directories[0].path.split("/").slice(0, -1).join("/");

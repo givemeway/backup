@@ -11,7 +11,6 @@ export const updatePassword = async (req, res, next) => {
     const new_hashpass = createHash("sha512")
       .update(new_password)
       .digest("hex");
-    console.log(username);
     const user = await prisma.user.findFirst({
       where: {
         username,

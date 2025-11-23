@@ -44,7 +44,6 @@ export const delete_copied_directories = async (prisma, data) => {
                         WHERE username = ${username}
                         AND device = ${device}`);
   }
-  console.log(regex_path);
   if (fileExists.length === 0) {
     await prisma.$executeRaw(Prisma.sql`
         DELETE FROM public."Directory"

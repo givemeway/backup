@@ -16,8 +16,8 @@ datasource db {
 
 
 model File {
-  username String @db.VarChar(70)
-  device String @db.VarChar(70)
+  username String @db.VarChar(255)
+  device String @db.VarChar(255)
   directory String @db.VarChar(255)
   uuid String @db.VarChar(36)
   origin String @unique @db.VarChar(36)
@@ -41,8 +41,8 @@ model File {
 }
 
 model FileVersion {
-  username String @db.VarChar(70)
-  device String @db.VarChar(70)
+  username String @db.VarChar(255)
+  device String @db.VarChar(255)
   directory String @db.VarChar(255)
   uuid String @db.VarChar(36)
   origin String @db.VarChar(36)
@@ -63,8 +63,8 @@ model FileVersion {
 }
 
 model DeletedFile {
-  username String @db.VarChar(70)
-  device String @db.VarChar(70)
+  username String @db.VarChar(255)
+  device String @db.VarChar(255)
   directory String @db.VarChar(255)
   uuid String @db.VarChar(36)
   origin String @db.VarChar(36) @unique
@@ -90,8 +90,8 @@ model DeletedFile {
 }
 
 model DeletedFileVersion {
-  username String @db.VarChar(70)
-  device String @db.VarChar(70)
+  username String @db.VarChar(255)
+  device String @db.VarChar(255)
   directory String @db.VarChar(255)
   uuid String @db.VarChar(36)
   origin String @db.VarChar(36)
@@ -116,8 +116,8 @@ model DeletedFileVersion {
 
 model Directory {
   uuid String @unique() @db.VarChar(36)
-  username String @db.VarChar(70)
-  device String @db.VarChar(70)
+  username String @db.VarChar(255)
+  device String @db.VarChar(255)
   folder String @db.VarChar(255)
   path String @db.VarChar(255)
   created_at DateTime
@@ -129,8 +129,8 @@ model Directory {
 
 model DeletedDirectory {
   uuid String @db.VarChar(36) @unique()
-  username String @db.VarChar(70)
-  device String @db.VarChar(70)
+  username String @db.VarChar(255)
+  device String @db.VarChar(255)
   folder String @db.VarChar(255)
   path String @db.VarChar(255)
   created_at DateTime

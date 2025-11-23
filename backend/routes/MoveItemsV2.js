@@ -27,10 +27,7 @@ const moveItems = async (req, res, next) => {
     }
     for (const folder of folders ? folders : []) {
       try {
-        console.log("processing v2....");
         const from = folder.path.split("/").slice(1).join("/");
-        console.log(from);
-        console.log(to);
         await moveFolder(from, to, username);
       } catch (err) {
         console.error(err);
@@ -45,8 +42,8 @@ const moveItems = async (req, res, next) => {
       moved: files?.length
         ? files.length
         : 0 + folders?.length
-        ? folders.length
-        : 0 + failed.length,
+          ? folders.length
+          : 0 + failed.length,
       failed: failed,
     });
   } catch (err) {

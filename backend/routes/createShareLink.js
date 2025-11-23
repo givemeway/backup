@@ -11,7 +11,6 @@ const createShareLink = async (req, res) => {
   const folders = req.body.directories;
   const files = req.body.files;
   const owner = req.user.Username;
-  console.log(type, folders, files, owner);
   let mapFiles = {};
   files.forEach((file) => (mapFiles[file.id] = file.file));
   let mapFolders = {};
@@ -57,14 +56,12 @@ const createShareLink = async (req, res) => {
       );
       if (fi === null) {
         const data = await FileShare.create(obj);
-        success_msg.url = `${FRONTEND_DOMAIN}/sh/fi/${data._id.toString()}/${
-          mapFiles[obj.uuid]
-        }?k=${obj.uuid}&dl=0`;
+        success_msg.url = `${FRONTEND_DOMAIN}/sh/fi/${data._id.toString()}/${mapFiles[obj.uuid]
+          }?k=${obj.uuid}&dl=0`;
         res.status(200).json(success_msg);
       } else {
-        success_msg.url = `${FRONTEND_DOMAIN}/sh/fi/${fi._id.toString()}/${
-          mapFiles[obj.uuid]
-        }?k=${obj.uuid}&dl=0`;
+        success_msg.url = `${FRONTEND_DOMAIN}/sh/fi/${fi._id.toString()}/${mapFiles[obj.uuid]
+          }?k=${obj.uuid}&dl=0`;
         res.status(200).json(success_msg);
       }
     } catch (err) {
@@ -84,14 +81,12 @@ const createShareLink = async (req, res) => {
       );
       if (fo === null) {
         const data = await FolderShare.create(obj);
-        success_msg.url = `${FRONTEND_DOMAIN}/sh/fo/${data._id.toString()}/h?k=${
-          obj.uuid
-        }&dl=0`;
+        success_msg.url = `${FRONTEND_DOMAIN}/sh/fo/${data._id.toString()}/h?k=${obj.uuid
+          }&dl=0`;
         res.status(200).json(success_msg);
       } else {
-        success_msg.url = `${FRONTEND_DOMAIN}/sh/fo/${fo._id.toString()}/h?k=${
-          obj.uuid
-        }&dl=0`;
+        success_msg.url = `${FRONTEND_DOMAIN}/sh/fo/${fo._id.toString()}/h?k=${obj.uuid
+          }&dl=0`;
         res.status(200).json(success_msg);
       }
     } catch (err) {

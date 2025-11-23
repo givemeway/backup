@@ -39,7 +39,6 @@ const processFiles = async (files, archive) => {
       const promises = [];
       let i = 0;
       for (const file of files) {
-        console.log(i);
         promises.push(async () => {
           try {
             await appendFileToArchive(archive, file);
@@ -104,7 +103,6 @@ const archiveDirectoriesAndFiles = (files, archive) => {
 };
 
 const { files, archive } = workerData;
-console.log("inside worker");
 archiveDirectoriesAndFiles(files, archive)
   .then((data) => parentPort.postMessage(data))
   .catch((err) => parentPort.postMessage(err));

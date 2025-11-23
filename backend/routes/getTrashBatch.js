@@ -17,8 +17,6 @@ router.post("*", verifyToken, async (req, res) => {
     dir = dir.replace(/\)/g, "\\)");
     dir = dir.replace(/\(/g, "\\(");
     let rows = [];
-    console.log(dir);
-    console.log(device, begin, end);
     if (item === bulk) {
       const regexp = `^${dir}(/[^/]+)*$`;
       if (dir === "/") {

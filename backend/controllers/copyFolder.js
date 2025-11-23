@@ -40,16 +40,11 @@ export const copy_transaction = (data) => async (prisma) => {
 export const copyFolder = async (fromPath, toPath, username) => {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log("from-->", fromPath, " toPath-->", toPath);
       const srcDepth = fromPath.split("/").length;
-
       const files = await getSrcFilePaths(prisma, fromPath, username);
-
       if (files.length > 0) {
         const dstFiles = getDstFilePaths(files, toPath, srcDepth);
-
         const dstFilesObj = getDirectoryMap(dstFiles);
-
         for (const [path, files] of Object.entries(dstFilesObj)) {
           const [dstPath, srcPath] = path.split(";");
           const device = dstPath.split("/")[1];

@@ -1,6 +1,5 @@
 export const getDeletedItemsList = (req, res, next) => {
   const username = req.user.Username;
-  console.log(req.body);
   const folders = req.body.directories;
   const files = req.body.fileIds;
   const deletionTime = new Date()

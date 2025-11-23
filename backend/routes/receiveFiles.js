@@ -22,7 +22,6 @@ const update_file_directory_DB = async (req, res, next) => {
   const enc_file_checksum = req.enc_hash;
   const directory = req.headers.dir;
   const fileStat = JSON.parse(req.headers.filestat);
-  console.log({ ...fileStat });
   let height = 0;
   let width = 0;
   if (fileStat.type.split("/")[0] === "image") {
@@ -121,7 +120,6 @@ const update_file_directory_DB = async (req, res, next) => {
 
 const triggerImageProcessingMS = async (req, res) => {
   try {
-    console.log("sent!!!");
     const payload = {
       name: req.name,
       id: req.id,
