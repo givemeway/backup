@@ -100,6 +100,7 @@ const parseFile = async (req) => {
               socket_main_id: req.socket_main_id,
             };
             // io.to(req.socket_main_id).emit("uploadProgress", { payload });
+            console.log("process.env.WEBHOOK_URL IS ", process.env.WEBHOOK_URL);
             await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
           });
           upload

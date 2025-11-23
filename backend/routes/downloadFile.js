@@ -47,7 +47,6 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const username = req.user.Username;
     const { file, uuid, db, dir, device } = req.query;
-    console.log(file, uuid, db, dir, device);
     const Key = `${username}/${uuid}`;
     const command = new GetObjectCommand({
       Bucket: BUCKET,

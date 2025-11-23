@@ -15,7 +15,6 @@ export const validateSession = async (req, res) => {
     if (!user_main) {
       return res.status(404).json({ success: false, msg: "User not found" })
     }
-    console.log({ user, user_main })
     const username = req.user.Username;
     const id = createHash("sha1").update(username).digest("hex");
     const url = await getSignedURL(id, username, true);
