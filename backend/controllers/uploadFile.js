@@ -17,6 +17,7 @@ import axios from "axios";
 import { insert_file_version } from "./insert_file_version.js";
 import { insert_file_and_directory } from "./insert_file_directory.js";
 import { initiKafkaProducer } from "../utils/kafka.js";
+import { deleteS3Object } from "./delete_trash_items.js";
 const headers = {
   headers: { "Content-Type": "application/json" },
 };
@@ -99,6 +100,7 @@ const parseFile = async (req) => {
               socket_main_id: req.socket_main_id,
             };
             // io.to(req.socket_main_id).emit("uploadProgress", { payload });
+            console.log("process.env.WEBHOOK_URL IS ", process.env.WEBHOOK_URL);
             await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
           });
           upload
@@ -185,10 +187,10 @@ const uploadFile = async (req, res, next) => {
     req.enc_hash = await parseFile(req);
     req.salt = arrayBufferToHex(salt);
     req.iv = arrayBufferToHex(iv);
-    next();
+    return next();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, place: "uploadfile", msg: err });
+    return res.status(500).json({ success: false, place: "uploadfile", msg: err });
   }
 };
 
@@ -217,7 +219,6 @@ const getFileStreamOptions = (cipher, key, cb) =>
           write.on("data", (data) => hash.update(data));
           write.on("end", () => {
             encryptedHash = hash.digest("hex");
-            console.log("encryptedHash : ", encryptedHash)
           });
 
           upload.on("error", (error) => {
@@ -255,13 +256,7 @@ const parseSyncFile = (req) =>
       );
       const options = await getFileStreamOptions(cipher, req.key, resolve);
       const form = formidable(options);
-      form.parse(req, (err) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-          return;
-        }
-      });
+      await form.parse(req)
     } catch (err) {
       console.error(err);
       reject(err);
@@ -269,8 +264,7 @@ const parseSyncFile = (req) =>
   });
 const sync_update_file_directory_DB = async (req, res, next) => {
   const enc_file_checksum = req.enc_hash;
-  const fileStat = req.body.filestat;
-  console.log({ ...fileStat });
+  const fileStat = JSON.parse(req.headers.filestat);
   let height = 0;
   let width = 0;
   if (fileStat.type.split("/")[0] === "image") {
@@ -329,25 +323,24 @@ const sync_update_file_directory_DB = async (req, res, next) => {
       fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
   };
 
-  const updateData = {
-    last_modified: last_modified.toISOString(),
-    versions: version,
-    size,
-    salt,
-    iv,
-    hashvalue: checksum,
-    origin,
-    uuid,
-    enc_hashvalue: enc_file_checksum,
-    type: type,
-    height:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
-    width:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
-  };
-
   try {
     if (modified) {
+      const updateData = {
+        last_modified: last_modified.toISOString(),
+        versions: version,
+        size,
+        salt,
+        iv,
+        hashvalue: checksum,
+        origin,
+        uuid,
+        enc_hashvalue: enc_file_checksum,
+        type: type,
+        height:
+          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+        width:
+          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+      };
       const data = {
         username,
         filename,
@@ -361,19 +354,19 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     } else {
       await insert_file_and_directory(path, insertData);
     }
-    next();
+    return next();
   } catch (err) {
-    console.log({ err });
+    console.log("*********************************************************")
+    console.log("Error: ", err);
+    console.log("*********************************************************")
     await deleteS3Object(username, uuid);
-    // await res.status(500).json(err?.meta);
-    await res.status(500).json("Something Went Wrong. Try again later");
+    return res.status(500).json({ [filename]: false, msg: "Something Went Wrong. Try again later" });
   }
 };
 const syncUpFile = async (req, res, next) => {
   const salt = await generateRandomBytes(32);
   const iv = await generateRandomBytes(16);
-  console.log("body: ", req.body);
-  const fileStat = req.body.filestat;
+  const fileStat = JSON.parse(req.headers.filestat);
   req.uuid = uuidv4();
   const size = fileStat.size;
   const name = fileStat.filename;
@@ -406,16 +399,15 @@ const syncUpFile = async (req, res, next) => {
     next();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, place: "uploadfile", msg: err });
+    res.status(500).json({ [name]: false, msg: err });
   }
-  next()
 }
 const sync_triggerImageProcessingMS = async (req, res) => {
   try {
+    console.log("********************Entering the final function**************************")
     const mime = mimetype.lookup(req.name);
     if (typeof mime === "string") {
       const ext = mime.split("/")[1].toUpperCase();
-
       if (imageTypes.hasOwnProperty(ext)) {
         let data = {};
         data.id = req.uuid;
@@ -423,13 +415,14 @@ const sync_triggerImageProcessingMS = async (req, res) => {
         data.filename = req.name;
         console.log("Image process triggered: ", data.filename);
         await initiKafkaProducer(data);
-        return res.status(200).json(`file ${req.headers.filename} received`);
+        return res.status(200).json(`file ${req.name} received`);
       }
     }
-    res.status(200).json(`file ${req.headers.filename} received`);
+    console.log(`Files received: ${req.name}`)
+    res.status(200).json({ [req.name]: true, msg: `file ${req.name} received` });
   } catch (err) {
     console.log(err);
-    return res.status(500).json(`file ${req.headers.filename} received`);
+    return res.status(500).json({ [req.name]: false, msg: `file ${req.name} failed` });
   }
 };
 

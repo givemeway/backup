@@ -59,7 +59,6 @@ const update_file_directory_DB = async (req, res, next) => {
     path = "/" + device + "/" + directory;
   }
   req.filePath = path;
-
   const insertData = {
     username,
     device,
@@ -81,25 +80,24 @@ const update_file_directory_DB = async (req, res, next) => {
       fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
   };
 
-  const updateData = {
-    last_modified: last_modified.toISOString(),
-    versions: version,
-    size,
-    salt,
-    iv,
-    hashvalue: checksum,
-    origin,
-    uuid,
-    enc_hashvalue: enc_file_checksum,
-    type: fileStat.type,
-    height:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
-    width:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
-  };
-
   try {
     if (modified) {
+      const updateData = {
+        last_modified: last_modified.toISOString(),
+        versions: version,
+        size,
+        salt,
+        iv,
+        hashvalue: checksum,
+        origin,
+        uuid,
+        enc_hashvalue: enc_file_checksum,
+        type: fileStat.type,
+        height:
+          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+        width:
+          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+      };
       const data = {
         username,
         filename,
@@ -113,12 +111,11 @@ const update_file_directory_DB = async (req, res, next) => {
     } else {
       await insert_file_and_directory(path, insertData);
     }
-    next();
+    return next();
   } catch (err) {
     console.log({ err });
     await deleteS3Object(username, uuid);
-    // await res.status(500).json(err?.meta);
-    await res.status(500).json("Something Went Wrong. Try again later");
+    return res.status(500).json("Something Went Wrong. Try again later");
   }
 };
 

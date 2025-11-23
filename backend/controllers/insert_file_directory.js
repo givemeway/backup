@@ -24,34 +24,41 @@ export const createPaths = async (prisma, paths, data) => {
   });
 };
 
-const insertFile = async (prisma, data) => {
-  const { username, device, folder, path, insertData } = data;
-  const directory = await prisma.directory.findUnique({
-    where: {
-      username_device_folder_path: {
-        username,
-        device,
-        path,
-        folder: folder,
-      },
-    },
-    select: {
-      uuid: true,
-    },
-  });
-  if (directory !== null) {
-    await prisma.file.create({
-      data: {
-        ...insertData,
-        directoryID: {
-          connect: {
-            uuid: directory.uuid,
+const insertFile = async (prisma, data) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const { username, device, folder, path, insertData } = data;
+      const directory = await prisma.directory.findUnique({
+        where: {
+          username_device_folder_path: {
+            username,
+            device,
+            path,
+            folder: folder,
           },
         },
-      },
-    });
-  }
-};
+        select: {
+          uuid: true,
+        },
+      });
+      if (directory !== null) {
+        await prisma.file.create({
+          data: {
+            ...insertData,
+            directoryID: {
+              connect: {
+                uuid: directory.uuid,
+              },
+            },
+          },
+        });
+      }
+      resolve()
+    } catch (err) {
+      reject(err)
+    }
+  });
+
 
 export const getPathTree = (pathParts) => {
   return pathParts
