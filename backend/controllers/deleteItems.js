@@ -161,9 +161,30 @@ const transactionFn = (data) => async (prisma) => {
   await deleteFromDirectory(prisma, data);
 };
 
-const deleteFolder = async (data) => {
+export const deleteFolder = async (data) => {
   await prisma.$transaction(transactionFn(data));
 };
+
+export const sync_deleteFolder = async (req, res, next) => {
+  try {
+    const { path, folder, directory, device, username } = req.query
+
+    const data = {
+      rel_path: path,
+      rel_name: folder,
+      deletion_type: `folder`,
+      path: path,
+      directory: directory,
+      device: device,
+      username,
+    };
+    await deleteFolder(data);
+    res.status(200).json({ [path]: true })
+  } catch (err) {
+    res.status(500).json({ err })
+  }
+
+}
 
 const insertFileDirectoryIntoDeletedDirectory = async (prisma, data) => {
   const { username, device, path, name } = data;
@@ -248,7 +269,19 @@ const fileTransactionFn = (data) => async (prisma) => {
 const deleteFile = async (data) => {
   await prisma.$transaction(fileTransactionFn(data));
 };
-
+export const syncDeleteItems = async (req, res) => {
+  const files = req.files;
+  const username = req.body.username
+  for (const file of files) {
+    try {
+      file["username"] = username;
+      await deleteFile(file);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  res.status(200).json({ success: true, msg: "success" });
+}
 export const deleteItems = async (req, res) => {
   const username = req.user.Username;
   const directories = req.folders;

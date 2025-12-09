@@ -8,8 +8,6 @@ const router = express.Router();
 const getFilesFolders = async (req, res, next) => {
   try {
     const { d, dir, sort, start, page } = req.query;
-
-    console.log("items->", start, page);
     const currentDir = dir;
     const order = req.headers.sortorder;
     const username = req.user.Username;
@@ -29,7 +27,6 @@ const getFilesFolders = async (req, res, next) => {
       path = path.replace(/\)/g, "\\)");
       regex = `^${path}(/[^/]+)$`;
     }
-
     const [results, count] = await prisma.$transaction([
       prisma.$queryRaw(Prisma.sql`
         SELECT uuid, filename as name, device, directory, origin, versions,'file' as type,

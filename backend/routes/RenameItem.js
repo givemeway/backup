@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import dotenv from "dotenv";
-await dotenv.config();
+dotenv.config();
 import { verifyToken } from "../auth/auth.js";
 import { prisma } from "../config/prismaDBConfig.js";
 import { moveFolder } from "../controllers/moveFolder.js";
@@ -11,7 +11,7 @@ const FILE = "fi";
 const FOLDER = "fo";
 const DUPLICATE = "DUPLICATE";
 
-const renameItems = async (req, res, next) => {
+export const renameItems = async (req, res, next) => {
   const username = req.user.Username;
   const { type } = req.body;
   let failed = [];
@@ -56,7 +56,6 @@ const renameItems = async (req, res, next) => {
       oldname = folder;
       newname = value;
       const src = oldPath === "/" ? "/" : oldPath.split("/").slice(1).join("/");
-
       const pathExists = await prisma.directory.findFirst({
         where: {
           username,

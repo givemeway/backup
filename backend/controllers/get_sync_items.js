@@ -14,6 +14,8 @@ export const get_sync_items = async (req, res, next) => {
         'folder' as type, created_at as modified, 0 as size,'--' as dirID
         FROM public."Directory"
         WHERE username = ${username}
+        AND
+        path ~ '^(/[^/]+)*$'
         ORDER BY name ASC;
       `),
       prisma.$queryRaw(Prisma.sql`
@@ -30,11 +32,11 @@ export const get_sync_items = async (req, res, next) => {
       if (a.type === 'file') {
         let path = "";
         if (a.path !== "/")
-          path = join("/", a.device, a.path).split("\\").join("/");
+          path = join("/", a.device, a.path).split(/[/\\]/).join("/");
         else {
-          path = join("/", a.device).split("\\").join("/")
+          path = join("/", a.device).split(/[/\\]/).join("/")
         }
-        return { filename: a.name, type: a.type, dirID: a.dirID, hashvalue: a.hashvalue, last_modified: a.modified, path, size: parseInt(a.size) }
+        return { filename: a.name, type: a.type, dirID: a.dirID, hashvalue: a.hashvalue, last_modified: a.modified, path, size: parseInt(a.size), uuid: a.uuid }
       } else {
         return { folder: a.name, path: a.path, uuid: a.uuid, device: a.device, type: a.type, created_at: a.modified }
       }

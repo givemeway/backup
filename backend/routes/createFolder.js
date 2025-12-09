@@ -19,17 +19,17 @@ router.post("/", verifyToken, async (req, res, next) => {
     path = subpath.split("home").slice(1).join("/") + "/" + folder;
     device = subpath.split("home")[1].split("/")[1];
   }
-
+  const data = {
+    uuid: uuidv4(),
+    username,
+    device,
+    folder,
+    path,
+    created_at: new Date().toISOString(),
+  }
   try {
     await prisma.directory.create({
-      data: {
-        uuid: uuidv4(),
-        username,
-        device,
-        folder,
-        path,
-        created_at: new Date().toISOString(),
-      },
+      data: data,
     });
     success = true;
     status = 200;

@@ -77,7 +77,7 @@ const decryptFile = (input, salt, iv, password) => {
 
 const kafka = new Kafka({
   clientId: "image-transform-server",
-  brokers: ["localhost:39092"],
+  brokers: ["localhost:9092"],
   ssl: false,
   sasl: undefined,
   logLevel: logLevel.ERROR,

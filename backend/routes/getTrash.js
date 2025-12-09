@@ -119,9 +119,8 @@ function batchSubFolderFiles(
               req.trash["folders"].push(item);
             } else {
               const sumTotal = item["items"].reduce(func, 0);
-              item["name"] = `${files[0].filename} and ${
-                sumTotal - 1
-              } more files`;
+              item["name"] = `${files[0].filename} and ${sumTotal - 1
+                } more files`;
               item["count"] = sumTotal;
               item["id"] = uuidv4();
               req.trash["files"].push(item);
@@ -161,9 +160,8 @@ function batchSubFolderFiles(
                 req.trash["folders"].push(item);
               }
             } else {
-              item["name"] = `${files[0].filename} and ${
-                files.length - 1
-              } more files`;
+              item["name"] = `${files[0].filename} and ${files.length - 1
+                } more files`;
               item["limit"] = { begin: begin, end: files.length };
               item["count"] = files.length;
               item["id"] = uuidv4();
@@ -240,9 +238,8 @@ function batchFolderRootFiles(
             item.id = uuidv4();
             req.trash["folders"].push(item);
           } else {
-            item["name"] = `${files[0].filename} and ${
-              files.length - 1
-            } more files`;
+            item["name"] = `${files[0].filename} and ${files.length - 1
+              } more files`;
             item.id = uuidv4();
             req.trash["files"].push(item);
           }
@@ -313,9 +310,8 @@ function createBatchTrashItems(
           item["id"] = uuidv4();
           req.trash["folders"].push(item);
         } else {
-          item["name"] = `${consolidate[0].name} and ${
-            sumTotal - 1
-          } more files`;
+          item["name"] = `${consolidate[0].name} and ${sumTotal - 1
+            } more files`;
           item["id"] = uuidv4();
           req.trash["files"].push(item);
         }
@@ -339,14 +335,10 @@ router.get("/", verifyToken, async (req, res) => {
                           AND (deletion_type IS NULL OR deletion_type = 'folder' )
                           GROUP BY
                           rel_name,rel_path;`);
-    console.log("group - folder _ ", group_folder_);
     const group_folder = group_folder_.map((folder) => ({
       ...folder,
       folder_count: parseInt(folder.folder_count),
     }));
-
-    console.log("group-folder ", group_folder);
-
     const deleted_files = await prisma.deletedFile.findMany({
       where: { username, deletion_type: "file" },
       select: {
@@ -358,7 +350,6 @@ router.get("/", verifyToken, async (req, res) => {
         origin: true,
       },
     });
-
     req.trash = {};
     req.trash["files"] = [];
     req.trash["folders"] = [];
@@ -383,14 +374,12 @@ router.get("/", verifyToken, async (req, res) => {
       });
 
       if (fileCount.length === 0) {
-        console.log("rel_path-", rel_path);
         const folder = await prisma.deletedDirectory.findFirst({
           where: {
             username,
             path: rel_path,
           },
         });
-        console.log(folder);
         const item = {
           deleted: folder.deleted,
           folder: folder.folder,

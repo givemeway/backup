@@ -13,7 +13,7 @@ import { Kafka, logLevel } from "kafkajs";
 // });
 const kafka = new Kafka({
   clientId: "IMAGE-TRANSFORM-EVENT-SERVER",
-  brokers: ["localhost:49092"],
+  brokers: ["localhost:9092"],
   ssl: false,
   sasl: undefined,
   logLevel: logLevel.ERROR,
