@@ -119,8 +119,9 @@ function batchSubFolderFiles(
               req.trash["folders"].push(item);
             } else {
               const sumTotal = item["items"].reduce(func, 0);
-              item["name"] = `${files[0].filename} and ${sumTotal - 1
-                } more files`;
+              item["name"] = `${files[0].filename} and ${
+                sumTotal - 1
+              } more files`;
               item["count"] = sumTotal;
               item["id"] = uuidv4();
               req.trash["files"].push(item);
@@ -160,8 +161,9 @@ function batchSubFolderFiles(
                 req.trash["folders"].push(item);
               }
             } else {
-              item["name"] = `${files[0].filename} and ${files.length - 1
-                } more files`;
+              item["name"] = `${files[0].filename} and ${
+                files.length - 1
+              } more files`;
               item["limit"] = { begin: begin, end: files.length };
               item["count"] = files.length;
               item["id"] = uuidv4();
@@ -238,8 +240,9 @@ function batchFolderRootFiles(
             item.id = uuidv4();
             req.trash["folders"].push(item);
           } else {
-            item["name"] = `${files[0].filename} and ${files.length - 1
-              } more files`;
+            item["name"] = `${files[0].filename} and ${
+              files.length - 1
+            } more files`;
             item.id = uuidv4();
             req.trash["files"].push(item);
           }
@@ -310,8 +313,9 @@ function createBatchTrashItems(
           item["id"] = uuidv4();
           req.trash["folders"].push(item);
         } else {
-          item["name"] = `${consolidate[0].name} and ${sumTotal - 1
-            } more files`;
+          item["name"] = `${consolidate[0].name} and ${
+            sumTotal - 1
+          } more files`;
           item["id"] = uuidv4();
           req.trash["files"].push(item);
         }
@@ -380,6 +384,7 @@ router.get("/", verifyToken, async (req, res) => {
             path: rel_path,
           },
         });
+        if (!folder) continue;
         const item = {
           deleted: folder.deleted,
           folder: folder.folder,

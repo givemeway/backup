@@ -178,22 +178,10 @@ const remove_emtpy_folder = async (prisma, data) => {
   }
 };
 
-const transaction = (data) => async (prisma) => {
-  const files = await getBatchDeletedFiles(prisma, data);
-  if (files.length > 0) {
-    const all_files = await getDeletedFiles(prisma, data);
-    const all_files_tag = tagDuplicates(all_files);
-    const files_tag = tagDuplicates(files);
-    const commonFiles = findCommonFiles(files_tag, all_files_tag);
-    const { s3Files } = get_DB_rows_s3_files_to_delete(commonFiles);
-    await deleteS3Objects(data.username, s3Files);
-    const folders = await getPathsToInsert(prisma, data, files);
-    await delete_version_from_deletedFileVersion_table(prisma, data);
-    await delete_files_from_deletedFile_table(prisma, data);
-    await delete_dir_from_deletedDir_table(prisma, folders);
-  } else {
-    await remove_emtpy_folder(prisma, data);
-  }
+const transaction = (data, folders) => async (prisma) => {
+  await delete_version_from_deletedFileVersion_table(prisma, data);
+  await delete_files_from_deletedFile_table(prisma, data);
+  await delete_dir_from_deletedDir_table(prisma, folders);
 };
 
 const deleteFileTransaction = (data) => async (prisma) => {
@@ -221,7 +209,19 @@ export const deleteTrashItems = async (req, res) => {
               const { path, limit } = el;
               const { begin, end } = limit;
               const data = getData(path, begin, end, el?.root, username);
-              await prisma.$transaction(transaction(data), prismaOpts);
+              const files = await getBatchDeletedFiles(prisma, data);
+              if (files.length > 0) {
+                const all_files = await getDeletedFiles(prisma, data);
+                const all_files_tag = tagDuplicates(all_files);
+                const files_tag = tagDuplicates(files);
+                const commonFiles = findCommonFiles(files_tag, all_files_tag);
+                const { s3Files } = get_DB_rows_s3_files_to_delete(commonFiles);
+                await deleteS3Objects(data.username, s3Files);
+                const folders = await getPathsToInsert(prisma, data, files);
+                await prisma.$transaction(transaction(data, folders), prismaOpts);
+              } else {
+                await remove_emtpy_folder(prisma, data);
+              }
             } catch (err) {
               console.error(err);
               break;
@@ -231,7 +231,19 @@ export const deleteTrashItems = async (req, res) => {
           try {
             const { path, begin, end } = item;
             const data = getData(path, begin, end, item?.root, username);
-            await prisma.$transaction(transaction(data), prismaOpts);
+            const files = await getBatchDeletedFiles(prisma, data);
+            if (files.length > 0) {
+              const all_files = await getDeletedFiles(prisma, data);
+              const all_files_tag = tagDuplicates(all_files);
+              const files_tag = tagDuplicates(files);
+              const commonFiles = findCommonFiles(files_tag, all_files_tag);
+              const { s3Files } = get_DB_rows_s3_files_to_delete(commonFiles);
+              await deleteS3Objects(data.username, s3Files);
+              const folders = await getPathsToInsert(prisma, data, files);
+              await prisma.$transaction(transaction(data, folders), prismaOpts);
+            } else {
+              await remove_emtpy_folder(prisma, data);
+            }
           } catch (err) {
             console.error(err);
             break;
@@ -250,9 +262,7 @@ export const deleteTrashItems = async (req, res) => {
             device: device,
             path: item.path,
           };
-
           await prisma.$transaction(deleteFileTransaction(data), prismaOpts);
-
           const duplicateExist = await prisma.deletedFile.findFirst({
             where: { username, uuid: item.id },
           });

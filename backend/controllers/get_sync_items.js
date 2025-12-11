@@ -5,12 +5,12 @@ export const get_sync_items = async (req, res, next) => {
   try {
     const [results, count] = await prisma.$transaction([
       prisma.$queryRaw(Prisma.sql`
-        SELECT uuid, filename as name, device, directory as path, hashvalue, versions,'file' as type,
+        SELECT uuid,origin, filename as name, device, directory as path, hashvalue, versions,'file' as type,
         last_modified as modified,size,"dirID"
         FROM public."File"
         WHERE username = ${username}
         UNION ALL
-        SELECT uuid, folder as name, device,path, '--' as hashvalue, 0 as versions,
+        SELECT uuid,'--' as origin, folder as name, device,path, '--' as hashvalue, 0 as versions,
         'folder' as type, created_at as modified, 0 as size,'--' as dirID
         FROM public."Directory"
         WHERE username = ${username}
@@ -36,7 +36,13 @@ export const get_sync_items = async (req, res, next) => {
         else {
           path = join("/", a.device).split(/[/\\]/).join("/")
         }
-        return { filename: a.name, type: a.type, dirID: a.dirID, hashvalue: a.hashvalue, last_modified: a.modified, path, size: parseInt(a.size), uuid: a.uuid }
+        return {
+          filename: a.name, type: a.type, dirID: a.dirID,
+          hashvalue: a.hashvalue, last_modified: a.modified,
+          path, size: parseInt(a.size),
+          uuid: a.uuid, origin: a.origin,
+          versions: a.versions
+        }
       } else {
         return { folder: a.name, path: a.path, uuid: a.uuid, device: a.device, type: a.type, created_at: a.modified }
       }
