@@ -32,7 +32,6 @@ export const moveFolder = async (
   const files = await getSrcFilePaths(prisma, fromPath, username);
   const dstFiles = getDstFilePaths(files, toPath, srcDepth, rename);
   const dstFilesObj = getDirectoryMap(dstFiles);
-  // todo HANDLE the empty folder
   if (files.length > 0) {
     for (const [path, files] of Object.entries(dstFilesObj)) {
       const [dstPath, srcPath] = path.split(";");
@@ -43,6 +42,7 @@ export const moveFolder = async (
       await prisma.$transaction(move_transaction(data));
     }
   } else {
+    // to HANDLE the empty folder
     const path = fromPath === "/" ? "/" : "/" + fromPath;
     let dir = path.split("/").slice(2).join("/");
     dir = dir === "" ? "/" : dir;

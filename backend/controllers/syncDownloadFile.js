@@ -54,6 +54,7 @@ export const downloadSyncFile = async (req, res) => {
     });
 
     if (userFound === null) {
+      console.log(`User ${username} not found`);
       return res.status(404).json({ success: false, msg: "User not Found" });
     }
 
@@ -89,6 +90,7 @@ export const downloadSyncFile = async (req, res) => {
           salt: true,
           iv: true,
           size: true,
+          last_modified: true
         },
       });
     }
@@ -104,6 +106,9 @@ export const downloadSyncFile = async (req, res) => {
       res.set("Content-Length", fileFound.size);
       res.set("Content-Disposition", `attachment; filename="${file}"`);
       res.set("Cache-Control", "private, max-age=31536000, no-transform");
+      const isoString = fileFound.last_modified.toISOString();
+      //const date = new Date(isoString);
+      res.set('mtime', isoString);
       const mimetype = file.split(".")[1];
       if (file_format.hasOwnProperty(mimetype)) {
         res.set("Content-Type", file_format[mimetype]);
@@ -116,7 +121,8 @@ export const downloadSyncFile = async (req, res) => {
       return res.status(404).json({ success: false, msg: "File not Found" });
     }
   } catch (err) {
-    return res.status(500).json({ success: false, msg: err });
+    console.error(err.message);
+    return res.status(500).json({ success: false, msg: err.message });
   }
 }
 

@@ -44,6 +44,7 @@ const update_file_directory_DB = async (req, res, next) => {
     origin = req.uuid;
     uuid = req.uuid;
   }
+  console.log({ version, origin, uuid, modified });
   const size = BigInt(`${fileStat.size}`);
   const salt = req.salt;
   const iv = req.iv;
@@ -93,9 +94,13 @@ const update_file_directory_DB = async (req, res, next) => {
         enc_hashvalue: enc_file_checksum,
         type: fileStat.type,
         height:
-          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+          fileStat.type.split("/")[0] === "image"
+            ? parseInt(fileStat.height)
+            : 0,
         width:
-          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+          fileStat.type.split("/")[0] === "image"
+            ? parseInt(fileStat.width)
+            : 0,
       };
       const data = {
         username,

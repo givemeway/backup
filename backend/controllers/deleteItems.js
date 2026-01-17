@@ -167,8 +167,7 @@ export const deleteFolder = async (data) => {
 
 export const sync_deleteFolder = async (req, res, next) => {
   try {
-    const { path, folder, directory, device, username } = req.query
-
+    const { path, folder, directory, device, username } = req.query;
     const data = {
       rel_path: path,
       rel_name: folder,
@@ -179,12 +178,12 @@ export const sync_deleteFolder = async (req, res, next) => {
       username,
     };
     await deleteFolder(data);
-    res.status(200).json({ [path]: true })
+    res.status(200).json({ [path]: true });
   } catch (err) {
-    res.status(500).json({ err })
+    console.log(err);
+    res.status(500).json({ err });
   }
-
-}
+};
 
 const insertFileDirectoryIntoDeletedDirectory = async (prisma, data) => {
   const { username, device, path, name } = data;
@@ -271,7 +270,7 @@ const deleteFile = async (data) => {
 };
 export const syncDeleteItems = async (req, res) => {
   const files = req.files;
-  const username = req.body.username
+  const username = req.body.username;
   for (const file of files) {
     try {
       file["username"] = username;
@@ -281,7 +280,7 @@ export const syncDeleteItems = async (req, res) => {
     }
   }
   res.status(200).json({ success: true, msg: "success" });
-}
+};
 export const deleteItems = async (req, res) => {
   const username = req.user.Username;
   const directories = req.folders;

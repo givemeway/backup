@@ -14,8 +14,8 @@ import mime from "mime-types";
 import mimetype from "mime-types";
 import { prismaUser } from "../config/prismaDBConfig.js";
 import axios from "axios";
-import { insert_file_version } from "./insert_file_version.js";
-import { insert_file_and_directory } from "./insert_file_directory.js";
+import { sync_insert_file_version } from "./insert_file_version.js";
+import { sync_insert_file_and_directory } from "./insert_file_directory.js";
 import { initiKafkaProducer } from "../utils/kafka.js";
 import { deleteS3Object } from "./delete_trash_items.js";
 const headers = {
@@ -64,7 +64,7 @@ const parseFile = async (req) => {
       let encryptedHash;
       const options = {
         maxFileSize: 2000 * 1024 * 1024,
-        fileWriteStreamHandler: (file) => {
+        fileWriteStreamHandler: () => {
           const read = new PassThrough();
           const write = new PassThrough();
           read.pipe(cipher).pipe(write);
@@ -100,7 +100,6 @@ const parseFile = async (req) => {
               socket_main_id: req.socket_main_id,
             };
             // io.to(req.socket_main_id).emit("uploadProgress", { payload });
-            console.log("process.env.WEBHOOK_URL IS ", process.env.WEBHOOK_URL);
             await axios.post(`${process.env.WEBHOOK_URL}`, payload, headers);
           });
           upload
@@ -190,7 +189,9 @@ const uploadFile = async (req, res, next) => {
     return next();
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, place: "uploadfile", msg: err });
+    return res
+      .status(500)
+      .json({ success: false, place: "uploadfile", msg: err });
   }
 };
 
@@ -203,7 +204,8 @@ const getFileStreamOptions = (cipher, key, cb) =>
         maxFileSize: 2000 * 1024 * 1024,
         allowEmptyFiles: true,
         minFileSize: 0,
-        fileWriteStreamHandler: () => {
+        fileWriteStreamHandler: (file) => {
+
           const read = new PassThrough();
           const write = new PassThrough();
           read.pipe(cipher).pipe(write);
@@ -230,23 +232,19 @@ const getFileStreamOptions = (cipher, key, cb) =>
 
           upload
             .done()
-            .then(() =>
-              cb(encryptedHash)
-            )
+            .then(() => cb(encryptedHash))
             .catch(async (err) => {
               console.error(err);
-              reject(err)
+              reject(err);
             });
           return read;
         },
       };
       resolve(options);
     } catch (err) {
-      reject(err)
+      reject(err);
     }
-
-
-  })
+  });
 const parseSyncFile = (req) =>
   new Promise(async (resolve, reject) => {
     try {
@@ -258,7 +256,7 @@ const parseSyncFile = (req) =>
       );
       const options = await getFileStreamOptions(cipher, req.key, resolve);
       const form = formidable(options);
-      await form.parse(req)
+      await form.parse(req);
     } catch (err) {
       console.error(err);
       reject(err);
@@ -273,25 +271,26 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     height = fileStat.height;
     width = fileStat.width;
   }
-  const last_modified = new Date(fileStat.mtime);
-  const { username, device, filename, type, directory, checksum } = fileStat
+  const last_modified = new Date(parseInt(fileStat.mtime));
+  const { username, device, filename, type, directory, checksum } = fileStat;
   let version;
   let origin;
   let uuid;
   let modified = false;
   if (fileStat?.version && fileStat?.isModified) {
     version = fileStat.version;
-    origin = req.uuid;
-    uuid = req.uuid_new;
+    origin = fileStat.origin;
+    uuid = fileStat.uuid;
     modified = true;
   } else {
     version = 1;
-    origin = req.uuid;
-    uuid = req.uuid;
+    origin = fileStat?.origin;
+    uuid = fileStat?.uuid;
   }
   const size = BigInt(`${fileStat.size}`);
   const salt = req.salt;
   const iv = req.iv;
+  const paths = fileStat.treeids
   req.uuid = uuid;
   req.username = username;
   let path;
@@ -324,7 +323,7 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     width:
       fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
   };
-
+  const treeIDs = fileStat.pathids;
   try {
     if (modified) {
       const updateData = {
@@ -339,9 +338,13 @@ const sync_update_file_directory_DB = async (req, res, next) => {
         enc_hashvalue: enc_file_checksum,
         type: type,
         height:
-          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
+          fileStat.type.split("/")[0] === "image"
+            ? parseInt(fileStat.height)
+            : 0,
         width:
-          fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+          fileStat.type.split("/")[0] === "image"
+            ? parseInt(fileStat.width)
+            : 0,
       };
       const data = {
         username,
@@ -352,33 +355,34 @@ const sync_update_file_directory_DB = async (req, res, next) => {
         insertData,
         updateData,
       };
-      await insert_file_version(data);
+      await sync_insert_file_version(data);
     } else {
-      await insert_file_and_directory(path, insertData);
+      await sync_insert_file_and_directory(path, insertData, treeIDs);
     }
     return next();
   } catch (err) {
-    console.log("Error: ", err);
     await deleteS3Object(username, uuid);
-    return res.status(500).json({ [filename]: false, msg: "Something Went Wrong. Try again later" });
+    return res.status(500).json({
+      [filename]: false,
+      msg: "Something Went Wrong. Try again later",
+    });
   }
 };
 const syncUpFile = async (req, res, next) => {
   const salt = await generateRandomBytes(32);
   const iv = await generateRandomBytes(16);
   const fileStat = JSON.parse(req.headers.filestat);
-  req.uuid = uuidv4();
+  if (fileStat?.uuid) {
+    req.uuid = fileStat?.uuid;
+  } else {
+    req.uuid = uuidv4();
+  }
   const size = fileStat.size;
   const name = fileStat.filename;
   const userName = fileStat.username;
   let key;
-  if (fileStat.isModified === true) {
-    req.uuid_new = req.uuid;
-    req.uuid = fileStat.uuid;
-    key = `${userName}/${req.uuid_new}`;
-  } else {
-    key = `${userName}/${req.uuid}`;
-  }
+  req.origin = req.origin;
+  key = `${userName}/${req.uuid}`;
   try {
     req.salt = salt;
     req.iv = iv;
@@ -401,7 +405,7 @@ const syncUpFile = async (req, res, next) => {
     console.error(err);
     return res.status(500).json({ [name]: false, msg: err });
   }
-}
+};
 const sync_triggerImageProcessingMS = async (req, res) => {
   try {
     const mime = mimetype.lookup(req.name);
@@ -412,18 +416,25 @@ const sync_triggerImageProcessingMS = async (req, res) => {
         data.id = req.uuid;
         data.username = req.username;
         data.filename = req.name;
-        console.log("Image process triggered: ", data.filename);
         await initiKafkaProducer(data);
         return res.status(200).json(`file ${req.name} received`);
       }
     }
-    console.log(`Files received: ${req.name}`)
-    return res.status(200).json({ [req.name]: true, msg: `file ${req.name} received` });
+    return res
+      .status(200)
+      .json({ [req.name]: true, msg: `Image ${req.name} thumbnail creation request received` });
   } catch (err) {
+    console.log(`Image thumbnail request failed: ${req.name} : ${err.message}`);
     console.log(err);
-    return res.status(500).json({ [req.name]: false, msg: `file ${req.name} failed` });
+    return res
+      .status(200)
+      .json({ [req.name]: false, msg: `Image ${req.name} thumbnanil creation request failed` });
   }
 };
 
-
-export { uploadFile, syncUpFile, sync_update_file_directory_DB, sync_triggerImageProcessingMS };
+export {
+  uploadFile,
+  syncUpFile,
+  sync_update_file_directory_DB,
+  sync_triggerImageProcessingMS,
+};

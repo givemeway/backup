@@ -5,6 +5,7 @@ import {
   getPathTree,
 } from "./insert_file_directory.js";
 import { getSrcFilePaths, getDstFilePaths, getDirectoryMap } from "./utils.js";
+import { join } from "path";
 
 export const copy_empty_directory = async (prisma, data) => {
   const { toPath, username, fromPath, srcDepth, rename } = data;
@@ -20,12 +21,14 @@ export const copy_empty_directory = async (prisma, data) => {
       path: true,
     },
   });
-
   for (const dir of all_directories) {
     const sliceStart = rename ? srcDepth + 1 : srcDepth;
     const pathParts = dir.path.split("/").slice(sliceStart).join("/");
     const relPath = pathParts === "" ? "/" : pathParts;
-    const dstPath = toPath + "/" + relPath;
+    // const dstPath = toPath + "/" + relPath;
+    let dstPath = join(toPath, relPath);
+    dstPath = dstPath.replace(/\\/g, "/");
+    dstPath = dstPath.endsWith("/") ? dstPath.slice(0, -1) : dstPath;
     const device = dstPath.split("/")[1] === "" ? "/" : dstPath.split("/")[1];
     const paths = getPathTree(dstPath.split("/"));
     const data = { username, device };

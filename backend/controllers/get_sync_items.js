@@ -51,6 +51,7 @@ export const get_sync_items = async (req, res, next) => {
     res.status(200).json({ success: true, items: filesFolders, count: totalCount })
   }
   catch (err) {
+    console.log("Error: ", err);
     res.status(500).json({ success: false, msg: "something went wrong. try again" })
   }
 } 

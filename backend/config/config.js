@@ -17,8 +17,8 @@ export const OTP_EXPIRY = 60 * 5;
 export const corsOpts = {
   origin: ORIGIN,
   allowedHeaders:
-    "Content-Type,X-CSRF-Token,Authorization,Origin,filename,dir,devicename,Content-Disposition,filestat,currentdirectory,backuptype",
-  exposedHeaders: "Set-Cookie",
+    "Content-Type,X-CSRF-Token,Authorization,Origin,filename,dir,devicename,Content-Disposition,filestat,currentdirectory,backuptype,",
+  exposedHeaders: ["Set-Cookie", "mtime"],
   methods: "OPTIONS, GET, POST, PUT, PATCH, DELETE",
   credentials: true,
 };

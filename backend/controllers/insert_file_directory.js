@@ -23,6 +23,23 @@ export const createPaths = async (prisma, paths, data) => {
     skipDuplicates: true,
   });
 };
+const syncCreatePaths = async (prisma, paths, username) => {
+  for (const dir of paths) {
+    const dirObj = { ...dir, username, created_at: new Date(parseInt(dir.created_at)).toISOString() };
+    await prisma.directory.upsert({
+      where: {
+        username_device_folder_path: {
+          username,
+          device: dir.device,
+          path: dir.path,
+          folder: dir.folder,
+        },
+      },
+      update: { uuid: dir.uuid },
+      create: dirObj
+    });
+  }
+};
 
 const insertFile = async (prisma, data) =>
   new Promise(async (resolve, reject) => {
@@ -53,12 +70,11 @@ const insertFile = async (prisma, data) =>
           },
         });
       }
-      resolve()
+      resolve();
     } catch (err) {
-      reject(err)
+      reject(err);
     }
   });
-
 
 export const getPathTree = (pathParts) => {
   return pathParts
@@ -68,7 +84,24 @@ export const getPathTree = (pathParts) => {
     ])
     .slice(1);
 };
-
+export const sync_insert_file_and_directory = (path, insertData, filePathTree) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await prisma.$transaction(async (prisma) => {
+        const username = insertData.username;
+        const device = insertData.device;
+        const folderParts = path.split("/").slice(-1)[0];
+        const folder = folderParts === "" ? "/" : folderParts;
+        const data = { username, device, folder, path, insertData };
+        await syncCreatePaths(prisma, filePathTree, username);
+        await insertFile(prisma, data);
+      });
+      resolve();
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
 export const insert_file_and_directory = (path, insertData) => {
   return new Promise(async (resolve, reject) => {
     try {
