@@ -271,7 +271,7 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     height = fileStat.height;
     width = fileStat.width;
   }
-  const last_modified = new Date(parseInt(fileStat.mtime));
+  const last_modified = new Date(parseInt(fileStat.mtime) * 1000).toISOString();
   const { username, device, filename, type, directory, checksum } = fileStat;
   let version;
   let origin;
@@ -290,7 +290,6 @@ const sync_update_file_directory_DB = async (req, res, next) => {
   const size = BigInt(`${fileStat.size}`);
   const salt = req.salt;
   const iv = req.iv;
-  const paths = fileStat.treeids
   req.uuid = uuid;
   req.username = username;
   let path;
@@ -310,7 +309,7 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     uuid,
     origin,
     filename,
-    last_modified: last_modified.toISOString(),
+    last_modified: last_modified,
     hashvalue: checksum,
     enc_hashvalue: enc_file_checksum,
     versions: version,
@@ -327,7 +326,7 @@ const sync_update_file_directory_DB = async (req, res, next) => {
   try {
     if (modified) {
       const updateData = {
-        last_modified: last_modified.toISOString(),
+        last_modified: last_modified,
         versions: version,
         size,
         salt,
