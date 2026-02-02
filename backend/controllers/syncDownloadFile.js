@@ -42,6 +42,7 @@ export const downloadSyncFile = async (req, res) => {
   try {
     const { file, uuid, db, dir, device, username } = req.query;
     const Key = `${username}/${uuid}`;
+    console.log("Key==>", Key);
     const command = new GetObjectCommand({
       Bucket: BUCKET,
       Key,

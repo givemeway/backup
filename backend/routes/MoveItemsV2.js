@@ -5,6 +5,7 @@ dotenv.config();
 import { verifyToken } from "../auth/auth.js";
 import { moveFolder } from "../controllers/moveFolder.js";
 import { moveFile } from "../controllers/moveFile.js";
+import { moveFolderV2 } from "./RenameItem.js";
 
 const moveItems = async (req, res, next) => {
   try {
@@ -28,7 +29,8 @@ const moveItems = async (req, res, next) => {
     for (const folder of folders ? folders : []) {
       try {
         const from = folder.path.split("/").slice(1).join("/");
-        await moveFolder(from, to, username);
+        await moveFolderV2(from == "/" ? "/" : "/" + from, to, username);
+        //        await moveFolder(from, to, username);
       } catch (err) {
         console.error(err);
       }

@@ -31,7 +31,7 @@ model File {
   iv String @db.VarChar(64)
   versionedFiles FileVersion[]
   dirID String @db.VarChar(36)
-  type String @db.VarChar(30) @default("file")
+  type String @db.VarChar(255) @default("file")
   height Int @default(0)
   width Int @default(0)
   directoryID Directory @relation(fields: [dirID],references: [uuid])
@@ -79,7 +79,7 @@ model DeletedFile {
   deletion_date DateTime
   deletion_type String @db.VarChar(6)
   dirID String @db.VarChar(36)
-  type String @db.VarChar(30) @default("file")
+  type String @db.VarChar(255) @default("file")
   height Int @default(0)
   width Int @default(0)
   directoryID DeletedDirectory @relation(fields: [dirID],references: [uuid])

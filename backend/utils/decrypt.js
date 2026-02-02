@@ -6,16 +6,19 @@ const decryptFile = (input, salt, iv, password) => {
     const ivBuffer = hexToBuffer(iv);
     const algorithm = "aes-256-cbc";
     try {
-      const key = await new Promise((resolve, reject) => {
-        scrypt(password, saltBuffer, 32, (err, key) => {
-          if (err) reject(err);
-          else {
-            resolve(key);
-          }
+      scrypt(password, saltBuffer, 32, (err, key) => {
+        if (err) return reject(err);
+        const decipher = createDecipheriv(algorithm, key, ivBuffer);
+        decipher.on("error", err => {
+          console.log("[cipher] ", err);
+          input.destroy();
         });
+        input.on("error", err => {
+          decipher.destroy();
+          reject(err);
+        });
+        resolve(input.pipe(decipher));
       });
-      const dicpher = createDecipheriv(algorithm, key, ivBuffer);
-      resolve(input.pipe(dicpher));
     } catch (err) {
       reject(err);
     }

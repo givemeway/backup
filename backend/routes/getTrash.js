@@ -119,9 +119,8 @@ function batchSubFolderFiles(
               req.trash["folders"].push(item);
             } else {
               const sumTotal = item["items"].reduce(func, 0);
-              item["name"] = `${files[0].filename} and ${
-                sumTotal - 1
-              } more files`;
+              item["name"] = `${files[0].filename} and ${sumTotal - 1
+                } more files`;
               item["count"] = sumTotal;
               item["id"] = uuidv4();
               req.trash["files"].push(item);
@@ -161,9 +160,8 @@ function batchSubFolderFiles(
                 req.trash["folders"].push(item);
               }
             } else {
-              item["name"] = `${files[0].filename} and ${
-                files.length - 1
-              } more files`;
+              item["name"] = `${files[0].filename} and ${files.length - 1
+                } more files`;
               item["limit"] = { begin: begin, end: files.length };
               item["count"] = files.length;
               item["id"] = uuidv4();
@@ -240,9 +238,8 @@ function batchFolderRootFiles(
             item.id = uuidv4();
             req.trash["folders"].push(item);
           } else {
-            item["name"] = `${files[0].filename} and ${
-              files.length - 1
-            } more files`;
+            item["name"] = `${files[0].filename} and ${files.length - 1
+              } more files`;
             item.id = uuidv4();
             req.trash["files"].push(item);
           }
@@ -271,6 +268,8 @@ function createBatchTrashItems(
 ) {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log("subFolderRegexp : ", subFoldersRegExp);
+
       const subFolders = await prisma.$queryRaw(Prisma.sql`
                               SELECT folder,path,device,uuid 
                               FROM public."DeletedDirectory" 
@@ -313,9 +312,8 @@ function createBatchTrashItems(
           item["id"] = uuidv4();
           req.trash["folders"].push(item);
         } else {
-          item["name"] = `${consolidate[0].name} and ${
-            sumTotal - 1
-          } more files`;
+          item["name"] = `${consolidate[0].name} and ${sumTotal - 1
+            } more files`;
           item["id"] = uuidv4();
           req.trash["files"].push(item);
         }
@@ -365,6 +363,7 @@ router.get("/", verifyToken, async (req, res) => {
       const dir = dirParts === "" ? "/" : dirParts;
       let rel_path = group.rel_path.replace(/\(/g, "\\(");
       rel_path = rel_path.replace(/\)/g, "\\)");
+      rel_path = rel_path.replace(/\+/g, "\\\\+");
       const subFoldersRegExp = `^${rel_path}(/[^/]+)$`;
 
       const fileCount = await prisma.deletedFile.findMany({
