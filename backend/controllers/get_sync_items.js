@@ -39,6 +39,7 @@ export const get_sync_items = async (req, res, next) => {
         return {
           filename: a.name, type: a.type, dirID: a.dirID,
           hashvalue: a.hashvalue, last_modified: a.modified,
+          last_updated: a.last_updated,
           path, size: parseInt(a.size),
           uuid: a.uuid, origin: a.origin,
           versions: a.versions

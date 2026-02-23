@@ -507,6 +507,7 @@ const copy_file_into_file_table = async (prisma, data) => {
   await prisma.$executeRaw(Prisma.sql`
           INSERT INTO public."File"
           SELECT username,device,directory,uuid,origin,filename,last_modified,
+              last_updated,
               hashvalue,enc_hashvalue,versions,size,salt,iv,"dirID"
           FROM public."DeletedFile"
           WHERE username = ${username}

@@ -37,9 +37,10 @@ const insertIntoDeletedFile = async (prisma, data) => {
     await prisma.$executeRaw(Prisma.sql`
     INSERT INTO public."DeletedFile"
     (username,device,directory,uuid,origin,filename,last_modified,
+      last_updated,
       hashvalue,enc_hashvalue,versions,size,salt,iv,deletion_date,
       deletion_type,"dirID")
-    SELECT username,device,directory,uuid,origin,filename,last_modified,hashvalue,
+    SELECT username,device,directory,uuid,origin,filename,last_modified,last_updated,hashvalue,
     enc_hashvalue,versions,size,salt,iv,CURRENT_TIMESTAMP,${deletion_type},"dirID"
     FROM public."File"
     WHERE 
@@ -51,10 +52,11 @@ const insertIntoDeletedFile = async (prisma, data) => {
     await prisma.$executeRaw(Prisma.sql`
     INSERT INTO public."DeletedFile"
     (username,device,directory,uuid,origin,filename,last_modified,
+    last_updated,
       hashvalue,enc_hashvalue,versions,size,salt,iv,deletion_date,
       deletion_type,"dirID")
     SELECT username,device,directory,uuid,origin,filename,
-    last_modified,hashvalue,enc_hashvalue,versions,size,salt,iv,CURRENT_TIMESTAMP,
+    last_modified,last_updated,hashvalue,enc_hashvalue,versions,size,salt,iv,CURRENT_TIMESTAMP,
     ${deletion_type},"dirID"
       FROM public."File"
       WHERE username = ${username}
@@ -206,10 +208,11 @@ const insertRowIntoDeletedFile = async (prisma, data) => {
   await prisma.$executeRaw(Prisma.sql`
     INSERT INTO public."DeletedFile"
         (username,device,directory,uuid,origin,filename,last_modified,
+        last_updated,
         hashvalue,enc_hashvalue,versions,size,salt,iv,deletion_date,
         deletion_type,"dirID")
     SELECT username,device,directory,uuid,origin,filename,
-        last_modified,hashvalue,enc_hashvalue,versions,size,salt,iv,CURRENT_TIMESTAMP,
+        last_modified,last_updated,hashvalue,enc_hashvalue,versions,size,salt,iv,CURRENT_TIMESTAMP,
         ${deletion_type},"dirID"
     FROM public."File"
     WHERE username = ${username}

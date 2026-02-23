@@ -23,6 +23,7 @@ model File {
   origin String @unique @db.VarChar(36)
   filename String @db.VarChar(255)
   last_modified DateTime
+  last_updated DateTime
   hashvalue String @db.Char(64)
   enc_hashvalue String @db.Char(64)
   versions Int 
@@ -70,6 +71,7 @@ model DeletedFile {
   origin String @db.VarChar(36) @unique
   filename String @db.VarChar(255)
   last_modified DateTime
+  last_updated DateTime
   hashvalue String @db.Char(64)
   enc_hashvalue String @db.Char(64)
   versions Int 

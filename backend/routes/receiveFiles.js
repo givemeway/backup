@@ -67,6 +67,7 @@ const update_file_directory_DB = async (req, res, next) => {
     origin,
     filename,
     last_modified: last_modified.toISOString(),
+    last_updated: new Date().toISOString(),
     hashvalue: checksum,
     enc_hashvalue: enc_file_checksum,
     versions: version,
@@ -84,6 +85,7 @@ const update_file_directory_DB = async (req, res, next) => {
     if (modified) {
       const updateData = {
         last_modified: last_modified.toISOString(),
+        last_updated: new Date().toISOString(),
         versions: version,
         size,
         salt,

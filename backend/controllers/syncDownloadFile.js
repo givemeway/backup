@@ -122,7 +122,9 @@ export const downloadSyncFile = async (req, res) => {
       return res.status(404).json({ success: false, msg: "File not Found" });
     }
   } catch (err) {
-    console.error(err.message);
+    if (err?.$metadata?.httpStatusCode == 404) {
+      return res.status(404).json({ success: false, msg: err.message });
+    }
     return res.status(500).json({ success: false, msg: err.message });
   }
 }

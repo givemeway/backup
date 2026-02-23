@@ -310,6 +310,7 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     origin,
     filename,
     last_modified: last_modified,
+    last_updated: new Date().toISOString(),
     hashvalue: checksum,
     enc_hashvalue: enc_file_checksum,
     versions: version,
@@ -327,6 +328,7 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     if (modified) {
       const updateData = {
         last_modified: last_modified,
+        last_updated: new Date().toISOString(),
         versions: version,
         size,
         salt,
@@ -361,6 +363,9 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     return next();
   } catch (err) {
     await deleteS3Object(username, uuid);
+    if (err?.code == "P2002") {
+      return res.status(409).json({ [filename]: false, msg: "File Exists" });
+    }
     return res.status(500).json({
       [filename]: false,
       msg: "Something Went Wrong. Try again later",

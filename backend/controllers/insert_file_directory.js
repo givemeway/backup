@@ -59,8 +59,14 @@ const insertFile = async (prisma, data) =>
         },
       });
       if (directory !== null) {
-        await prisma.file.create({
-          data: {
+        await prisma.file.upsert({
+          where: {
+            username_device_directory_filename: {
+              username, device, directory: insertData.directory, filename: insertData.filename
+            }
+          },
+          update: insertData,
+          create: {
             ...insertData,
             directoryID: {
               connect: {
@@ -72,6 +78,7 @@ const insertFile = async (prisma, data) =>
       }
       resolve();
     } catch (err) {
+      console.log(err);
       reject(err);
     }
   });

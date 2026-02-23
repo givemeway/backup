@@ -63,25 +63,30 @@ export const moveFile = async (device, username, filename, dir, to) => {
         });
         val = [to_device, to_dir, filename, dir, device, username, uuid];
       }
-      const new_origin = uuidV4();
       await prisma.$transaction(
         [
-          prisma.$executeRaw(Prisma.sql`INSERT INTO public."File"
-              SELECT username,${val[0]},${val[1]},uuid,${new_origin},filename,last_modified,
-              hashvalue,enc_hashvalue,versions,size,salt,iv,${val[6]} 
-              FROM public."File"
-              WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
-          prisma.$executeRaw(Prisma.sql`INSERT INTO public."FileVersion"
-              SELECT username,${val[0]},${val[1]},uuid,${new_origin},filename,last_modified,
-              hashvalue,enc_hashvalue,versions,size,salt,iv
-              FROM public."FileVersion"
-              WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
           prisma.$executeRaw(Prisma.sql`
-                DELETE FROM public."FileVersion" 
-                WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
+            UPDATE public."File"
+
+            SET device = ${val[0]},
+                directory = ${val[1]},
+                "dirID" = ${val[6]}
+
+            WHERE   filename = ${val[2]} AND 
+                    directory = ${val[3]} AND 
+                    device = ${val[4]} AND 
+                    username = ${val[5]};`),
+
           prisma.$executeRaw(Prisma.sql`
-              DELETE FROM public."File" 
-              WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),
+            UPDATE public."FileVersion"
+
+            SET device = ${val[0]},
+                directory = ${val[1]}
+
+            WHERE   filename = ${val[2]} AND 
+                    directory = ${val[3]} AND 
+                    device = ${val[4]} AND 
+                    username = ${val[5]};`),
         ],
         prismaOpts
       );

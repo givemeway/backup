@@ -1445,6 +1445,7 @@ export namespace Prisma {
     origin: string | null
     filename: string | null
     last_modified: Date | null
+    last_updated: Date | null
     hashvalue: string | null
     enc_hashvalue: string | null
     versions: number | null
@@ -1465,6 +1466,7 @@ export namespace Prisma {
     origin: string | null
     filename: string | null
     last_modified: Date | null
+    last_updated: Date | null
     hashvalue: string | null
     enc_hashvalue: string | null
     versions: number | null
@@ -1485,6 +1487,7 @@ export namespace Prisma {
     origin: number
     filename: number
     last_modified: number
+    last_updated: number
     hashvalue: number
     enc_hashvalue: number
     versions: number
@@ -1521,6 +1524,7 @@ export namespace Prisma {
     origin?: true
     filename?: true
     last_modified?: true
+    last_updated?: true
     hashvalue?: true
     enc_hashvalue?: true
     versions?: true
@@ -1541,6 +1545,7 @@ export namespace Prisma {
     origin?: true
     filename?: true
     last_modified?: true
+    last_updated?: true
     hashvalue?: true
     enc_hashvalue?: true
     versions?: true
@@ -1561,6 +1566,7 @@ export namespace Prisma {
     origin?: true
     filename?: true
     last_modified?: true
+    last_updated?: true
     hashvalue?: true
     enc_hashvalue?: true
     versions?: true
@@ -1668,6 +1674,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date
+    last_updated: Date
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -1707,6 +1714,7 @@ export namespace Prisma {
     origin?: boolean
     filename?: boolean
     last_modified?: boolean
+    last_updated?: boolean
     hashvalue?: boolean
     enc_hashvalue?: boolean
     versions?: boolean
@@ -1730,6 +1738,7 @@ export namespace Prisma {
     origin?: boolean
     filename?: boolean
     last_modified?: boolean
+    last_updated?: boolean
     hashvalue?: boolean
     enc_hashvalue?: boolean
     versions?: boolean
@@ -1763,6 +1772,7 @@ export namespace Prisma {
       origin: string
       filename: string
       last_modified: Date
+      last_updated: Date
       hashvalue: string
       enc_hashvalue: string
       versions: number
@@ -2177,6 +2187,7 @@ export namespace Prisma {
     readonly origin: FieldRef<"File", 'String'>
     readonly filename: FieldRef<"File", 'String'>
     readonly last_modified: FieldRef<"File", 'DateTime'>
+    readonly last_updated: FieldRef<"File", 'DateTime'>
     readonly hashvalue: FieldRef<"File", 'String'>
     readonly enc_hashvalue: FieldRef<"File", 'String'>
     readonly versions: FieldRef<"File", 'Int'>
@@ -3661,6 +3672,7 @@ export namespace Prisma {
     origin: string | null
     filename: string | null
     last_modified: Date | null
+    last_updated: Date | null
     hashvalue: string | null
     enc_hashvalue: string | null
     versions: number | null
@@ -3683,6 +3695,7 @@ export namespace Prisma {
     origin: string | null
     filename: string | null
     last_modified: Date | null
+    last_updated: Date | null
     hashvalue: string | null
     enc_hashvalue: string | null
     versions: number | null
@@ -3705,6 +3718,7 @@ export namespace Prisma {
     origin: number
     filename: number
     last_modified: number
+    last_updated: number
     hashvalue: number
     enc_hashvalue: number
     versions: number
@@ -3743,6 +3757,7 @@ export namespace Prisma {
     origin?: true
     filename?: true
     last_modified?: true
+    last_updated?: true
     hashvalue?: true
     enc_hashvalue?: true
     versions?: true
@@ -3765,6 +3780,7 @@ export namespace Prisma {
     origin?: true
     filename?: true
     last_modified?: true
+    last_updated?: true
     hashvalue?: true
     enc_hashvalue?: true
     versions?: true
@@ -3787,6 +3803,7 @@ export namespace Prisma {
     origin?: true
     filename?: true
     last_modified?: true
+    last_updated?: true
     hashvalue?: true
     enc_hashvalue?: true
     versions?: true
@@ -3896,6 +3913,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date
+    last_updated: Date
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -3937,6 +3955,7 @@ export namespace Prisma {
     origin?: boolean
     filename?: boolean
     last_modified?: boolean
+    last_updated?: boolean
     hashvalue?: boolean
     enc_hashvalue?: boolean
     versions?: boolean
@@ -3962,6 +3981,7 @@ export namespace Prisma {
     origin?: boolean
     filename?: boolean
     last_modified?: boolean
+    last_updated?: boolean
     hashvalue?: boolean
     enc_hashvalue?: boolean
     versions?: boolean
@@ -3997,6 +4017,7 @@ export namespace Prisma {
       origin: string
       filename: string
       last_modified: Date
+      last_updated: Date
       hashvalue: string
       enc_hashvalue: string
       versions: number
@@ -4413,6 +4434,7 @@ export namespace Prisma {
     readonly origin: FieldRef<"DeletedFile", 'String'>
     readonly filename: FieldRef<"DeletedFile", 'String'>
     readonly last_modified: FieldRef<"DeletedFile", 'DateTime'>
+    readonly last_updated: FieldRef<"DeletedFile", 'DateTime'>
     readonly hashvalue: FieldRef<"DeletedFile", 'String'>
     readonly enc_hashvalue: FieldRef<"DeletedFile", 'String'>
     readonly versions: FieldRef<"DeletedFile", 'Int'>
@@ -7875,6 +7897,7 @@ export namespace Prisma {
     origin: 'origin',
     filename: 'filename',
     last_modified: 'last_modified',
+    last_updated: 'last_updated',
     hashvalue: 'hashvalue',
     enc_hashvalue: 'enc_hashvalue',
     versions: 'versions',
@@ -7927,6 +7950,7 @@ export namespace Prisma {
     origin: 'origin',
     filename: 'filename',
     last_modified: 'last_modified',
+    last_updated: 'last_updated',
     hashvalue: 'hashvalue',
     enc_hashvalue: 'enc_hashvalue',
     versions: 'versions',
@@ -8203,6 +8227,7 @@ export namespace Prisma {
     origin?: StringFilter<"File"> | string
     filename?: StringFilter<"File"> | string
     last_modified?: DateTimeFilter<"File"> | Date | string
+    last_updated?: DateTimeFilter<"File"> | Date | string
     hashvalue?: StringFilter<"File"> | string
     enc_hashvalue?: StringFilter<"File"> | string
     versions?: IntFilter<"File"> | number
@@ -8225,6 +8250,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -8252,6 +8278,7 @@ export namespace Prisma {
     uuid?: StringFilter<"File"> | string
     filename?: StringFilter<"File"> | string
     last_modified?: DateTimeFilter<"File"> | Date | string
+    last_updated?: DateTimeFilter<"File"> | Date | string
     hashvalue?: StringFilter<"File"> | string
     enc_hashvalue?: StringFilter<"File"> | string
     versions?: IntFilter<"File"> | number
@@ -8274,6 +8301,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -8302,6 +8330,7 @@ export namespace Prisma {
     origin?: StringWithAggregatesFilter<"File"> | string
     filename?: StringWithAggregatesFilter<"File"> | string
     last_modified?: DateTimeWithAggregatesFilter<"File"> | Date | string
+    last_updated?: DateTimeWithAggregatesFilter<"File"> | Date | string
     hashvalue?: StringWithAggregatesFilter<"File"> | string
     enc_hashvalue?: StringWithAggregatesFilter<"File"> | string
     versions?: IntWithAggregatesFilter<"File"> | number
@@ -8434,6 +8463,7 @@ export namespace Prisma {
     origin?: StringFilter<"DeletedFile"> | string
     filename?: StringFilter<"DeletedFile"> | string
     last_modified?: DateTimeFilter<"DeletedFile"> | Date | string
+    last_updated?: DateTimeFilter<"DeletedFile"> | Date | string
     hashvalue?: StringFilter<"DeletedFile"> | string
     enc_hashvalue?: StringFilter<"DeletedFile"> | string
     versions?: IntFilter<"DeletedFile"> | number
@@ -8458,6 +8488,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -8487,6 +8518,7 @@ export namespace Prisma {
     uuid?: StringFilter<"DeletedFile"> | string
     filename?: StringFilter<"DeletedFile"> | string
     last_modified?: DateTimeFilter<"DeletedFile"> | Date | string
+    last_updated?: DateTimeFilter<"DeletedFile"> | Date | string
     hashvalue?: StringFilter<"DeletedFile"> | string
     enc_hashvalue?: StringFilter<"DeletedFile"> | string
     versions?: IntFilter<"DeletedFile"> | number
@@ -8511,6 +8543,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -8541,6 +8574,7 @@ export namespace Prisma {
     origin?: StringWithAggregatesFilter<"DeletedFile"> | string
     filename?: StringWithAggregatesFilter<"DeletedFile"> | string
     last_modified?: DateTimeWithAggregatesFilter<"DeletedFile"> | Date | string
+    last_updated?: DateTimeWithAggregatesFilter<"DeletedFile"> | Date | string
     hashvalue?: StringWithAggregatesFilter<"DeletedFile"> | string
     enc_hashvalue?: StringWithAggregatesFilter<"DeletedFile"> | string
     versions?: IntWithAggregatesFilter<"DeletedFile"> | number
@@ -8826,6 +8860,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -8847,6 +8882,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -8868,6 +8904,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -8889,6 +8926,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -8910,6 +8948,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -8930,6 +8969,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -8949,6 +8989,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -9094,6 +9135,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -9117,6 +9159,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -9140,6 +9183,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -9163,6 +9207,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -9186,6 +9231,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -9208,6 +9254,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -9229,6 +9276,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -9629,6 +9677,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -9656,6 +9705,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -9676,6 +9726,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -9883,6 +9934,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -9912,6 +9964,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -9934,6 +9987,7 @@ export namespace Prisma {
     origin?: SortOrder
     filename?: SortOrder
     last_modified?: SortOrder
+    last_updated?: SortOrder
     hashvalue?: SortOrder
     enc_hashvalue?: SortOrder
     versions?: SortOrder
@@ -10760,6 +10814,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -10780,6 +10835,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -10816,6 +10872,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -10836,6 +10893,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11011,6 +11069,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11033,6 +11092,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11071,6 +11131,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11093,6 +11154,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11115,6 +11177,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11135,6 +11198,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11184,6 +11248,7 @@ export namespace Prisma {
     origin?: StringFilter<"File"> | string
     filename?: StringFilter<"File"> | string
     last_modified?: DateTimeFilter<"File"> | Date | string
+    last_updated?: DateTimeFilter<"File"> | Date | string
     hashvalue?: StringFilter<"File"> | string
     enc_hashvalue?: StringFilter<"File"> | string
     versions?: IntFilter<"File"> | number
@@ -11204,6 +11269,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11226,6 +11292,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11277,6 +11344,7 @@ export namespace Prisma {
     origin?: StringFilter<"DeletedFile"> | string
     filename?: StringFilter<"DeletedFile"> | string
     last_modified?: DateTimeFilter<"DeletedFile"> | Date | string
+    last_updated?: DateTimeFilter<"DeletedFile"> | Date | string
     hashvalue?: StringFilter<"DeletedFile"> | string
     enc_hashvalue?: StringFilter<"DeletedFile"> | string
     versions?: IntFilter<"DeletedFile"> | number
@@ -11443,6 +11511,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11462,6 +11531,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11482,6 +11552,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11502,6 +11573,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11521,6 +11593,7 @@ export namespace Prisma {
     origin: string
     filename: string
     last_modified: Date | string
+    last_updated: Date | string
     hashvalue: string
     enc_hashvalue: string
     versions: number
@@ -11542,6 +11615,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11564,6 +11638,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
@@ -11586,6 +11661,7 @@ export namespace Prisma {
     origin?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
     last_modified?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     hashvalue?: StringFieldUpdateOperationsInput | string
     enc_hashvalue?: StringFieldUpdateOperationsInput | string
     versions?: IntFieldUpdateOperationsInput | number
