@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "DeletedFile" ALTER COLUMN "type" SET DATA TYPE VARCHAR(30);
-
--- AlterTable
-ALTER TABLE "File" ALTER COLUMN "type" SET DATA TYPE VARCHAR(30);

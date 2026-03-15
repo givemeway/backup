@@ -23,7 +23,7 @@ export const createPaths = async (prisma, paths, data) => {
     skipDuplicates: true,
   });
 };
-const syncCreatePaths = async (prisma, paths, username) => {
+export const syncCreatePaths = async (prisma, paths, username) => {
   for (const dir of paths) {
     const dirObj = { ...dir, username, created_at: new Date(parseInt(dir.created_at)).toISOString() };
     await prisma.directory.upsert({

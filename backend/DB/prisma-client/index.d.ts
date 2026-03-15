@@ -1725,8 +1725,8 @@ export namespace Prisma {
     type?: boolean
     height?: boolean
     width?: boolean
-    versionedFiles?: boolean | File$versionedFilesArgs<ExtArgs>
     directoryID?: boolean | DirectoryDefaultArgs<ExtArgs>
+    versionedFiles?: boolean | File$versionedFilesArgs<ExtArgs>
     _count?: boolean | FileCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["file"]>
 
@@ -1752,8 +1752,8 @@ export namespace Prisma {
   }
 
   export type FileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    versionedFiles?: boolean | File$versionedFilesArgs<ExtArgs>
     directoryID?: boolean | DirectoryDefaultArgs<ExtArgs>
+    versionedFiles?: boolean | File$versionedFilesArgs<ExtArgs>
     _count?: boolean | FileCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -1761,8 +1761,8 @@ export namespace Prisma {
   export type $FilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "File"
     objects: {
-      versionedFiles: Prisma.$FileVersionPayload<ExtArgs>[]
       directoryID: Prisma.$DirectoryPayload<ExtArgs>
+      versionedFiles: Prisma.$FileVersionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       username: string
@@ -2148,9 +2148,9 @@ export namespace Prisma {
   export interface Prisma__FileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
 
-    versionedFiles<T extends File$versionedFilesArgs<ExtArgs> = {}>(args?: Subset<T, File$versionedFilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FileVersionPayload<ExtArgs>, T, 'findMany'> | Null>;
-
     directoryID<T extends DirectoryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DirectoryDefaultArgs<ExtArgs>>): Prisma__DirectoryClient<$Result.GetResult<Prisma.$DirectoryPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
+
+    versionedFiles<T extends File$versionedFilesArgs<ExtArgs> = {}>(args?: Subset<T, File$versionedFilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FileVersionPayload<ExtArgs>, T, 'findMany'> | Null>;
 
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -8238,8 +8238,8 @@ export namespace Prisma {
     type?: StringFilter<"File"> | string
     height?: IntFilter<"File"> | number
     width?: IntFilter<"File"> | number
-    versionedFiles?: FileVersionListRelationFilter
     directoryID?: XOR<DirectoryRelationFilter, DirectoryWhereInput>
+    versionedFiles?: FileVersionListRelationFilter
   }
 
   export type FileOrderByWithRelationAndSearchRelevanceInput = {
@@ -8261,8 +8261,8 @@ export namespace Prisma {
     type?: SortOrder
     height?: SortOrder
     width?: SortOrder
-    versionedFiles?: FileVersionOrderByRelationAggregateInput
     directoryID?: DirectoryOrderByWithRelationAndSearchRelevanceInput
+    versionedFiles?: FileVersionOrderByRelationAggregateInput
     _relevance?: FileOrderByRelevanceInput
   }
 
@@ -8289,8 +8289,8 @@ export namespace Prisma {
     type?: StringFilter<"File"> | string
     height?: IntFilter<"File"> | number
     width?: IntFilter<"File"> | number
-    versionedFiles?: FileVersionListRelationFilter
     directoryID?: XOR<DirectoryRelationFilter, DirectoryWhereInput>
+    versionedFiles?: FileVersionListRelationFilter
   }, "origin" | "username_device_directory_filename">
 
   export type FileOrderByWithAggregationInput = {
@@ -8870,8 +8870,8 @@ export namespace Prisma {
     type?: string
     height?: number
     width?: number
-    versionedFiles?: FileVersionCreateNestedManyWithoutLatestFileInput
     directoryID: DirectoryCreateNestedOneWithoutFilesInput
+    versionedFiles?: FileVersionCreateNestedManyWithoutLatestFileInput
   }
 
   export type FileUncheckedCreateInput = {
@@ -8914,8 +8914,8 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     height?: IntFieldUpdateOperationsInput | number
     width?: IntFieldUpdateOperationsInput | number
-    versionedFiles?: FileVersionUpdateManyWithoutLatestFileNestedInput
     directoryID?: DirectoryUpdateOneRequiredWithoutFilesNestedInput
+    versionedFiles?: FileVersionUpdateManyWithoutLatestFileNestedInput
   }
 
   export type FileUncheckedUpdateInput = {
@@ -9641,15 +9641,15 @@ export namespace Prisma {
     not?: NestedBigIntFilter<$PrismaModel> | bigint | number
   }
 
+  export type DirectoryRelationFilter = {
+    is?: DirectoryWhereInput
+    isNot?: DirectoryWhereInput
+  }
+
   export type FileVersionListRelationFilter = {
     every?: FileVersionWhereInput
     some?: FileVersionWhereInput
     none?: FileVersionWhereInput
-  }
-
-  export type DirectoryRelationFilter = {
-    is?: DirectoryWhereInput
-    isNot?: DirectoryWhereInput
   }
 
   export type FileVersionOrderByRelationAggregateInput = {
@@ -10254,17 +10254,17 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type DirectoryCreateNestedOneWithoutFilesInput = {
+    create?: XOR<DirectoryCreateWithoutFilesInput, DirectoryUncheckedCreateWithoutFilesInput>
+    connectOrCreate?: DirectoryCreateOrConnectWithoutFilesInput
+    connect?: DirectoryWhereUniqueInput
+  }
+
   export type FileVersionCreateNestedManyWithoutLatestFileInput = {
     create?: XOR<FileVersionCreateWithoutLatestFileInput, FileVersionUncheckedCreateWithoutLatestFileInput> | FileVersionCreateWithoutLatestFileInput[] | FileVersionUncheckedCreateWithoutLatestFileInput[]
     connectOrCreate?: FileVersionCreateOrConnectWithoutLatestFileInput | FileVersionCreateOrConnectWithoutLatestFileInput[]
     createMany?: FileVersionCreateManyLatestFileInputEnvelope
     connect?: FileVersionWhereUniqueInput | FileVersionWhereUniqueInput[]
-  }
-
-  export type DirectoryCreateNestedOneWithoutFilesInput = {
-    create?: XOR<DirectoryCreateWithoutFilesInput, DirectoryUncheckedCreateWithoutFilesInput>
-    connectOrCreate?: DirectoryCreateOrConnectWithoutFilesInput
-    connect?: DirectoryWhereUniqueInput
   }
 
   export type FileVersionUncheckedCreateNestedManyWithoutLatestFileInput = {
@@ -10298,6 +10298,14 @@ export namespace Prisma {
     divide?: bigint | number
   }
 
+  export type DirectoryUpdateOneRequiredWithoutFilesNestedInput = {
+    create?: XOR<DirectoryCreateWithoutFilesInput, DirectoryUncheckedCreateWithoutFilesInput>
+    connectOrCreate?: DirectoryCreateOrConnectWithoutFilesInput
+    upsert?: DirectoryUpsertWithoutFilesInput
+    connect?: DirectoryWhereUniqueInput
+    update?: XOR<XOR<DirectoryUpdateToOneWithWhereWithoutFilesInput, DirectoryUpdateWithoutFilesInput>, DirectoryUncheckedUpdateWithoutFilesInput>
+  }
+
   export type FileVersionUpdateManyWithoutLatestFileNestedInput = {
     create?: XOR<FileVersionCreateWithoutLatestFileInput, FileVersionUncheckedCreateWithoutLatestFileInput> | FileVersionCreateWithoutLatestFileInput[] | FileVersionUncheckedCreateWithoutLatestFileInput[]
     connectOrCreate?: FileVersionCreateOrConnectWithoutLatestFileInput | FileVersionCreateOrConnectWithoutLatestFileInput[]
@@ -10310,14 +10318,6 @@ export namespace Prisma {
     update?: FileVersionUpdateWithWhereUniqueWithoutLatestFileInput | FileVersionUpdateWithWhereUniqueWithoutLatestFileInput[]
     updateMany?: FileVersionUpdateManyWithWhereWithoutLatestFileInput | FileVersionUpdateManyWithWhereWithoutLatestFileInput[]
     deleteMany?: FileVersionScalarWhereInput | FileVersionScalarWhereInput[]
-  }
-
-  export type DirectoryUpdateOneRequiredWithoutFilesNestedInput = {
-    create?: XOR<DirectoryCreateWithoutFilesInput, DirectoryUncheckedCreateWithoutFilesInput>
-    connectOrCreate?: DirectoryCreateOrConnectWithoutFilesInput
-    upsert?: DirectoryUpsertWithoutFilesInput
-    connect?: DirectoryWhereUniqueInput
-    update?: XOR<XOR<DirectoryUpdateToOneWithWhereWithoutFilesInput, DirectoryUpdateWithoutFilesInput>, DirectoryUncheckedUpdateWithoutFilesInput>
   }
 
   export type FileVersionUncheckedUpdateManyWithoutLatestFileNestedInput = {
@@ -10673,6 +10673,29 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type DirectoryCreateWithoutFilesInput = {
+    uuid: string
+    username: string
+    device: string
+    folder: string
+    path: string
+    created_at: Date | string
+  }
+
+  export type DirectoryUncheckedCreateWithoutFilesInput = {
+    uuid: string
+    username: string
+    device: string
+    folder: string
+    path: string
+    created_at: Date | string
+  }
+
+  export type DirectoryCreateOrConnectWithoutFilesInput = {
+    where: DirectoryWhereUniqueInput
+    create: XOR<DirectoryCreateWithoutFilesInput, DirectoryUncheckedCreateWithoutFilesInput>
+  }
+
   export type FileVersionCreateWithoutLatestFileInput = {
     username: string
     device: string
@@ -10717,27 +10740,33 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type DirectoryCreateWithoutFilesInput = {
-    uuid: string
-    username: string
-    device: string
-    folder: string
-    path: string
-    created_at: Date | string
-  }
-
-  export type DirectoryUncheckedCreateWithoutFilesInput = {
-    uuid: string
-    username: string
-    device: string
-    folder: string
-    path: string
-    created_at: Date | string
-  }
-
-  export type DirectoryCreateOrConnectWithoutFilesInput = {
-    where: DirectoryWhereUniqueInput
+  export type DirectoryUpsertWithoutFilesInput = {
+    update: XOR<DirectoryUpdateWithoutFilesInput, DirectoryUncheckedUpdateWithoutFilesInput>
     create: XOR<DirectoryCreateWithoutFilesInput, DirectoryUncheckedCreateWithoutFilesInput>
+    where?: DirectoryWhereInput
+  }
+
+  export type DirectoryUpdateToOneWithWhereWithoutFilesInput = {
+    where?: DirectoryWhereInput
+    data: XOR<DirectoryUpdateWithoutFilesInput, DirectoryUncheckedUpdateWithoutFilesInput>
+  }
+
+  export type DirectoryUpdateWithoutFilesInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    folder?: StringFieldUpdateOperationsInput | string
+    path?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DirectoryUncheckedUpdateWithoutFilesInput = {
+    uuid?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    device?: StringFieldUpdateOperationsInput | string
+    folder?: StringFieldUpdateOperationsInput | string
+    path?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FileVersionUpsertWithWhereUniqueWithoutLatestFileInput = {
@@ -10775,35 +10804,6 @@ export namespace Prisma {
     iv?: StringFilter<"FileVersion"> | string
     height?: IntFilter<"FileVersion"> | number
     width?: IntFilter<"FileVersion"> | number
-  }
-
-  export type DirectoryUpsertWithoutFilesInput = {
-    update: XOR<DirectoryUpdateWithoutFilesInput, DirectoryUncheckedUpdateWithoutFilesInput>
-    create: XOR<DirectoryCreateWithoutFilesInput, DirectoryUncheckedCreateWithoutFilesInput>
-    where?: DirectoryWhereInput
-  }
-
-  export type DirectoryUpdateToOneWithWhereWithoutFilesInput = {
-    where?: DirectoryWhereInput
-    data: XOR<DirectoryUpdateWithoutFilesInput, DirectoryUncheckedUpdateWithoutFilesInput>
-  }
-
-  export type DirectoryUpdateWithoutFilesInput = {
-    uuid?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    device?: StringFieldUpdateOperationsInput | string
-    folder?: StringFieldUpdateOperationsInput | string
-    path?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DirectoryUncheckedUpdateWithoutFilesInput = {
-    uuid?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    device?: StringFieldUpdateOperationsInput | string
-    folder?: StringFieldUpdateOperationsInput | string
-    path?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FileCreateWithoutVersionedFilesInput = {

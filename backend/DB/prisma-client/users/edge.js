@@ -137,7 +137,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/sandeep/Desktop/backup/backend/DB/prisma-client/users",
+      "value": "F:\\Desktop\\backup\\backend\\DB\\prisma-client\\users",
       "fromEnvVar": null
     },
     "config": {
@@ -146,7 +146,7 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "windows",
         "native": true
       },
       {
@@ -176,6 +176,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -184,8 +185,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output = \"../DB/prisma-client/users\"\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\",\"debian-openssl-3.0.x\",\"darwin-arm64\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL_USER\")\n}\n\n\nmodel User {\n  id Int @id @default(autoincrement())\n  username String @unique @db.VarChar(70)\n  email String @db.VarChar(255)\n  password String @db.VarChar(255) @default(\"NULL\")\n  first_name String @db.VarChar(70)\n  last_name String @db.VarChar(70)\n  phone String @db.VarChar(20) @default(\"NULL\")\n  enc String @db.VarChar(64)\n  is2FA Boolean @default(false)\n  isSMS Boolean @default(false)\n  isEmail Boolean @default(false)\n  isTOTP Boolean @default(false)\n  hotpCounter BigInt @default(0)\n  OTPGenTime BigInt @default(0)\n  OTPValidity Int @default(300)\n  status Boolean @default(true)\n  cancellation_date String @default(\"NULL\")\n  isSSO Boolean @default(false)\n  isSocial Boolean @default(false)\n  issuer_URL String @default(\"\")\n  SSO_EndPoint String @default(\"\")\n  cert String @default(\"\")\n}\n",
-  "inlineSchemaHash": "dee1c9895c9562caad4cdcbf9e05f5aee2368372b21a3a2fd6b1f57975849492",
+  "inlineSchema": "generator client {\r\n  provider = \"prisma-client-js\"\r\n  output = \"../DB/prisma-client/users\"\r\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\",\"debian-openssl-3.0.x\",\"darwin-arm64\"]\r\n}\r\n\r\ndatasource db {\r\n  provider = \"postgresql\"\r\n  url      = env(\"DATABASE_URL_USER\")\r\n}\r\n\r\n\r\nmodel User {\r\n  id Int @id @default(autoincrement())\r\n  username String @unique @db.VarChar(70)\r\n  email String @db.VarChar(255)\r\n  password String @db.VarChar(255) @default(\"NULL\")\r\n  first_name String @db.VarChar(70)\r\n  last_name String @db.VarChar(70)\r\n  phone String @db.VarChar(20) @default(\"NULL\")\r\n  enc String @db.VarChar(64)\r\n  is2FA Boolean @default(false)\r\n  isSMS Boolean @default(false)\r\n  isEmail Boolean @default(false)\r\n  isTOTP Boolean @default(false)\r\n  hotpCounter BigInt @default(0)\r\n  OTPGenTime BigInt @default(0)\r\n  OTPValidity Int @default(300)\r\n  status Boolean @default(true)\r\n  cancellation_date String @default(\"NULL\")\r\n  isSSO Boolean @default(false)\r\n  isSocial Boolean @default(false)\r\n  issuer_URL String @default(\"\")\r\n  SSO_EndPoint String @default(\"\")\r\n  cert String @default(\"\")\r\n}\r\n",
+  "inlineSchemaHash": "bdbbba77c0c4a7f8cb9ba78743d75710f7fae7df91a3b4623ba4da590b2c85cc",
   "copyEngine": true
 }
 config.dirname = '/'

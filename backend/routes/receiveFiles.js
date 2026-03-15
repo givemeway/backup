@@ -25,8 +25,8 @@ const update_file_directory_DB = async (req, res, next) => {
   let height = 0;
   let width = 0;
   if (fileStat.type.split("/")[0] === "image") {
-    height = fileStat.height;
-    width = fileStat.width;
+    height = fileStat?.height ? parseInt(fileStat.height) : 0;
+    width = fileStat?.width ? parseInt(fileStat.width) : 0;
   }
   const last_modified = new Date(fileStat.mtime);
   const checksum = fileStat.checksum;
@@ -75,10 +75,8 @@ const update_file_directory_DB = async (req, res, next) => {
     salt,
     iv,
     type: fileStat.type,
-    height:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
-    width:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+    height: height,
+    width: width
   };
 
   try {
@@ -95,14 +93,8 @@ const update_file_directory_DB = async (req, res, next) => {
         uuid,
         enc_hashvalue: enc_file_checksum,
         type: fileStat.type,
-        height:
-          fileStat.type.split("/")[0] === "image"
-            ? parseInt(fileStat.height)
-            : 0,
-        width:
-          fileStat.type.split("/")[0] === "image"
-            ? parseInt(fileStat.width)
-            : 0,
+        height: height,
+        width: width
       };
       const data = {
         username,

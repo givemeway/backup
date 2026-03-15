@@ -1,147 +1,143 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// https://www.prisma.io/docs/orm/prisma-client/queries/transactions
 generator client {
-  provider = "prisma-client-js"
-  output = "../DB/prisma-client"
-  previewFeatures = ["fullTextSearch","relationJoins"]
-  binaryTargets = ["native", "debian-openssl-1.1.x","debian-openssl-3.0.x","darwin-arm64"]
+  provider        = "prisma-client-js"
+  output          = "../DB/prisma-client"
+  previewFeatures = ["fullTextSearch", "relationJoins"]
+  binaryTargets   = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "darwin-arm64"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  connection_limit  = 20    
+  pool_timeout      = 100  
 }
 
-
 model File {
-  username String @db.VarChar(255)
-  device String @db.VarChar(255)
-  directory String @db.VarChar(255)
-  uuid String @db.VarChar(36)
-  origin String @unique @db.VarChar(36)
-  filename String @db.VarChar(255)
-  last_modified DateTime
-  last_updated DateTime
-  hashvalue String @db.Char(64)
-  enc_hashvalue String @db.Char(64)
-  versions Int 
-  size BigInt
-  salt String @db.VarChar(64)
-  iv String @db.VarChar(64)
+  username       String        @db.VarChar(255)
+  device         String        @db.VarChar(255)
+  directory      String        @db.VarChar(255)
+  uuid           String        @db.VarChar(36)
+  origin         String        @unique @db.VarChar(36)
+  filename       String        @db.VarChar(255)
+  last_modified  DateTime
+  last_updated   DateTime
+  hashvalue      String        @db.Char(64)
+  enc_hashvalue  String        @db.Char(64)
+  versions       Int
+  size           BigInt
+  salt           String        @db.VarChar(64)
+  iv             String        @db.VarChar(64)
+  dirID          String        @db.VarChar(36)
+  type           String        @default("file") @db.VarChar(255)
+  height         Int           @default(0)
+  width          Int           @default(0)
+  directoryID    Directory     @relation(fields: [dirID], references: [uuid])
   versionedFiles FileVersion[]
-  dirID String @db.VarChar(36)
-  type String @db.VarChar(255) @default("file")
-  height Int @default(0)
-  width Int @default(0)
-  directoryID Directory @relation(fields: [dirID],references: [uuid])
-  @@unique([username,device,directory,filename])
-  // @@schema("files")
-  @@index([device,directory]) 
+
+  @@unique([username, device, directory, filename])
+  @@index([device, directory])
 }
 
 model FileVersion {
-  username String @db.VarChar(255)
-  device String @db.VarChar(255)
-  directory String @db.VarChar(255)
-  uuid String @db.VarChar(36)
-  origin String @db.VarChar(36)
-  LatestFile File @relation(fields: [origin],references: [origin])
-  filename String @db.VarChar(255)
+  username      String   @db.VarChar(255)
+  device        String   @db.VarChar(255)
+  directory     String   @db.VarChar(255)
+  uuid          String   @db.VarChar(36)
+  origin        String   @db.VarChar(36)
+  filename      String   @db.VarChar(255)
   last_modified DateTime
-  hashvalue String @db.Char(64)
-  enc_hashvalue String @db.Char(64)
-  versions Int 
-  size BigInt
-  salt String @db.VarChar(64)
-  iv String @db.VarChar(64)
-  height Int @default(0)
-  width Int @default(0)
-  @@unique([username,device,directory,filename,uuid])
-  // @@schema("versions")
+  hashvalue     String   @db.Char(64)
+  enc_hashvalue String   @db.Char(64)
+  versions      Int
+  size          BigInt
+  salt          String   @db.VarChar(64)
+  iv            String   @db.VarChar(64)
+  height        Int      @default(0)
+  width         Int      @default(0)
+  LatestFile    File     @relation(fields: [origin], references: [origin])
+
+  @@unique([username, device, directory, filename, uuid])
   @@index([origin])
 }
 
 model DeletedFile {
-  username String @db.VarChar(255)
-  device String @db.VarChar(255)
-  directory String @db.VarChar(255)
-  uuid String @db.VarChar(36)
-  origin String @db.VarChar(36) @unique
-  filename String @db.VarChar(255)
-  last_modified DateTime
-  last_updated DateTime
-  hashvalue String @db.Char(64)
-  enc_hashvalue String @db.Char(64)
-  versions Int 
-  size BigInt
-  salt String @db.VarChar(64)
-  iv String @db.VarChar(64)
-  deletion_date DateTime
-  deletion_type String @db.VarChar(6)
-  dirID String @db.VarChar(36)
-  type String @db.VarChar(255) @default("file")
-  height Int @default(0)
-  width Int @default(0)
-  directoryID DeletedDirectory @relation(fields: [dirID],references: [uuid])
+  username            String               @db.VarChar(255)
+  device              String               @db.VarChar(255)
+  directory           String               @db.VarChar(255)
+  uuid                String               @db.VarChar(36)
+  origin              String               @unique @db.VarChar(36)
+  filename            String               @db.VarChar(255)
+  last_modified       DateTime
+  last_updated        DateTime
+  hashvalue           String               @db.Char(64)
+  enc_hashvalue       String               @db.Char(64)
+  versions            Int
+  size                BigInt
+  salt                String               @db.VarChar(64)
+  iv                  String               @db.VarChar(64)
+  deletion_date       DateTime
+  deletion_type       String               @db.VarChar(6)
+  dirID               String               @db.VarChar(36)
+  type                String               @default("file") @db.VarChar(255)
+  height              Int                  @default(0)
+  width               Int                  @default(0)
+  directoryID         DeletedDirectory     @relation(fields: [dirID], references: [uuid])
   deletedFileVersions DeletedFileVersion[]
-  @@unique([username,device,directory,filename])
-  // @@schema("deleted_files")
-  @@index([device,directory])
+
+  @@unique([username, device, directory, filename])
+  @@index([device, directory])
 }
 
 model DeletedFileVersion {
-  username String @db.VarChar(255)
-  device String @db.VarChar(255)
-  directory String @db.VarChar(255)
-  uuid String @db.VarChar(36)
-  origin String @db.VarChar(36)
-  filename String @db.VarChar(255)
-  last_modified DateTime
-  hashvalue String @db.Char(64)
-  enc_hashvalue String @db.Char(64)
-  versions Int 
-  size BigInt
-  salt String @db.VarChar(64)
-  iv String @db.VarChar(64)
-  deletion_date DateTime
-  deletion_type String @db.VarChar(6)
-  height Int @default(0)
-  width Int @default(0)
-  latest_deleted_file DeletedFile @relation(fields: [origin],references: [origin])
-  @@unique([username,device,directory,filename,uuid])
-  // @@schema("deleted_files")
-  @@index([device,directory,origin])
+  username            String      @db.VarChar(255)
+  device              String      @db.VarChar(255)
+  directory           String      @db.VarChar(255)
+  uuid                String      @db.VarChar(36)
+  origin              String      @db.VarChar(36)
+  filename            String      @db.VarChar(255)
+  last_modified       DateTime
+  hashvalue           String      @db.Char(64)
+  enc_hashvalue       String      @db.Char(64)
+  versions            Int
+  size                BigInt
+  salt                String      @db.VarChar(64)
+  iv                  String      @db.VarChar(64)
+  deletion_date       DateTime
+  deletion_type       String      @db.VarChar(6)
+  height              Int         @default(0)
+  width               Int         @default(0)
+  latest_deleted_file DeletedFile @relation(fields: [origin], references: [origin])
 
+  @@unique([username, device, directory, filename, uuid])
+  @@index([device, directory, origin])
 }
 
 model Directory {
-  uuid String @unique() @db.VarChar(36)
-  username String @db.VarChar(255)
-  device String @db.VarChar(255)
-  folder String @db.VarChar(255)
-  path String @db.VarChar(255)
+  uuid       String   @unique @db.VarChar(36)
+  username   String   @db.VarChar(255)
+  device     String   @db.VarChar(255)
+  folder     String   @db.VarChar(255)
+  path       String   @db.VarChar(255)
   created_at DateTime
-  @@unique([username,device,folder,path])
-  files File[] 
-  // @@schema("directories")
+  files      File[]
+
+  @@unique([username, device, folder, path])
   @@index([path])
 }
 
 model DeletedDirectory {
-  uuid String @db.VarChar(36) @unique()
-  username String @db.VarChar(255)
-  device String @db.VarChar(255)
-  folder String @db.VarChar(255)
-  path String @db.VarChar(255)
-  created_at DateTime
-  deleted DateTime
-  files DeletedFile[]
-  rel_path String @db.VarChar(255)
-  rel_name String @db.VarChar(255)
-  deletion_type String? @db.VarChar(6) 
-  @@unique([username,device,folder,path])
-  // @@schema("deleted_directories")
+  uuid          String        @unique @db.VarChar(36)
+  username      String        @db.VarChar(255)
+  device        String        @db.VarChar(255)
+  folder        String        @db.VarChar(255)
+  path          String        @db.VarChar(255)
+  created_at    DateTime
+  deleted       DateTime
+  rel_path      String        @db.VarChar(255)
+  rel_name      String        @db.VarChar(255)
+  deletion_type String?       @db.VarChar(6)
+  files         DeletedFile[]
+
+  @@unique([username, device, folder, path])
   @@index([path])
 }

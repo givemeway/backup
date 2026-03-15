@@ -268,8 +268,8 @@ const sync_update_file_directory_DB = async (req, res, next) => {
   let height = 0;
   let width = 0;
   if (fileStat.type.split("/")[0] === "image") {
-    height = fileStat.height;
-    width = fileStat.width;
+    height = fileStat?.height ? parseInt(fileStat?.height) : 0;
+    width = fileStat?.width ? parseInt(fileStat?.width) : 0;
   }
   const last_modified = new Date(parseInt(fileStat.mtime) * 1000).toISOString();
   const { username, device, filename, type, directory, checksum } = fileStat;
@@ -318,10 +318,8 @@ const sync_update_file_directory_DB = async (req, res, next) => {
     salt,
     iv,
     type: type,
-    height:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.height) : 0,
-    width:
-      fileStat.type.split("/")[0] === "image" ? parseInt(fileStat.width) : 0,
+    height: height,
+    width: width
   };
   const treeIDs = fileStat.pathids;
   try {
@@ -338,14 +336,8 @@ const sync_update_file_directory_DB = async (req, res, next) => {
         uuid,
         enc_hashvalue: enc_file_checksum,
         type: type,
-        height:
-          fileStat.type.split("/")[0] === "image"
-            ? parseInt(fileStat.height)
-            : 0,
-        width:
-          fileStat.type.split("/")[0] === "image"
-            ? parseInt(fileStat.width)
-            : 0,
+        height: height,
+        width: width
       };
       const data = {
         username,

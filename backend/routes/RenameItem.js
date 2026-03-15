@@ -6,6 +6,7 @@ dotenv.config();
 import { verifyToken } from "../auth/auth.js";
 import { prisma } from "../config/prismaDBConfig.js";
 import { moveFolder } from "../controllers/moveFolder.js";
+import { syncCreatePaths } from "../controllers/insert_file_directory.js";
 
 const FILE = "fi";
 const FOLDER = "fo";
@@ -27,7 +28,6 @@ const getDirDeviceFolder = (path) => {
 
 export const moveFolderV2 = (oldPath, newPath, username, rename = false) => new Promise(async (resolve, reject) => {
   try {
-    console.log({ oldPath, newPath, username });
     const dirs = await prisma.directory.findMany({
       where: {
         username,
@@ -49,8 +49,9 @@ export const moveFolderV2 = (oldPath, newPath, username, rename = false) => new 
           newPathSeg = newPath;
         }
         const { device, folder, directory } = getDirDeviceFolder(newPathSeg);
+        const oldSeg = getDirDeviceFolder(dir.path);
         await prisma.fileVersion.updateMany({
-          where: { device: dir.device, directory: dir.directory },
+          where: { device: oldSeg.device, directory: oldSeg.directory },
           data: { device, directory }
         });
         await prisma.file.updateMany({
@@ -70,24 +71,28 @@ export const moveFolderV2 = (oldPath, newPath, username, rename = false) => new 
 
       }
     });
+    console.log(`RENAMED ${oldPath} => ${newPath}`);
     resolve();
   } catch (err) {
+    console.log(`RENAME FAILED ${oldPath} => ${newPath}`);
     reject(err)
   }
 });
 
-export const syncRenameFolder = async (req, res, next) => {
+export const syncRenameFolder = (isRename) => async (req, res, next) => {
   try {
 
     const { oldPath, newPath, username } = req.body;
+    console.log({ oldPath, newPath, username })
     const pathExists = await prisma.directory.findFirst({
       where: {
         username,
         path: newPath,
       },
     });
+    console.log(pathExists);
     if (pathExists) return res.status(409).json({ success: false, message: "folder exists" });
-    await moveFolderV2(oldPath, newPath, username, true);
+    await moveFolderV2(oldPath, newPath, username, isRename);
     res.status(200).json({ success: true, message: "Rename successful" });
   } catch (e) {
     console.log(e);
@@ -98,6 +103,7 @@ export const syncRenameFolder = async (req, res, next) => {
 export const renameFolder = async (req, res, next) => {
   try {
     const { oldPath, newPath, username } = req.body;
+
     const src = oldPath === "/" ? "/" : oldPath.split("/").slice(1).join("/");
     const pathExists = await prisma.directory.findFirst({
       where: {
@@ -139,43 +145,61 @@ export const renameFolder = async (req, res, next) => {
   }
 };
 
-export const renameFile = async (req, res, next) => {
+export const moveFile = async (req, res, next) => {
   try {
     const { type, username } = req.body.data;
     if (type === FILE) {
-      const { dir, filename, origin, to, device } = req.body.data;
-      const oldname = filename;
-      const newname = to;
-      await prisma.$transaction([
-        prisma.file.update({
+      const { origin, dir, device, filename, id, old_filename, old_dir, old_device, pathIds } = req.body.data;
+      await prisma.$transaction(async (prisma) => {
+        let dirID = id;
+        const existingDir = await prisma.directory.findUnique({
+          where: { uuid: dirID }
+        });
+        if (!existingDir) {
+          await syncCreatePaths(prisma, pathIds, username);
+          const d = await prisma.directory.findUnique({
+            where: { uuid: dirID }
+          });
+          if (d)
+            dirID = d.uuid;
+        } else {
+          dirID = existingDir.uuid;
+        }
+        await prisma.file.update({
           where: {
             username_device_directory_filename: {
               username,
-              device,
-              directory: dir,
-              filename,
+              device: old_device,
+              directory: old_dir,
+              filename: old_filename,
             },
           },
           data: {
-            filename: to,
+            filename: filename,
+            device: device,
+            directory: dir,
+            dirID: dirID
           },
-        }),
-        prisma.fileVersion.updateMany({
+        });
+        await prisma.fileVersion.updateMany({
           where: {
-            filename,
+            filename: old_filename,
             origin: origin,
             username,
-            device,
-            directory: dir,
+            device: old_device,
+            directory: old_dir,
           },
           data: {
-            filename: to,
-          },
-        }),
-      ]);
+            filename: filename,
+            device: device,
+            directory: dir,
+          }
+        })
+      });
+
       res
         .status(200)
-        .json({ success: true, oldName: oldname, newName: newname });
+        .json({ success: true, });
     }
   } catch (err) {
     console.log(err);

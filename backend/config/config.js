@@ -12,9 +12,9 @@ export const HOST_URL = "https://qdrive.online";
 export const ORIGIN = "https://qdrive.online";
 export const SERVER_DOMAIN = "https://api.qdrive.online";
 export const FRONTEND_DOMAIN = "https://qdrive.online";
+
 export const EXPIRY = 15 * 60 * 1000;
 export const OTP_EXPIRY = 60 * 5;
-
 export const corsOpts = {
   origin: ORIGIN,
   allowedHeaders:
