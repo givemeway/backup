@@ -5,7 +5,7 @@ import { getSignedURls } from "../controllers/getSignedURLs.js";
 
 const router = express.Router();
 
-const getFilesFolders = async (req, res, next) => {
+export const getFilesFolders = async (req, res, next) => {
   try {
     const { d, dir, sort, start, page } = req.query;
     const currentDir = dir;

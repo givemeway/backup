@@ -1,4 +1,4 @@
-import { prisma } from "../config/prismaDBConfig.js";
+import { prisma, Prisma } from "../config/prismaDBConfig.js";
 import { DeleteObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "../server.js";
 import dotenv from "dotenv";
@@ -157,7 +157,7 @@ const get_DB_rows_s3_files_to_delete = (rows) => {
 };
 
 const remove_emtpy_folder = async (prisma, data) => {
-  const { username, device, dir } = data;
+  const { username, device, dir, reg } = data;
   if (dir === "/") {
     await prisma.deletedDirectory.deleteMany({
       where: {
@@ -167,14 +167,11 @@ const remove_emtpy_folder = async (prisma, data) => {
     });
   } else {
     const path = "/" + device + "/" + dir;
-    await prisma.deletedDirectory.deleteMany({
-      where: {
-        username: data.username,
-        path: {
-          contains: path + "%",
-        },
-      },
-    });
+    const regex = `^${path}(/[^/]+)*$`;
+    await prisma.$executeRaw(Prisma.sql`
+           DELETE FROM public."DeletedDirectory" 
+                WHERE username = ${username}
+                AND path ~ ${regex};`);
   }
 };
 
@@ -193,13 +190,12 @@ const deleteFileTransaction = (data) => async (prisma) => {
   );
   await delete_file_ver_from_deletedFileVersion_table(prisma, data);
   await delete_file_from_deletedFile_table(prisma, data);
-  await delete_dir_from_deletedDir_table(prisma, folders);
+  //  await delete_dir_from_deletedDir_table(prisma, folders);
 };
 
 export const deleteTrashItems = async (req, res) => {
   const items = req.body.items;
   const username = req.user.Username;
-
   try {
     for (const item of items) {
       if (item.item !== SINGLEFILE) {
@@ -210,6 +206,8 @@ export const deleteTrashItems = async (req, res) => {
               const { begin, end } = limit;
               const data = getData(path, begin, end, el?.root, username);
               const files = await getBatchDeletedFiles(prisma, data);
+              console.log(data);
+              console.log("files: ", files.length)
               if (files.length > 0) {
                 const all_files = await getDeletedFiles(prisma, data);
                 const all_files_tag = tagDuplicates(all_files);
@@ -232,6 +230,8 @@ export const deleteTrashItems = async (req, res) => {
             const { path, begin, end } = item;
             const data = getData(path, begin, end, item?.root, username);
             const files = await getBatchDeletedFiles(prisma, data);
+            console.log(data);
+            console.log("files: ", files.length)
             if (files.length > 0) {
               const all_files = await getDeletedFiles(prisma, data);
               const all_files_tag = tagDuplicates(all_files);

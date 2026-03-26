@@ -64,12 +64,11 @@ export const copyFile = async (device, username, filename, dir, to) => {
         val = [to_device, to_dir, filename, dir, device, username, uuid];
       }
       const uuid_origin = uuidV4();
-      const uuid_file_ver = uuidV4();
 
       await prisma.$transaction(
         [
           prisma.$executeRaw(Prisma.sql`INSERT INTO public."File"
-            SELECT username,${val[0]},${val[1]},uuid,${uuid_origin},filename,last_modified,
+            SELECT username,${val[0]},${val[1]},uuid,${uuid_origin},filename,last_modified,last_updated,
             hashvalue,enc_hashvalue,versions,size,salt,iv,${val[6]} 
             FROM public."File"
             WHERE filename = ${val[2]} AND directory = ${val[3]} AND device = ${val[4]} AND username = ${val[5]};`),

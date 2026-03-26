@@ -2,24 +2,11 @@ import { prisma, Prisma } from "../config/prismaDBConfig.js";
 
 const insertIntoDeletedDirectory = async (prisma, data) => {
   const { rel_path, rel_name, path, device, username, directory } = data;
-  if (directory === "/") {
-    await prisma.$executeRaw(Prisma.sql`
-            INSERT INTO public."DeletedDirectory"
-            (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name)
-            SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name}
-            FROM public."Directory"
-            WHERE username = ${username}
-            AND device = ${device}
-            ON CONFLICT (username,device,folder,path)
-            DO UPDATE SET deletion_type = 'folder', 
-            rel_path = ${rel_path},
-            rel_name = ${rel_name};`);
-  } else {
-    const regex_path = `^${path}(/[^/]+)*$`;
-    await prisma.$executeRaw(Prisma.sql`
+  const regex_path = `^${path}(/[^/]+)*$`;
+  await prisma.$executeRaw(Prisma.sql`
         INSERT INTO public."DeletedDirectory"
-        (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name)
-        SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name}
+        (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
+        SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name},'folder'
         FROM public."Directory"
         WHERE username = ${username}
         AND device = ${device}
@@ -28,11 +15,40 @@ const insertIntoDeletedDirectory = async (prisma, data) => {
         DO UPDATE SET deletion_type = 'folder', 
         rel_path = ${rel_path},
         rel_name = ${rel_name};`);
-  }
+  /*
+    if (directory === "/") {
+      await prisma.$executeRaw(Prisma.sql`
+              INSERT INTO public."DeletedDirectory"
+              (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
+              SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name},'folder'
+              FROM public."Directory"
+              WHERE username = ${username}
+              AND path = ${path}
+              ON CONFLICT (username,device,folder,path)
+              DO UPDATE SET deletion_type = 'folder', 
+              rel_path = ${rel_path},
+              rel_name = ${rel_name};`);
+    } else {
+      const regex_path = `^${path}(/[^/]+)*$`;
+      await prisma.$executeRaw(Prisma.sql`
+          INSERT INTO public."DeletedDirectory"
+          (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
+          SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name},'folder'
+          FROM public."Directory"
+          WHERE username = ${username}
+          AND device = ${device}
+          AND path ~ ${regex_path}
+          ON CONFLICT (username,device,folder,path)
+          DO UPDATE SET deletion_type = 'folder', 
+          rel_path = ${rel_path},
+          rel_name = ${rel_name};`);
+    }
+    */
 };
 
 const insertIntoDeletedFile = async (prisma, data) => {
   const { deletion_type, device, username, directory } = data;
+  console.log("Data: ", data);
   if (directory === "/") {
     await prisma.$executeRaw(Prisma.sql`
     INSERT INTO public."DeletedFile"
@@ -78,7 +94,8 @@ const insertIntoDeletedFileVersion = async (prisma, data) => {
         FROM public."FileVersion"
         WHERE 
         username = ${username} AND 
-        device = ${device};`);
+        device = ${device} AND
+        directory = ${directory};`);
   } else {
     const regex_dir = `^${directory}(/[^/]+)*$`;
     await prisma.$executeRaw(Prisma.sql`
@@ -191,7 +208,7 @@ export const sync_deleteFolder = async (req, res, next) => {
 
 const insertFileDirectoryIntoDeletedDirectory = async (prisma, data) => {
   const { username, device, path, name } = data;
-  const affected = await prisma.$executeRaw(Prisma.sql`
+  await prisma.$executeRaw(Prisma.sql`
             INSERT INTO public."DeletedDirectory"
                 (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
             SELECT uuid,username,device,folder,path,created_at,
@@ -200,7 +217,13 @@ const insertFileDirectoryIntoDeletedDirectory = async (prisma, data) => {
             WHERE username = ${username}
             AND device = ${device}
             AND path = ${path}
-            ON CONFLICT DO NOTHING;`);
+            ON CONFLICT (username,device,folder,path) 
+            DO UPDATE SET 
+            uuid         = EXCLUDED.uuid,
+            deleted      = CURRENT_TIMESTAMP,
+            rel_path     = ${path},
+            rel_name     = ${name},
+            deletion_type = 'file';`);
 };
 
 const insertRowIntoDeletedFile = async (prisma, data) => {
@@ -293,7 +316,6 @@ export const deleteItems = async (req, res) => {
   for (const file of files) {
     try {
       file["username"] = username;
-
       await deleteFile(file);
     } catch (err) {
       console.error(err);

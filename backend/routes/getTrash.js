@@ -268,7 +268,6 @@ function createBatchTrashItems(
 ) {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log("subFolderRegexp : ", subFoldersRegExp);
 
       const subFolders = await prisma.$queryRaw(Prisma.sql`
                               SELECT folder,path,device,uuid 

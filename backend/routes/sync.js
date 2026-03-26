@@ -6,6 +6,7 @@ import { getDeletedFileList } from "../controllers/get_to_be_deleted_items.js";
 import { syncDeleteItems } from "../controllers/deleteItems.js";
 import { downloadSyncFile } from "../controllers/syncDownloadFile.js";
 import { moveFile, renameFolder, renameItems, syncRenameFolder } from "./RenameItem.js";
+import { getFilesFolders } from "./getFilesSubfolders.js";
 import {
   syncUpFile,
   sync_triggerImageProcessingMS,
@@ -28,4 +29,5 @@ router.post("/renameFolder", syncRenameFolder(true));
 router.post("/moveFolder", syncRenameFolder(true));
 router.delete("/deleteFolder", sync_deleteFolder);
 router.post("/createFolder", createFolder);
+router.get("/browseFolder", getFilesFolders)
 export { router as sync };

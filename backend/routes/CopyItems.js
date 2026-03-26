@@ -1,7 +1,5 @@
 import express from "express";
 const router = express.Router();
-import dotenv from "dotenv";
-await dotenv.config();
 import { verifyToken } from "../auth/auth.js";
 import { copyFile } from "../controllers/copyFile.js";
 import { copyFolder } from "../controllers/copyFolder.js";

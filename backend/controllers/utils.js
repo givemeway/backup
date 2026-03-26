@@ -2,8 +2,8 @@ import { prisma, Prisma } from "../config/prismaDBConfig.js";
 import { v4 as uuidV4 } from "uuid";
 
 export const prismaOpts = {
-  maxWait: 10000,
-  timeout: 10000,
+  maxWait: 30000,
+  timeout: 30000,
   isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
 };
 
@@ -80,12 +80,14 @@ export const getData = (path, begin, end, root, username) => {
   dir = dir.replace(/\(/g, "\\(");
   dir = dir.replace(/\)/g, "\\)");
   const regexp = `^${dir}(/[^/]+)*$`;
+  const pathRegex = `^${path}(/[^/]+)*$`;
   let data = {};
   data.root = root;
   data.dir = dir;
   data.device = device;
   data.username = username;
   data.reg = regexp;
+  data.pathReg = pathRegex;
   data.pg = end;
   data.bg = begin;
   return data;
