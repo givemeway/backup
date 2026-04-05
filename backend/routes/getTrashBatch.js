@@ -48,6 +48,7 @@ router.post("*", verifyToken, async (req, res) => {
                             AND directory = ${dir}
                             AND uuid = ${id};`);
     }
+    console.log("Rows: ", rows.length)
     res.status(200).json(rows);
   } catch (err) {
     console.log(err);

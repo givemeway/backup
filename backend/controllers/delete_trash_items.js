@@ -29,14 +29,20 @@ const deleteS3Objects = (username, files) => {
       }
       if (objects.length > 0) {
         console.log("inside the s3 delete block");
+        const chunkSize = 1000
+        for (let i = 0; i < objects.length; i += chunkSize) {
+          const chunkObjects = objects.slice(i, i + chunkSize);
+          const objectsDeleteCommand = new DeleteObjectsCommand({
+            Bucket: BUCKET,
+            Delete: {
+              Objects: chunkObjects,
+            },
+          });
+          console.log(`DELETING Batch ${chunkObjects.length}`)
+          await s3Client.send(objectsDeleteCommand);
+          console.log(`DELETED Batch ${chunkObjects.length}`)
+        }
 
-        const objectsDeleteCommand = new DeleteObjectsCommand({
-          Bucket: BUCKET,
-          Delete: {
-            Objects: objects,
-          },
-        });
-        await s3Client.send(objectsDeleteCommand);
       }
       resolve();
     } catch (err) {
@@ -207,7 +213,7 @@ export const deleteTrashItems = async (req, res) => {
               const data = getData(path, begin, end, el?.root, username);
               const files = await getBatchDeletedFiles(prisma, data);
               console.log(data);
-              console.log("files: ", files.length)
+              console.log("files in the path: ", files.length)
               if (files.length > 0) {
                 const all_files = await getDeletedFiles(prisma, data);
                 const all_files_tag = tagDuplicates(all_files);

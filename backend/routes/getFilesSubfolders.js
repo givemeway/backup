@@ -7,10 +7,11 @@ const router = express.Router();
 
 export const getFilesFolders = async (req, res, next) => {
   try {
-    const { d, dir, sort, start, page } = req.query;
+    const { d, dir, sort, start, page, userName } = req.query;
+    console.log({ d, dir, sort, start, page, userName })
     const currentDir = dir;
     const order = req.headers.sortorder;
-    const username = req.user.Username;
+    const username = req.user?.Username ? req.user?.Username : userName;
     const devicename = d;
     let regex = ``;
     let path = ``;
@@ -84,7 +85,7 @@ export const getFilesFolders = async (req, res, next) => {
     res.status(200).json(data);
   } catch (err) {
     console.log(err);
-    res.json(500).json({ success: false, msg: err });
+    return res.json(500).json({ success: false, msg: err });
   }
   next();
 };

@@ -20,8 +20,8 @@ const createFolder = async (req, res) => {
       where: {
         username_device_folder_path: { username, device, folder, path },
       },
-      update: { path, device, created_at: new Date(parseInt(created_at)).toISOString(), username, uuid, folder },
-      create: { path, device, created_at: new Date(parseInt(created_at)).toISOString(), username, uuid, folder },
+      update: { path, device, created_at: new Date(parseInt(created_at) * 1000).toISOString(), username, uuid, folder },
+      create: { path, device, created_at: new Date(parseInt(created_at) * 1000).toISOString(), username, uuid, folder },
     });
     // const pathParts = getTreePath(path);
     // const all_paths = [];

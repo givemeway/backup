@@ -187,7 +187,6 @@ export const deleteFolder = async (data) => {
 export const sync_deleteFolder = async (req, res, next) => {
   try {
     const { path, folder, directory, device, username } = req.query;
-    console.log({ path, folder, directory, device, username });
     const data = {
       rel_path: path,
       rel_name: folder,
@@ -333,6 +332,7 @@ export const deleteItems = async (req, res) => {
         device: directory.device,
         username,
       };
+      console.log(data);
       await deleteFolder(data);
     } catch (err) {
       console.log(err);

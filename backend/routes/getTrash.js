@@ -340,6 +340,7 @@ router.get("/", verifyToken, async (req, res) => {
       ...folder,
       folder_count: parseInt(folder.folder_count),
     }));
+    console.log(group_folder)
     const deleted_files = await prisma.deletedFile.findMany({
       where: { username, deletion_type: "file" },
       select: {
@@ -364,8 +365,8 @@ router.get("/", verifyToken, async (req, res) => {
       rel_path = rel_path.replace(/\)/g, "\\)");
       rel_path = rel_path.replace(/\+/g, "\\\\+");
       const subFoldersRegExp = `^${rel_path}(/[^/]+)$`;
-
-      const fileCount = await prisma.deletedFile.findMany({
+      const regex_dir = `^${dir}(/[^/]+)*$`;
+      /*let fileCount_ = await prisma.deletedFile.findMany({
         where: {
           username,
           device,
@@ -373,9 +374,16 @@ router.get("/", verifyToken, async (req, res) => {
             contains: dir + "%",
           },
         },
-      });
+      }); */
+      const fileCount = await prisma.$executeRaw(Prisma.sql`
+        SELECT *
+        FROM public."DeletedFile"
+        WHERE username = ${username}
+        AND device = ${device}
+        AND directory ~ ${regex_dir};`);
 
-      if (fileCount.length === 0) {
+      if (fileCount === 0) {
+
         const folder = await prisma.deletedDirectory.findFirst({
           where: {
             username,
