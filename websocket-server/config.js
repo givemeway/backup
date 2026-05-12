@@ -1,4 +1,4 @@
-export const ORIGIN = "http://localhost:3000";
+export const ORIGIN = "https://websocket-server-v220.onrender.com";
 export const corsOpts = {
   origin: ORIGIN,
   allowedHeaders:
