@@ -543,6 +543,9 @@ export const delete_version_from_deletedFileVersion_table = async (
 };
 export const delete_dir_from_deletedDir_table = async (prisma, folders) => {
   for (const folder of folders) {
+    console.log("--------------------")
+    console.log("---- deleting empty dir----")
+    console.log({ ...folder })
     let dir = folder.path.split("/").slice(2).join("/");
     dir = dir === "" ? "/" : dir;
     const regex = `^${dir}(/[^/]+)*$`;

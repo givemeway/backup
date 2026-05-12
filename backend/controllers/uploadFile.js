@@ -63,7 +63,7 @@ const parseFile = async (req) => {
       const hash = createHash("sha256");
       let encryptedHash;
       const options = {
-        maxFileSize: 2000 * 1024 * 1024,
+        maxFileSize: 20000 * 1024 * 1024,
         fileWriteStreamHandler: () => {
           const read = new PassThrough();
           const write = new PassThrough();

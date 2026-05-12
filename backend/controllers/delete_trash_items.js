@@ -196,7 +196,7 @@ const deleteFileTransaction = (data) => async (prisma) => {
   );
   await delete_file_ver_from_deletedFileVersion_table(prisma, data);
   await delete_file_from_deletedFile_table(prisma, data);
-  //  await delete_dir_from_deletedDir_table(prisma, folders);
+  await delete_dir_from_deletedDir_table(prisma, folders);
 };
 
 export const deleteTrashItems = async (req, res) => {

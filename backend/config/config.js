@@ -1,17 +1,17 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+/*
 export const DOMAIN = "localhost";
 export const ORIGIN = "http://localhost:3000";
 export const SERVER_DOMAIN = `http://localhost:3001`;
 export const FRONTEND_DOMAIN = `http://localhost:3000`;
-/*
+*/
 export const DOMAIN = "qdrive.online";
 export const HOST_URL = "https://qdrive.online";
 export const ORIGIN = "https://qdrive.online";
 export const SERVER_DOMAIN = "https://api.qdrive.online";
 export const FRONTEND_DOMAIN = "https://qdrive.online";
-*/
 export const EXPIRY = 15 * 60 * 1000;
 export const OTP_EXPIRY = 60 * 5;
 export const corsOpts = {

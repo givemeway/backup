@@ -1,9 +1,18 @@
 import { prisma, Prisma } from "../config/prismaDBConfig.js";
 
 const insertIntoDeletedDirectory = async (prisma, data) => {
-  const { rel_path, rel_name, path, device, username, directory } = data;
+  const { rel_path, rel_name, path, device, username, uuid } = data;
   const regex_path = `^${path}(/[^/]+)*$`;
-  await prisma.$executeRaw(Prisma.sql`
+  let arr = path.split("/");
+  let folder = arr.at(-1) == "" ? "/" : arr.at(-1);
+  const deletedDir = await prisma.deletedDirectory.findUnique({
+    where: {
+      uuid
+    }
+  });
+
+  if (!deletedDir) {
+    await prisma.$executeRaw(Prisma.sql`
         INSERT INTO public."DeletedDirectory"
         (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
         SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name},'folder'
@@ -12,9 +21,27 @@ const insertIntoDeletedDirectory = async (prisma, data) => {
         AND device = ${device}
         AND path ~ ${regex_path}
         ON CONFLICT (username,device,folder,path)
-        DO UPDATE SET deletion_type = 'folder', 
+        DO UPDATE SET deletion_type = 'folder',
         rel_path = ${rel_path},
         rel_name = ${rel_name};`);
+
+  }
+  else {
+    await prisma.$executeRaw(Prisma.sql`
+        INSERT INTO public."DeletedDirectory"
+        (uuid,username,device,folder,path,created_at,deleted,rel_path,rel_name,deletion_type)
+        SELECT uuid,username,device,folder,path,created_at,CURRENT_TIMESTAMP,${rel_path},${rel_name},'folder'
+        FROM public."Directory"
+        WHERE username = ${username}
+        AND device = ${device}
+        AND path ~ ${regex_path}
+        ON CONFLICT (uuid)
+        DO UPDATE SET deletion_type = 'folder',
+        rel_path = ${rel_path},
+        rel_name = ${rel_name};`);
+  }
+
+
   /*
     if (directory === "/") {
       await prisma.$executeRaw(Prisma.sql`
@@ -186,7 +213,7 @@ export const deleteFolder = async (data) => {
 
 export const sync_deleteFolder = async (req, res, next) => {
   try {
-    const { path, folder, directory, device, username } = req.query;
+    const { path, folder, directory, uuid, device, username } = req.query;
     const data = {
       rel_path: path,
       rel_name: folder,
@@ -194,6 +221,7 @@ export const sync_deleteFolder = async (req, res, next) => {
       path: path,
       directory: directory,
       device: device,
+      uuid: uuid,
       username,
     };
     await deleteFolder(data);
@@ -331,8 +359,8 @@ export const deleteItems = async (req, res) => {
         directory: directory.dir,
         device: directory.device,
         username,
+        uuid: directory.id
       };
-      console.log(data);
       await deleteFolder(data);
     } catch (err) {
       console.log(err);

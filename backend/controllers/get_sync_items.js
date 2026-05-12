@@ -38,14 +38,14 @@ export const get_sync_items = async (req, res, next) => {
         }
         return {
           filename: a.name, type: a.type, dirID: a.dirID,
-          hashvalue: a.hashvalue, last_modified: a.modified,
+          hashvalue: a.hashvalue, last_modified: new Date(a.modified).getTime().toString(),
           last_updated: a.last_updated,
           path, size: parseInt(a.size),
           uuid: a.uuid, origin: a.origin,
           versions: a.versions
         }
       } else {
-        return { folder: a.name, path: a.path, uuid: a.uuid, device: a.device, type: a.type, created_at: a.modified }
+        return { folder: a.name, path: a.path, uuid: a.uuid, device: a.device, type: a.type, created_at: new Date(a.modified).getTime().toString() }
       }
     });
     const totalCount = count.reduce((total, a) => total + parseInt(a.count), 0);
